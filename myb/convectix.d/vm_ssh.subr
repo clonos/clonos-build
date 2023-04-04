@@ -1,0 +1,16 @@
+init_ssh()
+{
+	readconf freecloud.conf
+
+	[ -z "${orig_vm_os_type}" ] && orig_vm_os_type="${vm_os_type}"
+
+	[ -z "${listenip}" ] && listenip="${nodeip}"
+
+	if [ -z "${convectix_ssh_privatekey}" ]; then
+		_md5name=$( /sbin/md5 -qs ${nodename} )
+		convectix_ssh_privatekey="${sshdir}/${_md5name}.id_rsa"
+	fi
+
+	ssh_cmd="/usr/bin/ssh -tt -oConnectionAttempts=2 -oConnectTimeout=2 -oPort=22 -i ${convectix_ssh_privatekey} root@${service_vm_ip}"
+	scp_cmd="/usr/bin/scp -i ${convectix_ssh_privatekey}"
+}

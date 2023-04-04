@@ -1,0 +1,10 @@
+---
+elasticsearch::datadir: /var/db/elasticsearch/data
+elasticsearch::download_tool: 'fetch -o'
+elasticsearch::elasticsearch_user: elasticsearch
+elasticsearch::elasticsearch_group: elasticsearch
+elasticsearch::homedir: /usr/local/elasticsearch
+elasticsearch::init_template: "%{module_name}/etc/init.d/elasticsearch.FreeBSD.erb"
+elasticsearch::package_dir: /var/cache/elasticsearch
+elasticsearch::service_provider: freebsd
+elasticsearch::manage_repo: false

@@ -1,0 +1,248 @@
+#!/usr/local/bin/cbsd
+#v11.0.7
+MYARG="jname size vm_os_type"
+MYOPTARG="login pw mask ip4_addr gw authkey host_hostname listenip convectix_ssh_privatekey pause_after_err service_vm_ip"
+MYDESC="Resize VMs disk"
+ADDHELP="listenip - connect from resizer to this ip. by default is nodeip\
+ip4_addr - can be 'DHCP' or 'REALDHCP'\n"
+CBSDMODULE="convectix"
+
+. ${subr}
+
+. ${cbsdinit}
+
+. ${system}
+. ${subrdir}/universe.subr
+. ${subrdir}/bhyve.subr
+
+#defines
+_MYDIR=$( /usr/bin/dirname `${REALPATH_CMD} $0` )
+
+### MAIN Route ###
+set -e
+	. ${_MYDIR}/vm_ssh.subr
+set +e
+
+if [ -z "${login}" ]; then
+	orig_login=0
+else
+	orig_login="${login}"
+fi
+
+if [ -z "${pw}" ]; then
+	orig_pw=0
+else
+	orig_pw="${pw}"
+fi
+
+if [ -z "${ip4_addr}" ]; then
+	orig_ip4_addr=0
+else
+	orig_ip4_addr="${ip4_addr}"
+fi
+
+case "${orig_ip4_addr}" in
+	[Dd][Hh][Cc][Pp])
+		orig_ip4_addr=$( dhcpd )
+		[ $? -eq 2 ] && err 1 "${N1_COLOR}No free IP address for DHCP in nodeippool${N0_COLOR}"
+		;;
+	[Rr][Ee][Aa][Ll][Dd][Hh][Cc][Pp])
+		unset gw orig_gw mask orig_mask
+		;;
+esac
+
+if [ -z "${gw}" ]; then
+	orig_gw=0
+else
+	orig_gw="${gw}"
+fi
+
+if [ -z "${authkey}" ]; then
+	orig_authkey=0
+else
+	orig_authkey="${authkey}"
+fi
+
+if [ -z "${host_hostname}" ]; then
+	orig_host_hostname=0
+else
+	orig_host_hostname="${host_hostname}"
+fi
+
+if [ -z "${vm_os_type}" ]; then
+	orig_vm_os_type=0
+else
+	orig_vm_os_type="${vm_os_type}"
+fi
+
+if [ "${orig_authkey}" != "0" ]; then
+	[ ! -r "${orig_authkey}" ] && err 1 "${N1_COLOR}No such pubkey: ${N2_COLOR}${orig_authkey}${N0_COLOR}"
+fi
+
+. ${jrcconf}
+[ $? -eq 1 ] && err 1 "${N1_COLOR}No such jail: ${N2_COLOR}${jname}${N0_COLOR}"
+[ "${emulator}" != "bhyve" ] && err 1 "${N1_COLOR}Only for bhyve type VMs${N0_COLOR}"
+
+lockfile="/tmp/make_ctld.lock"
+
+[ -f ${lockfile} ] && err 1 "Already locked $lockfile"
+
+readconf freecloud.conf
+
+[ -z "${listenip}" ] && listenip="${nodeip}"
+[ -z "${pause_after_err}" ] && pause_after_err=0
+
+config="/etc/ctl.conf"
+target="iqn.${consumerip}:target0"
+
+init_ssh
+
+${ssh_cmd} -C date > /dev/null 2>&1
+[ $? -ne 0 ] && err 1 "No ssh connection with resizer service: ${ssh_cmd}"
+
+echo ":: connection to resizer: OK"
+
+/usr/bin/touch ${lockfile}
+trap "/etc/rc.d/ctld onestop > /dev/null 2>&1; /bin/rm -f ${lockfile}" HUP INT ABRT BUS TERM EXIT
+
+. ${zfstool}
+
+is_getzvol ${data}/dsk1.vhd
+
+if ! is_getzvol ${data}/dsk1.vhd; then
+	err 1 "${N1_COLOR}${data}/dsk1.vhd not on zvol${N0_COLOR}"
+fi
+
+zvolpath="/dev/zvol/${is_zvol}"
+echo ":: MyZVOL: $is_zvol, MyPATH: ${zvolpath}"
+
+[ ! -c "${zvolpath}" ] && err 1 "No such $zvolpath"
+s=$(( size + 1 ))
+/sbin/zfs set volsize=${s}g ${is_zvol}
+echo ":: $is_zvol resized to: ${size}g"
+
+if [ -z "${size}" ]; then
+	echo "No such size"
+	exit 1
+fi
+
+${CAT_CMD} > ${config} << EOF
+
+#isns-server ${listenip}
+
+portal-group pg0 {
+	discovery-auth-group no-authentication
+	listen ${listenip}
+#	listen [::]
+}
+
+target ${target} {
+	auth-group no-authentication
+	portal-group pg0
+
+	lun 0 {
+		path ${zvolpath}
+		#size ${size}G
+		#option vendor "FreeBSD"
+	}
+}
+
+EOF
+
+chmod 0400 ${config}
+/etc/rc.d/ctld onestart
+
+/usr/sbin/service ctld onestatus
+
+[ $? -ne 0 ] && err 1 "${N1_COLOR}CTLd not runned${N0_COLOR}
+
+echo ":: ctld configured"
+
+case "${vm_os_type}" in
+	linux)
+cat << EOF
+
+Hint: Use for Linux:
+scan:
+iscsiadm -m discovery -t st -p ${listenip}
+
+EOF
+		eval $( ${ssh_cmd} -C iscsiadm -m discovery -t st -p ${listenip} 2>/dev/null |tr -d \\r |while read _iremote _itarget; do
+			x=$( echo $_iremote |awk '{printf $1}' )
+			y=$( echo $_itarget |awk '{printf $1}' )
+			echo "iremote=\"$x\""
+			echo "itarget=\"$y\""
+		done )
+		;;
+	freebsd)
+cat << EOF
+
+Hint: Use for FreeBSD:
+scan:
+iscsictl -A -p ${listenip} -t ${target}
+
+EOF
+		sleep 3
+		iremote="nop"
+
+		mycmd="${ssh_cmd} iscsictl -Ra"
+		mess=$( ${mycmd} 2>/dev/null )
+
+		mycmd="${ssh_cmd} service iscsid onestop"
+		mess=$( ${mycmd} 2>/dev/null )
+
+#		mycmd="${ssh_cmd} iscsictl -A -p ${listenip} -t iqn.${convectix_srv_freebsd_ip}:target0"
+		mycmd="${ssh_cmd} iscsictl -A -p ${listenip} -t iqn.:target0"
+		mess=$( ${mycmd} 2>/dev/null )
+
+		mycmd="${ssh_cmd} service iscsid onestart"
+		mess=$( ${mycmd} 2>/dev/null )
+
+		ret=$?
+		if [ $ret -ne 0 ]; then
+			echo ":: iscsictl failed:"
+			echo ":: ${mycmd}"
+			echo ":: ${mess}"
+			err 1 "error iscsi"
+		else
+			echo ":: iscsi discovery: done"
+		fi
+		itarget=$( ${ssh_cmd} iscsictl 2>/dev/null | grep ^iqn |grep Connected| awk '{printf $1}' )
+		;;
+esac
+
+#if [ "${target}" != "${itarget}" ]; then
+#	err 1 "local target not equal with remote: [${target}] vs [${itarget}]"
+#fi
+
+[ -z "${itarget}" ] && err 1 "Empty itarget"
+
+echo ":: iSCSI ready: ${iremote} ${itarget}"
+
+pubkeyarg=
+
+if [ "${orig_authkey}" != "0" ]; then
+	${ssh_cmd} -C rm -f /tmp/authorized_keys
+	${scp_cmd} ${orig_authkey} ${consumerip}:/tmp/authorized_keys
+	pubkeyarg="-a /tmp/authorized_keys"
+fi
+
+echo "/usr/bin/crsh-resize.sh -r ${iremote} -t ${itarget} -s ${size} -l $orig_login -p $orig_pw -i $orig_ip4_addr -g $orig_gw -h $orig_host_hostname ${pubkeyarg}"
+echo
+echo "${ssh_cmd} -C /usr/bin/crsh-resize.sh -r ${iremote} -t ${itarget} -s ${size} -l $orig_login -p $orig_pw -i $orig_ip4_addr -g $orig_gw -h $orig_host_hostname ${pubkeyarg}"
+${ssh_cmd} -C /usr/bin/crsh-resize.sh -r ${iremote} -t ${itarget} -s ${size} -l $orig_login -p $orig_pw -i $orig_ip4_addr -g $orig_gw -h $orig_host_hostname ${pubkeyarg}
+
+ret=$?
+
+[ ${ret} -ne 0 ] && exit ${ret}
+
+if [ "${vm_os_type}" = "freebsd" ]; then
+	${ssh_cmd} iscsictl -Ra
+fi
+
+rm -f ${lockfile}
+exit 0
+
+#read p
+#sleep 5
+#/etc/rc.d/ctld onestop

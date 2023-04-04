@@ -1,0 +1,13 @@
+# vncterm
+CBSD module: access into jail via VNC
+
+This module requires the libvncserver and gnutls, please install first, e.g:
+
+  `pkg install -y security/gnutls net/libvncserver`
+
+To install module:
+
+  - cbsd module mode=install vncterm
+  - make -C /usr/local/cbsd/modules/vncterm.d
+  - echo 'vncterm.d' >> ~cbsd/etc/modules.conf
+  - cbsd initenv

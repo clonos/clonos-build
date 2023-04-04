@@ -1,0 +1,22 @@
+{
+  "CHANGELOG.md": "0f800b62170629ffa7d59a668f879e88",
+  "Gemfile": "5c5092366b04d0847966a4a4e757ce9a",
+  "LICENSE": "6089b6bd1f0d807edb8bdfd76da0b038",
+  "README.md": "0d7044e56192038efdae4a0a4069165c",
+  "Rakefile": "55655e22184683cc75bc3a931dbee2f3",
+  "files/RPM-GPG-KEY-CentOS-SIG-SCLo": "c2d40a02e7fe588a5ceb6bdc20f9fdda",
+  "manifests/collection.pp": "9d62ddcbc4456e09f38587bee100b0e2",
+  "manifests/config.pp": "7345d2b5cf000030d8940169e0305bf2",
+  "manifests/init.pp": "203c203debd5ecccaad4d832175c5a7f",
+  "manifests/install.pp": "30e96b1d1949b9655ec9c41ab6e2ddbf",
+  "manifests/params.pp": "3b06b9003386925bfb2ab8d62e0c2153",
+  "metadata.json": "85aeb9a364b2e78ddaf7e7dc5ca6a8a5",
+  "spec/acceptance/nodesets/centos-66-x64.yml": "1d51592d7d0a50dcd9d941846be99fbe",
+  "spec/acceptance/nodesets/centos-72-x64.yml": "89261fa3281c9f981561f2c1b5988e5c",
+  "spec/acceptance/nodesets/default.yml": "89261fa3281c9f981561f2c1b5988e5c",
+  "spec/acceptance/scl_spec.rb": "5f941a1443dd330a35dd34cab09584ba",
+  "spec/classes/scl_spec.rb": "7d909560825eb0b390825c259d8947b6",
+  "spec/defines/scl_collection_spec.rb": "1e52c51867c7f9aff7f96774bd9312c0",
+  "spec/spec_helper.rb": "f9665b706bb3df2d36659feb342eb4ae",
+  "spec/spec_helper_acceptance.rb": "af3b8345487411eeaeca37c246bb13b8"
+}

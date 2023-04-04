@@ -1,0 +1,53 @@
+{
+  "name": "tohuwabohu-roundcube",
+  "version": "3.5.2",
+  "author": "tohuwabohu",
+  "license": "Apache-2.0",
+  "summary": "Install and manage the Roundcube webmail application",
+  "source": "https://github.com/tohuwabohu/puppet-roundcube.git",
+  "project_page": "https://github.com/tohuwabohu/puppet-roundcube",
+  "issues_url": "https://github.com/tohuwabohu/puppet-roundcube/issues",
+  "tags": [
+    "roundcube",
+    "webmail"
+  ],
+  "operatingsystem_support": [
+    {
+      "operatingsystem": "Debian",
+      "operatingsystemrelease": [
+        "9",
+        "10"
+      ]
+    },
+    {
+      "operatingsystem": "Ubuntu",
+      "operatingsystemrelease": [
+        "18.04",
+        "20.04"
+      ]
+    },
+    {
+      "operatingsystem": "FreeBSD"
+    }
+  ],
+  "requirements": [
+    {
+      "name": "puppet",
+      "version_requirement": ">= 4.0.0 < 8.0.0"
+    }
+  ],
+  "dependencies": [
+    {
+      "name": "willdurand/composer",
+      "version_requirement": "1.x"
+    },
+    {
+      "name": "puppetlabs/concat",
+      "version_requirement": ">= 1.0.0 < 7.0.0"
+    },
+    {
+      "name": "puppetlabs/stdlib",
+      "version_requirement": ">= 4.6.0 < 7.0.0"
+    }
+  ]
+}

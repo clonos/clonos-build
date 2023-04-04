@@ -1,0 +1,52 @@
+#!/usr/local/bin/cbsd
+#v12.0.6
+MYARG="src"
+MYOPTARG="clonos"
+MYDESC="Show bhyve profiles"
+ADDHELP="src can be: cloud, template or vm\n\
+clonos=1 - indicate that we work with ClonOS-only template\n"
+
+. ${subr}
+
+clonos=0
+
+. ${cbsdinit}
+
+. ${system}
+
+case "${src}" in
+	cloud)
+			cache_file="${tmpdir}/bhyve-cloud.json"
+			# at the moment cloud = template, alias
+			src="template"
+			;;
+	template)
+			cache_file="${tmpdir}/bhyve-templates.json"
+			;;
+	vm)
+			cache_file="${tmpdir}/bhyve-vm.json"
+			;;
+	*)
+			err 1 "unknown src: ${src}, use: src=cloud, src=vm or src=template"
+			;;
+esac
+
+if [ -r ${cache_file} ]; then
+	cache_file_size=$( ${STAT_CMD} -f "%z" ${cache_file} 2>/dev/null )
+else
+	cache_file_size=0
+fi
+
+if [ -r ${cache_file} -a ${cache_file_size} -gt 5 ]; then
+	${CAT_CMD} ${cache_file}
+else
+	if [ ${clonos} -eq 1 ]; then
+		is_clonos_args="--is_clonos"
+	else
+		is_clonos_args=
+	fi
+	compile_bhyve_profiles --workdir ${workdir} --${src} ${is_clonos_args} > ${cache_file}
+	${CAT_CMD} ${cache_file}
+fi
+
+exit 0

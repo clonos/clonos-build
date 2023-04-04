@@ -1,0 +1,21 @@
+#!/bin/bash
+
+#Managed by puppet
+
+#This is a basic shell script to sync a set of folders for csync2
+#Uses inotify to sync when necessary (On file modifications or additions)
+
+while true; do
+  inotifywait -qq \
+<% Array(@syncfolders).sort.each do |folders| -%>
+  -r <%= folders %> \
+<% end -%>
+  -e attrib -e close_write -e move -e delete 
+
+  #Sleep if necessary
+  sleep <%= @sleeptimer %>
+
+  #Run csync2
+  csync2 -x
+
+done

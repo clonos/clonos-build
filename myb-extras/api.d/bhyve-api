@@ -1,0 +1,415 @@
+#!/usr/local/bin/cbsd
+#v12.2.2
+DIST_MODULE_PATH="${distmoduledir}/api.d"
+. ${DIST_MODULE_PATH}/share/bhyve.conf
+MYOPTARG="imgsize jname image ram cpus pubkey host_hostname extras ci_user_pw_user ci_user_pw_root bhyve_vnc_tcp_bind"
+MYARG="mode"
+MYDESC="Operate with bhyve via API"
+CBSDMODULE="sys"
+ADDHELP="
+${H3_COLOR}Description${N0_COLOR}:
+
+Extra helper for jail creation via API
+
+${H3_COLOR}General Options${N0_COLOR}:
+
+${H3_COLOR}Examples${N0_COLOR}:
+
+${H3_COLOR}See also${N0_COLOR}:
+
+"
+EXTHELP="wf_bhyve"
+MODULE_PATH="${dbdir}/bhyve"
+
+. ${subrdir}/nc.subr
+dryrun=0
+checkip=1
+gold=0
+develop=0
+runasap=0
+ip4_gw=
+readconf bhyve-default-default.conf
+readconf bhyve.conf
+
+# ssh host
+ssh_host=
+
+readconf api.conf
+readconf bhyve-api.conf
+
+[ -n "${ip4_gw}" ] && oip4_gw="${ip4_gw}"
+
+set -e
+. ${distmoduledir}/api.d/api.subr
+set +e
+MY_LOG="${cbsd_api_logdir}/bhyve-api.log"
+log "wakeup: [workdir: ${workdir}, cbsdworkdir: ${cbsd_workdir}, api_postcreate_hook: ${api_postcreate_hook}, cbsd_api_dbdir: ${cbsd_api_dbdir}]: $*"
+
+ip4_addr=
+vm_os_type=
+vm_os_profile=
+ip4_addr=
+ip4_gw=
+
+. ${cbsdinit}
+. ${subrdir}/system.subr
+. ${subrdir}/strings.subr
+
+[ -z "${ip4_gw}" -a -n "${oip4_gw}" ] && ip4_gw="${oip4_gw}"
+
+create_env()
+{
+	ssh_user=
+	ssh_port=
+
+	eval vm_os_type="\$${image}_vm_os_type"
+	eval vm_os_profile="\$${image}_vm_os_profile"
+	eval ssh_user="\$${image}_ssh_user"
+
+	[ -z "${ssh_host}" ] && ssh_host="${nodeip}"
+	[ -z "${vm_os_type}" ] && err 1 "vm_os_type empty? check img/mapping in bhyve-api.conf for: ${image}"
+	[ -z "${vm_os_profile}" ] && err 1 "vm_os_profile empty? check img/mapping in bhyve-api.conf for: ${image}"
+	[ -z "${ssh_user}" ] && err 1 "ssh_user empty? check img/mapping in bhyve-api.conf for: ${image}"
+
+	# extras area
+	v6_addr=
+	v4_addr=
+	primary_ip=
+	ip4_addr=
+	ossh_port=
+	port=
+
+	if [ -n "${extras}" ]; then
+		# strip special: must be performed on the API first
+		extras=$( echo ${extras} | ${TR_CMD} -dc '[:alnum:]:,\n\r' | ${TR_CMD} '[:upper:]' '[:lower:]' )
+		log "EXTRAS [${extras}]"
+	fi
+
+	exec_extras=
+
+	if [ -n "${extras}" ]; then
+
+		for i in ${jail_known_extras}; do
+			unset ${i}
+		done
+
+		OIFS="${IFS}"
+		IFS=","
+		for i in ${extras}; do
+			IFS="${OIFS}"
+			extras_name=$( echo ${i} | ${CUT_CMD} -d ":" -f 1 )
+			known=0
+			for x in ${jail_known_extras}; do
+				log "extras check [${x}][${extras_name}]"
+				if [ "${x}" = "${extras_name}" ]; then
+					known=1
+				fi
+			done
+
+			if [ ${known} -eq 1 ]; then
+				#extras_val=$( echo ${i} | ${CUT_CMD} -d ":" -f 2 )
+				_arg_len=$( strlen ${i} )
+				strpos --str="${i}" --search=":"
+				_eqpos=$?
+				_eqpos=$(( _eqpos + 2 ))
+				extras_val=$( substr --pos=${_eqpos} --len=${_arg_len} --str="${i}" )
+				log "known extras found: ${extras_name}, val: [${extras_val}]"
+				eval "${extras_name}=\"${extras_val}\""
+
+				if [ -z "${exec_extras}" ]; then
+					exec_extras="${extras_name}"
+				else
+					exec_extras="${exec_extras} ${extras_name}"
+				fi
+			else
+				log "Unknown extras: ${extras_name}"
+			fi
+			IFS=","
+		done
+		IFS="${OIFS}"
+
+		if [ "${ipv6}" = "external" ]; then
+			v6_addr=$( dhcpdv6 )
+			primary_ip="${v6_addr}"
+			ssh_host="${primary_ip}"
+			ossh_port="22"
+			v4_addr=$( dhcpd ip4pool=${ip4pool} )
+		else
+			v4_addr=$( dhcpd ip4pool=${ip4pool} )
+			primary_ip="${v4_addr}"
+		fi
+	else
+		v4_addr=$( dhcpd ip4pool=${ip4pool} )
+		primary_ip="${v4_addr}"
+	fi
+
+	if [ -n "${ci_gw42}" ]; then
+		v6_addr=$( dhcpdv6 )
+	fi
+
+	log "exec extras: ${exec_extras}"
+
+	for i in ${exec_extras}; do
+		log "looking for helper : ${i}"
+		#helper_var="extras_helper_${i}"
+		#log "looking for helper : ${helper_var}"
+		#eval helper="\$helper_var"
+
+		eval helper="\$extras_helper_$i"
+
+		if [ -x "${helper}" ]; then
+			log "HELPER FOUND for ${i}: [${helper}]"
+			letsencrypt_args=
+			[ -n "${letsencrypt}" ] && letsencrypt_args="-l true"
+			log "EXEC HELPER: ${helper} -m create -n \"${lb}\" -a \"${v4_addr}\" -b \"${v6_addr}\" ${letsencrypt_args}"
+			${helper} -m create -n "${lb}" -a "${v4_addr}" -b "${v6_addr}" ${letsencrypt_args} >> ${MY_LOG} 2>&1
+			ret=$?
+			# todo: notify for error
+		else
+			log "HELPER for ${i} not found: ${helper}!"
+		fi
+	done
+
+	ip4_addr="${v4_addr}"
+
+#	for i in ${v4_addr} ${v6_addr}; do
+#		if [ -z "${ip4_addr}" ]; then
+#			ip4_addr="${i}"
+#		else
+#			ip4_addr="${ip4_addr},${i}"
+#		fi
+#	done
+
+	#ip4_addr=$( dhcpd ip4pool=${ip4pool} )
+	[ -z "${ip4_gw}" ] && ip4_gw="10.0.0.1"
+	ci_jname="${jname}"
+
+	if [ -n "${host_hostname}" ]; then
+		ci_fqdn="${host_hostname}"
+	else
+		ci_fqdn="${jname}.my.domain"
+	fi
+	ci_ip4_addr="${ip4_addr}"
+	ci_gw4="${ip4_gw}"
+
+	[ -z "${vm_os_type}" ] && err 1 "no vm_os_type"
+	[ -z "${vm_os_profile}" ] && err 1 "no vm_os_profile"
+
+	# additional check for profile/type?
+
+	cid=$( ${MD5_CMD} -qs "${pubkey}" )
+	if [ ! -d ${cbsd_api_dbdir}/${cid} ]; then
+		${MKDIR_CMD} -m 0770 -p ${cbsd_api_dbdir}/${cid}
+		${CHOWN_CMD} ${cbsduser}:${cbsduser} ${cbsd_api_dbdir}/${cid}
+	fi
+
+	if [ ! -d ${cbsd_api_dbdir}/${cid}/.ssh ]; then
+		${MKDIR_CMD} -m 0770 -p ${cbsd_api_dbdir}/${cid}/.ssh
+		${CHOWN_CMD} ${cbsduser}:${cbsduser} ${cbsd_api_dbdir}/${cid}/.ssh
+	fi
+
+	if [ ! -r ${cbsd_api_dbdir}/${cid}/.ssh/authorized_keys ]; then
+		echo "${pubkey}" > ${cbsd_api_dbdir}/${cid}/.ssh/authorized_keys
+		${CHOWN_CMD} ${cbsduser}:${cbsduser} ${cbsd_api_dbdir}/${cid}/.ssh/authorized_keys
+		sync
+		#fflush?
+		sleep 1
+	fi
+	if [ ! -d ${cbsd_api_dbdir}/${cid}/vms ]; then
+		${MKDIR_CMD} -m 0770 -p ${cbsd_api_dbdir}/${cid}/vms
+		${CHOWN_CMD} ${cbsduser}:${cbsduser} ${cbsd_api_dbdir}/${cid}/vms
+	fi
+
+	if [ -n "${ci_gw42}" ]; then
+		str="cbsd bcreate jname=${jname} runasap=1 vm_cpus=${cpus} vm_ram=${ram} imgsize=${imgsize} vm_os_type=\"${vm_os_type}\" vm_os_profile=\"${vm_os_profile}\" ci_jname=\"${jname}\" ci_fqdn=\"${ci_fqdn}\" ci_ip4_addr=\"${ip4_addr}\" ci_gw4=\"${ip4_gw}\" ip4_addr=\"${ip4_addr}\" ci_user_pubkey=\"${cbsd_api_dbdir}/${cid}/.ssh/authorized_keys\" ci_jname=\"${ci_fqdn}\" ci_ip4_addr2=\"${v6_addr}\" ci_user_pw_root=\"cbsd\""
+	else
+		str="cbsd bcreate jname=${jname} runasap=1 vm_cpus=${cpus} vm_ram=${ram} imgsize=${imgsize} vm_os_type=\"${vm_os_type}\" vm_os_profile=\"${vm_os_profile}\" ci_jname=\"${jname}\" ci_fqdn=\"${ci_fqdn}\" ci_ip4_addr=\"${ip4_addr}\" ci_gw4=\"${ip4_gw}\" ip4_addr=\"${ip4_addr}\" ci_user_pubkey=\"${cbsd_api_dbdir}/${cid}/.ssh/authorized_keys\" ci_jname=\"${ci_fqdn}\""
+	fi
+
+	[ -n "${bhyve_vnc_tcp_bind}" ] && str="${str} bhyve_vnc_tcp_bind=\"${bhyve_vnc_tcp_bind}\""
+	[ -n "${ci_user_pw_user}" ] && str="${str} ci_user_pw_user=\"${ci_user_pw_user}\""
+	[ -n "${ci_user_pw_root}" ] && str="${str} ci_user_pw_root=\"${ci_user_pw_root}\""
+
+	log "${str}"
+	${str}
+
+	max_retry=20
+	retry=0
+
+	# inherit workdir from CBSD/API?
+	. /etc/rc.conf
+
+	while [ ${retry} -lt ${max_retry} ]; do
+		if [ -r ${cbsd_workdir}/vm/${jname}/vnc_port ]; then
+			vnc_file_stat=$( ${STAT_CMD} -f "%z" ${cbsd_workdir}/vm/${jname}/vnc_port 2>/dev/null )
+			[ ${vnc_file_stat} -gt 0 ] && break
+		fi
+		sleep 1
+		retry=$(( retry + 1 ))
+	done
+
+	if [ ${retry} -gt ${max_retry} ]; then
+		log "unable to read vnc port file: ${cbsd_workdir}/vm/${jname}/vnc_port"
+		err 1 "unable to read vnc port file: ${cbsd_workdir}/vm/${jname}/vnc_port"
+	fi
+
+	# for slow hdd/vm startup
+	sleep 5
+
+	if [ "${nodeip_expose}" = "0" ]; then
+		port=22
+		ssh_host="${ip4_addr}"
+	else
+		vnc_port=$( ${HEAD_CMD} -n1 ${cbsd_workdir}/vm/${jname}/vnc_port | ${AWK_CMD} '{printf $1}' )
+		port=$(( vnc_port + 3000 ))
+
+		if [ "${vm_os_type}" = "windows" ]; then
+			log "expose mode=add jname=${jname} in=${port} out=3389"
+			expose mode=add jname=${jname} in=${port} out=3389 >> ${MY_LOG}
+		else
+			log "expose mode=add jname=${jname} in=${port} out=22"
+			expose mode=add jname=${jname} in=${port} out=22 >> ${MY_LOG}
+		fi
+	fi
+
+
+	if is_number "${imgsize}"; then
+		if conv2bytes ${imgsize}; then
+			imgsize_bytes="${convval}"
+		else
+			imgsize_bytes="0"
+		fi
+	else
+		# already on bytes?
+		imgsize_bytes="${imgsize}"
+	fi
+
+	if is_number "${ram}"; then
+		if conv2bytes ${ram}; then
+			ram_bytes="${convval}"
+		else
+			ram_bytes="0"
+		fi
+	else
+		# already on bytes?
+		ram_bytes="${ram}"
+	fi
+
+	create_time=$( ${DATE_CMD} -u "+%Y-%m-%dT%H:%M:%S" )
+	[ -z "${port4}" ] && port4="${port}"
+	[ -z "${port6}" ] && port6="22"
+	[ -z "${ssh4_host}" ] && ssh4_host="${v4_addr}"
+	[ -z "${ssh6_host}" ] && ssh6_host="${v6_addr}"
+
+	if [ "${port4_real}" = "1" ]; then
+		port4="22"
+	fi
+
+	#echo "${host_hostname} (${vm_os_type}:${vm_os_profile}) ${cpus}/${ram}/${imgsize} ssh ${ssh_user}@${ssh_host} -p${port}" > ${cbsd_api_dbdir}/${cid}/vms/${jname}
+
+	if [ -z "${mq_tube}" ]; then
+		hostname=$( hostname )
+	else
+		hostname="${mq_tube}"
+	fi
+
+	echo "${hostname}" > ${cbsd_api_dbdir}/${cid}/${jname}.node
+	${CAT_CMD} > ${cbsd_api_dbdir}/${cid}/${jname}-bhyve.ssh <<EOF
+{
+  "instanceid": "${host_hostname}",
+  "type": "vm",
+  "is_power_on": true,
+  "created": "${create_time}",
+  "cpus": ${cpus},
+  "ram_bytes": ${ram_bytes},
+  "ram_human": "${ram}",
+  "imgsize_bytes": ${imgsize_bytes},
+  "imgsize_human": "${imgsize}",
+  "vm_os_type": "${vm_os_type}",
+  "vm_os_profile": "${vm_os_profile}",
+  "ssh_user": "${ssh_user}",
+  "ssh_host": "${ssh_host}",
+  "ssh4_host": "${ssh4_host}",
+  "ssh6_host": "${ssh6_host}",
+  "ssh_port": ${port},
+  "ssh4_port": ${port4},
+  "ssh6_port": ${port6},
+EOF
+
+	case "${vm_os_type}" in
+		windows)
+			${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-bhyve.ssh <<EOF
+  "ssh_string": "xfreerdp +clipboard +fonts /rfx /size:1920x1200 /u:windows /v:${ssh_host}:${port}",
+  "ssh4_string": "xfreerdp +clipboard +fonts /rfx /size:1920x1200 /u:windows /v:${ssh4_host}:${port4}",
+  "ssh6_string": "xfreerdp +clipboard +fonts /rfx /size:1920x1200 /u:windows /v:${ssh6_host}:${port6}"
+}
+EOF
+			;;
+		*)
+			${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-bhyve.ssh <<EOF
+  "ssh_string": "ssh ${ssh_user}@${ssh_host} -p${port}",
+  "ssh4_string": "ssh ${ssh_user}@${ssh4_host} -p${port4}",
+  "ssh6_string": "ssh ${ssh_user}@${ssh6_host} -p${port6}"
+}
+EOF
+			;;
+	esac
+
+        # dup to param-values
+	${CAT_CMD} > ${cbsd_api_dbdir}/${cid}/vms/${jname} <<EOF
+host_hostname="${host_hostname}"
+gid="${jname}"
+hostname="${hostname}"
+type="vm"
+is_power_on="true"
+created="${create_time}"
+cpus="${cpus}"
+ram_bytes="${ram_bytes}"
+ram_human="${ram}"
+imgsize_bytes="${imgsize_bytes}"
+imgsize_human="${imgsize}"
+vm_os_type="${vm_os_type}"
+vm_os_profile="${vm_os_profile}"
+ssh_user="${ssh_user}"
+ssh_host="${ssh_host}"
+ssh4_host="${ssh4_host}"
+ssh6_host="${ssh6_host}"
+ssh_port="${port}"
+ssh_port4="${port4}"
+ssh_port6="${port6}"
+EOF
+
+	case "${vm_os_type}" in
+		windows)
+			${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/vms/${jname} <<EOF
+ssh_string="xfreerdp +clipboard +fonts /rfx /size:1920x1200 /u:windows /v:${ssh_host}:${port}"
+ssh4_string="xfreerdp +clipboard +fonts /rfx /size:1920x1200 /u:windows /v:${ssh4_host}:${port4}"
+ssh6_string="xfreerdp +clipboard +fonts /rfx /size:1920x1200 /u:windows /v:${ssh6_host}:${port6}"
+EOF
+			;;
+		*)
+			${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/vms/${jname} <<EOF
+ssh_string="ssh ${ssh_user}@${ssh_host} -p${port}"
+ssh4_string="ssh ${ssh_user}@${ssh4_host} -p${port4}"
+ssh6_string="ssh ${ssh_user}@${ssh6_host} -p${port6}"
+EOF
+			;;
+	esac
+
+	${CHOWN_CMD} ${cbsduser}:${cbsduser} ${cbsd_api_dbdir}/${cid}/vms/${jname} ${cbsd_api_dbdir}/${cid}/${jname}.node ${cbsd_api_dbdir}/${cid}/${jname}-bhyve.ssh
+
+	[ -n "${api_postcreate_hook}" -a -x "${api_postcreate_hook}" ] && ${api_postcreate_hook} -c "${cid}" -j "${jname}" -m create -r "${cbsd_api_dbdir}" -w "${cbsd_workdir}"
+}
+
+## MAIN
+case "${mode}" in
+	create)
+		create_env
+		;;
+esac
+
+# temporary hack/mock for standalone no-DB API version
+[ -x /root/bin/tubestat.sh ] && /root/bin/tubestat.sh > /dev/null 2>&1
+[ -x /root/bin/update_cluster_status.sh ] && /root/bin/update_cluster_status.sh > /dev/null 2>&1
+
+exit 0

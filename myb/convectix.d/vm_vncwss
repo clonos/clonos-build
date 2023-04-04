@@ -1,0 +1,74 @@
+#!/usr/local/bin/cbsd
+#v13.0.17
+MYARG="jname permit"
+MYOPTARG=""
+MYDESC="Launch wss to vnc"
+CBSDMODULE="convectix"
+
+. ${subr}
+. ${cbsdinit}
+
+. ${system}
+. ${subrdir}/universe.subr
+. ${subrdir}/bhyve.subr
+
+readconf vm_vncwss.conf
+
+[ -z "${daemon_user}" ] && daemon_user="www"
+[ ! -f ${jailsysdir}/${jname}/vnc_port ] && log_err 1 "${N1_COLOR}No vnc_port file${N0_COLOR}"
+
+port=$( ${CAT_CMD} ${jailsysdir}/${jname}/vnc_port | ${AWK_CMD} '{printf $1}' )
+
+[ -z "${port}" ] && log_err 1 "${N1_COLOR}${CBSD_APP} no port for ${jname}${N0_COLOR}"
+[ -z "${nodeip}" ] && nodeip="127.0.0.1"
+
+listen_v6=
+[ "${node_ip6_active}" = "1" ] && listen_v6="listen [::]:6080;"
+
+[ ! -d /usr/local/etc/nginx/streams-enabled ] && ${MKDIR_CMD} -p /usr/local/etc/nginx/streams-enabled
+
+${CAT_CMD} > /usr/local/etc/nginx/streams-enabled/vnc.conf <<EOF
+# managed by cbsd vm_vncww script
+upstream cbsd_vnc {
+	server 127.0.0.1:6081;
+}
+
+server {
+	listen *:6080;
+	${listen_v6}
+
+	allow 127.0.0.1;	# always trust localhost
+	allow ${permit};	# remote_addr
+	allow ${nodeip};	# nodeip
+	deny all;
+
+	proxy_pass cbsd_vnc;
+}
+EOF
+
+${SED_CMD} -e "s:%%PORT%%:${port}:g" \
+	/usr/local/cbsd/modules/convectix.d/share/clonos-vnc2wss.tpl > /usr/local/etc/rc.d/clonos-vnc2wss
+
+chmod +x /usr/local/etc/rc.d/clonos-vnc2wss
+
+# it should be for PHP/ClonOS exec
+${SERVICE_CMD} clonos-vnc2wss stop > /dev/null 2>&1
+
+${PS_CMD} -axfw -w -o pid,ucomm,command -ww | ${GREP_CMD} "6081 127.0.0.1" | while read _pid _ucomm _cmd; do
+	case "${_ucomm}" in
+		python*)
+			kill -9 ${_pid}
+			;;
+	esac
+done
+
+# todo: while/nc loop ?
+# daemon: mandatory for ClonOS runCMD/vnc.php
+${DAEMON_CMD} -f ${SERVICE_CMD} clonos-vnc2wss start
+sleep 3
+
+${DAEMON_CMD} -f ${SERVICE_CMD} nginx reload > /dev/null 2>&1
+
+sleep 1
+
+exit 0

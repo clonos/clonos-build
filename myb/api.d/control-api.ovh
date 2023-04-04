@@ -1,0 +1,117 @@
+#!/usr/local/bin/cbsd
+#v13.0.1
+DIST_MODULE_PATH="${distmoduledir}/api.d"
+MYOPTARG="imgsize jname img ram cpus pubkey host_hostname"
+MYARG="mode"
+MYDESC="Operate with jail via API"
+CBSDMODULE="sys"
+ADDHELP="\
+"
+EXTHELP="wf_bhyve"
+MODULE_PATH="${dbdir}/bhyve"
+
+. ${subrdir}/nc.subr
+
+ip4_addr=
+. ${cbsdinit}
+. ${subrdir}/system.subr
+. ${subrdir}/strings.subr
+
+readconf api.conf
+
+set -e
+. ${distmoduledir}/api.d/api.subr
+set +e
+MY_LOG="${cbsd_api_logdir}/contol-api.log"
+[ -z "${cbsd_api_dbdir}" ] && cbsd_api_dbdir="/var/db/cbsd-api"
+log "wakeup: $*"
+
+destroy_env()
+{
+	local MYCID int_br ext_br int_bridge_name ext_bridge_name
+
+	${FIND_CMD} ${cbsd_api_dbdir}/ -type d -name vms | while read _dir; do
+		if [ -r ${_dir}/${jname} ]; then
+			cid=$( ${REALPATH_CMD} ${_dir}/${jname} | ${CUT_CMD} -d / -f 5 )
+			${RM_CMD} -f ${_dir}/${jname} ${cbsd_api_dbdir}/${cid}/${jname}-bhyve.ssh ${cbsd_api_dbdir}/${cid}/${jname}.node
+			[ -n "${api_postdestroy_hook}" -a -x "${api_postdestroy_hook}" ] && ${api_postdestroy_hook} -c ${cid} -j ${jname} -m destroy -r ${cbsd_api_dbdir}
+		fi
+	done
+
+	# destroy ifaces
+	if [ -r ${cbsd_api_dbdir}/${jname}.myd ]; then
+		MYID=$( ${CAT_CMD} ${cbsd_api_dbdir}/${jname}.myd | ${AWK_CMD} '{printf $1}' )
+
+		${RM_CMD} -f ${cbsd_api_dbdir}/${jname}.myd
+
+		int_br="${MYID}"
+
+#		int_br=$(( MYID * 2 ))
+#		ext_br=$(( int_br + 1 ))
+
+		int_bridge_name="bridge${int_br}"
+#		ext_bridge_name="bridge${ext_br}"
+
+		echo "${IFCONFIG_CMD} ${int_bridge_name} destroy" >> /tmp/destroy.txt
+
+		${IFCONFIG_CMD} ${int_bridge_name} destroy > /dev/null 2>&1
+#		${IFCONFIG_CMD} ${ext_bridge_name} destroy > /dev/null 2>&1
+		${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock ${SYSRC_CMD} -qf /etc/rc.conf cloned_interfaces-="${int_bridge_name}"
+		${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock ${SYSRC_CMD} -qf /etc/rc.conf ifconfig_${int_bridge_name}=""
+	fi
+
+	# destroy alias
+	if [ -r ${cbsd_api_dbdir}/${jname}.ext_v4 ]; then
+		EXT_V4=$( ${CAT_CMD} ${cbsd_api_dbdir}/${jname}.ext_v4 | ${AWK_CMD} '{printf $1}' )
+		${RM_CMD} -f ${cbsd_api_dbdir}/${jname}.ext_v4
+		${IFCONFIG_CMD} ix0 delete ${EXT_V4} > /dev/null 2>&1
+	fi
+
+	return 0
+}
+
+. ${subrdir}/rcconf.subr
+if [ $? -eq 1 ]; then
+	log "no such env: ${jname}"
+	err 1 "${N1_COLOR}no such env: ${N2_COLOR}${jname}${N0_COLOR}"
+fi
+
+case "${emulator}" in
+	bhyve)
+		start_cmd="bstart"
+		stop_cmd="bstop"
+		destroy_cmd="bdestroy"
+		;;
+	jail)
+		start_cmd="jstart"
+		stop_cmd="jstop"
+		destroy_cmd="jdestroy"
+		;;
+	*)
+		log "unknown emulator for ${jname}: ${emulator}"
+		err 1 "unknown emulator ${jname}: ${emulator}"
+		;;
+esac
+
+## MAIN
+case "${mode}" in
+	stop)
+		log "stop ${jname} via ${stop_cmd}"
+		${stop_cmd} jname=${jname}
+		;;
+	start)
+		log "start ${jname} via ${start_cmd}"
+		${start_cmd} jname=${jname}
+		;;
+	destroy)
+		log "destroy ${jname} via ${destroy_cmd}"
+		${destroy_cmd} jname=${jname}
+		destroy_env
+		;;
+esac
+
+# temporary hack/mock for standalone no-DB API version
+[ -x /root/bin/tubestat.sh ] && /root/bin/tubestat.sh > /dev/null 2>&1
+[ -x /root/bin/update_cluster_status.sh ] && /root/bin/update_cluster_status.sh > /dev/null 2>&1
+
+exit 0

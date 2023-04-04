@@ -1,0 +1,67 @@
+{
+  "name": "puppet-redis",
+  "version": "8.4.0",
+  "author": "Vox Pupuli",
+  "summary": "Redis module",
+  "license": "Apache-2.0",
+  "source": "https://github.com/voxpupuli/puppet-redis.git",
+  "project_page": "http://github.com/voxpupuli/puppet-redis",
+  "issues_url": "https://github.com/voxpupuli/puppet-redis/issues",
+  "dependencies": [
+    {
+      "name": "puppetlabs/stdlib",
+      "version_requirement": ">= 4.25.0 < 9.0.0"
+    },
+    {
+      "name": "puppet/systemd",
+      "version_requirement": ">= 2.0.0 < 4.0.0"
+    }
+  ],
+  "description": "Redis module with cluster support",
+  "tags": [
+    "cluster",
+    "failover",
+    "loadbalancing",
+    "redis",
+    "sentinel"
+  ],
+  "requirements": [
+    {
+      "name": "puppet",
+      "version_requirement": ">= 6.1.0 < 8.0.0"
+    }
+  ],
+  "operatingsystem_support": [
+    {
+      "operatingsystem": "Debian",
+      "operatingsystemrelease": [
+        "9",
+        "10",
+        "11"
+      ]
+    },
+    {
+      "operatingsystem": "Ubuntu",
+      "operatingsystemrelease": [
+        "18.04",
+        "20.04"
+      ]
+    },
+    {
+      "operatingsystem": "RedHat",
+      "operatingsystemrelease": [
+        "7",
+        "8",
+        "9"
+      ]
+    },
+    {
+      "operatingsystem": "CentOS",
+      "operatingsystemrelease": [
+        "7",
+        "8",
+        "9"
+      ]
+    }
+  ]
+}

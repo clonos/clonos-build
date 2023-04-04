@@ -1,0 +1,46 @@
+#!/bin/sh
+export PATH="/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin"
+
+[ -r /var/db/roundcube-mysql-initial.log ] && return 0
+
+MYSQL_CLI=$( which mysql )
+if [ ! -x ${MYSQL_CLI} ]; then
+	echo "no such mysql cli"
+	exit 1
+fi
+
+MYSQL_SQL="/usr/local/www/roundcube/SQL/mysql.initial.sql"
+
+if [ ! -r ${MYSQL_SQL} ]; then
+	echo "no such ${MYSQL_SQL}"
+	exit 1
+fi
+
+timeout 60 ${MYSQL_CLI} -u <%= scope['roundcube::db_username'] %> -p<%= scope['roundcube::db_password'] %> -h <%= scope['roundcube::db_host'] %> <%= scope['roundcube::db_name'] %> < /usr/local/www/roundcube/SQL/<%= scope['roundcube::db_type'] %>.initial.sql
+ret=$?
+
+if [ ${ret} -ne 0 ]; then
+	echo "failed to create sqldb for roundcube"
+	exit ${ret}
+fi
+
+
+session_exist=$( timeout 60 ${MYSQL_CLI} -u <%= scope['roundcube::db_username'] %> -p<%= scope['roundcube::db_password'] %> -h <%= scope['roundcube::db_host'] %> <%= scope['roundcube::db_name'] %> <<EOF
+SHOW TABLES LIKE 'session';
+EOF
+2>/dev/null )
+ret=$?
+
+if [ ${ret} -ne 0 ]; then
+	echo "failed to check 'session' table existance for roundcube"
+	exit ${ret}
+fi
+
+if [ -z "${session_exist}" ]; then
+	echo "failed to create sqldb for roundcube: no 'session' table"
+	exit 1
+fi
+
+date > /var/db/roundcube-mysql-initial.log
+
+exit 0

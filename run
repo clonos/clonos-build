@@ -1,4 +1,0 @@
-cd /rel
-tar cf clonos.tar clonos ; xz -9 clonos.tar ; mv clonos.tar.xz clonos.txz
-echo "MAKE"
-/rel/make.sh

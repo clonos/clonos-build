@@ -1,0 +1,11 @@
+MYCOL="id user_id sess_id secure_sess_id user_ip auth_time"
+
+id="INTEGER PRIMARY KEY AUTOINCREMENT"
+user_id="INTEGER"
+sess_id="VARCHAR(128)"
+secure_sess_id="VARCHAR(128)"
+user_ip="VARCHAR(46)"
+auth_time="TIMESTAMP DATE"
+
+INITDB=""
+CONSTRAINT=""

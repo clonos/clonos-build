@@ -1,0 +1,34 @@
+{
+  "author": "Diego Gutierrez",
+  "checksums": {
+    ".fixtures.yml": "57dc0ca923a813538580a664c1de8f32",
+    "Gemfile": "088adb020198be91b319cae485ebb90d",
+    "Gemfile.lock": "c3e58ccaa7ee2b97f847d783b2ceb730",
+    "Modulefile": "7f1d3f171c71dfe0f867aab7457313cd",
+    "README.markdown": "d4424a862584177790c6c2db37089e23",
+    "Rakefile": "e53eb5d82ce9e1b396942a7c01af684c",
+    "manifests/env/userhome.pp": "88829271ea4203e1d0e246e0dd82ab4b",
+    "manifests/init.pp": "f1af5e73271a661514181bfaea37084e",
+    "manifests/params.pp": "02e2c8e3ecec3fb5d0052338ef04e8f8",
+    "spec/classes/rpmbuild_spec.rb": "e155523de4cc36dfec10cdab86e4cd33",
+    "spec/defines/env/userhome_spec.rb": "44a02ee4e0309e3fe6b13a0188527901",
+    "spec/spec.opts": "a600ded995d948e393fbe2320ba8e51c",
+    "spec/spec_helper.rb": "edd817d39bb09b1d542dfa9a9dbcf734",
+    "templates/default_macros.erb": "4b25df45b15d4e3bf6aba9356d12c287",
+    "tests/init.pp": "422d11435b989c7cc9f40114f89a679a"
+  },
+  "dependencies": [
+    {
+      "name": "puppetlabs/stdlib",
+      "version_requirement": "\u003e\u003d 4.2.0"
+    }
+  ],
+  "description": "Module to install and configure an rpmbuild environment",
+  "license": "GPL",
+  "name": "dgutierrez1287-rpmbuild",
+  "project_page": "https://github.com/dgutierrez1287/puppet-rpmbuild",
+  "source": "https://github.com/dgutierrez1287/puppet-rpmbuild.git",
+  "summary": "puppet module for rpmbuild configuration",
+  "types": [],
+  "version": "0.2.0"
+}

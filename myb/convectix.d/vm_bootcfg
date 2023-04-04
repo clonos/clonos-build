@@ -1,0 +1,77 @@
+#!/usr/local/bin/cbsd
+#v11.1.19
+MYARG="jname ip4_addr"
+MYOPTARG="gw mask nameserver authkey authuser"
+MYDESC="Configure first/primary settings for ConvectIX VM Appliance"
+ADDHELP="authkey - path to authorized_keys to store inside vm. Can be: node\n\
+authuser - store authkey inside authuser homedir. Default is: root\n\
+ip4_addr can be: DHCP or REALDHCP\n"
+CBSDMODULE="convectix"
+
+. ${subr}
+. ${cbsdinit}
+
+. ${system}
+. ${subrdir}/universe.subr
+. ${subrdir}/bhyve.subr
+
+orig_ip4_addr="${ip4_addr}"
+
+case "${orig_ip4_addr}" in
+	[Rr][Ee][Aa][Ll][Dd][Hh][Cc][Pp])
+		mask=0
+		orig_mask=0
+		;;
+	[Dd][Hh][Cc][Pp])
+		mask=0
+		orig_mask=0
+		;;
+	*)
+		[ -z "${gw}" ] && err 1 "${N1_COLOR}gw= is mandatory${N0_COLOR}"
+		[ -z "${mask}" ] && err 1 "${N1_COLOR}mask= is mandatory${N0_COLOR}"
+		orig_gw="${gw}"
+		orig_mask="${mask}"
+		;;
+esac
+
+. ${jrcconf}
+[ $? -eq 1 ] && err 1 "${N1_COLOR}Not found: ${N2_COLOR}${jname}${N0_COLOR}"
+[ "${emulator}" != "bhyve" ] && err 1 "${N1_COLOR}Not in bhyve mode${N0_COLOR}"
+
+dsk_path="${jaildatadir}/${jname}-${jaildatapref}"
+system_dsk_path="${dsk_path}/cbsd.img"
+
+[ ! -d ${dsk_path} ] && /bin/mkdir -p ${dsk_path}
+
+readconf freecloud.conf
+
+if [ -z "${convectix_ssh_pubkey}" ]; then
+	_md5name=$( /sbin/md5 -qs ${nodename} )
+	_keyfile="${sshdir}/${_md5name}.id_rsa"
+	convectix_ssh_pubkey="${sshdir}/authorized_keys"
+fi
+
+#[ ! -f ${convectix_ssh_pubkey} ] && err 1 "${N1_COLOR}Unable to read pubkey: ${N2_COLOR}${convectix_ssh_pubkey}${N0_COLOR}"
+[ -z "${nameserver}" ] && nameserver="8.8.8.8,8.8.4.4"
+[ -z "${authuser}" ] && authuser="root"
+
+read_authkey=
+[ "${authkey}" = "node" ] && read_authkey="${convectix_ssh_pubkey}"
+[ -n "${authkey}" ] && read_authauthkey="${authkey}"
+
+[ -n "${read_authkey}" -a -r "${read_authkey}" ] && authkey=$( ${CAT_CMD} ${read_authkey} )
+
+${CAT_CMD} > ${system_dsk_path} <<CEOF
+#!/bin/sh
+cat > /etc/crsh/network.txt <<EOF
+ip4_addr="${orig_ip4_addr}"
+netmask="${orig_mask}"
+gw="${orig_gw}"
+nameserver="${nameserver}"
+authuser="${authuser}"
+authkey="${authkey}"
+EOF
+CEOF
+
+bset jname=${jname} ip4_addr="${orig_ip4_addr}"
+${TRUNCATE_CMD} -s1m ${system_dsk_path}

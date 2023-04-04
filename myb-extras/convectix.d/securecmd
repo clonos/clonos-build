@@ -1,0 +1,10 @@
+# List of the allowed cbsd commands
+SECCMD="\
+${SECCMD}
+vm_vncwss \
+get_bhyve_profiles \
+compile_bhyve_profiles \
+get_vm_packages \
+get_interfaces \
+cix_upgrade \
+"

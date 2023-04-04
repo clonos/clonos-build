@@ -1,0 +1,7 @@
+# List of the allowed cbsd commands
+SECCMD="\
+${SECCMD}
+bhyve-api \
+jail-api \
+control-api \
+"

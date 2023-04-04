@@ -1,0 +1,94 @@
+#!/usr/local/bin/cbsd
+MYARG=""
+MYOPTARG=""
+MYDESC="Generate/reset initial DB for ClonOS"
+CBSDMODULE="clonos"
+ADDHELP="
+${H3_COLOR}Description${N0_COLOR}:
+
+Generate initial ClonOS db.
+
+${H3_COLOR}Options${N0_COLOR}:
+
+
+${H3_COLOR}Examples${N0_COLOR}:
+
+ # cbsd clonosdb
+
+"
+
+. ${subrdir}/nc.subr
+. ${system}
+. ${strings}
+. ${tools}
+. ${cbsdinit}
+
+MYPATH="${distmoduledir}/clonosdb.d"
+DBFILE="/var/db/clonos/clonos.sqlite"
+SALT_FILE="/var/db/clonos/salt"
+
+if [ ! -r ${SALT_FILE} ]; then
+	# ZNINkHErdLQ0JjfhnkdTP33KXL4Sh2RaVJ6qF9lE
+	# hz165sD+NPlXhqCeGV233jzNIdWNHRApD2y7nNAN
+	SALT=$( random_password_gen -l 40 )
+	echo ${SALT} > ${SALT_FILE}
+	${CHMOD_CMD} 0440 ${SALT_FILE}
+	${CHOWN_CMD} www:cbsd ${SALT_FILE}
+fi
+
+# sys_helpers_list, jails_helper_wl
+/usr/local/bin/cbsd ${miscdir}/updatesql ${DBFILE} ${MYPATH}/sys_helpers_list.schema sys_helpers_list
+/usr/local/bin/cbsd ${miscdir}/updatesql ${DBFILE} ${MYPATH}/sys_helpers_list.schema jails_helpers_list
+/usr/local/bin/cbsd ${miscdir}/updatesql ${DBFILE} ${MYPATH}/auth_user.schema auth_user
+/usr/local/bin/cbsd ${miscdir}/updatesql ${DBFILE} ${MYPATH}/auth_list.schema auth_list
+
+
+${SQLITE3_CMD} ${DBFILE} << EOF
+BEGIN TRANSACTION;
+DELETE FROM sys_helpers_list;
+INSERT INTO sys_helpers_list ( module ) VALUES ( 'elasticsearch' );
+INSERT INTO sys_helpers_list ( module ) VALUES ( 'memcached' );
+INSERT INTO sys_helpers_list ( module ) VALUES ( 'php' );
+INSERT INTO sys_helpers_list ( module ) VALUES ( 'postgresql' );
+INSERT INTO sys_helpers_list ( module ) VALUES ( 'prometheus' );
+INSERT INTO sys_helpers_list ( module ) VALUES ( 'rabbitmq' );
+INSERT INTO sys_helpers_list ( module ) VALUES ( 'redis' );
+INSERT INTO sys_helpers_list ( module ) VALUES ( 'rtorrent' );
+COMMIT;
+
+BEGIN TRANSACTION;
+DELETE FROM jails_helpers_list;
+INSERT INTO jails_helpers_list ( module ) VALUES ( 'elasticsearch' );
+INSERT INTO jails_helpers_list ( module ) VALUES ( 'memcached' );
+INSERT INTO jails_helpers_list ( module ) VALUES ( 'php' );
+INSERT INTO jails_helpers_list ( module ) VALUES ( 'postgresql' );
+INSERT INTO jails_helpers_list ( module ) VALUES ( 'prometheus' );
+INSERT INTO jails_helpers_list ( module ) VALUES ( 'rabbitmq' );
+INSERT INTO jails_helpers_list ( module ) VALUES ( 'redis' );
+INSERT INTO jails_helpers_list ( module ) VALUES ( 'rtorrent' );
+COMMIT;
+EOF
+
+admin_user=$( ${SQLITE3_CMD} ${DBFILE} "SELECT username FROM auth_user WHERE username='admin' LIMIT 1" 2>/dev/null )
+
+if [ -z "${admin_user}" ]; then
+	SALT=$( ${CAT_CMD} ${SALT_FILE} | ${AWK_CMD} '{printf $1}' )
+	${ECHO} "${N1_COLOR}${CBSD_APP}: added new admin login/password (salt: ${SALT}): ${N2_COLOR}admin/admin${N0_COLOR}"
+	echo ${SALT} > ${SALT_FILE}
+	password="admin"
+	hash1=$( ${SHA256_CMD} -qs "${password}" )
+	hash2="${hash1}${SALT}"
+	salted_hash=$( ${SHA256_CMD} -qs "${hash2}" )
+
+${SQLITE3_CMD} ${DBFILE} << EOF
+BEGIN TRANSACTION;
+INSERT INTO auth_user ( username,password,first_name,last_name,is_active ) VALUES ( 'admin', '${salted_hash}', 'Admin', 'Admin', 1 );
+COMMIT;
+EOF
+else
+	${ECHO} "${N1_COLOR}${CBSD_APP}: admin account already exist${NORMAL}"
+fi
+
+${CHOWN_CMD} www:www ${DBFILE}
+
+exit 0

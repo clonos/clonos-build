@@ -1,0 +1,43 @@
+#!/usr/local/bin/cbsd
+#v11.0.15
+MYARG="jname"
+MYOPTARG="cmd port script"
+MYDESC="Execution for command inside ConvectIX VM"
+ADDHELP="port=22  alternative ssh port\n"
+CBSDMODULE="bhyve"
+
+. ${subr}
+. ${strings}
+init $*
+
+[ -z "${jname}" ] && err 1 "Give me jname"
+[ -z "${port}" ] && port=22
+
+shift  # todo: jname and cmd may have reverse order
+
+[ -z "${cmd}" -a -z "${script}" ] && cmd="${@}"
+[ -z "${cmd}" -a -z "${script}" ] && err 1 "Empty command"
+
+. ${jrcconf}
+[ $? -eq 1 ] && err 1 "${MAGENTA}No such jail: ${GREEN}${jname}${NORMAL}"
+[ "${emulator}" != "bhyve" ] && err 1 "${MAGENTA}Not in bhyve mode${NORMAL}"
+
+[ ${jid} -ne 0 ] || err 1 "Not running"
+
+/usr/bin/nc -w 2 -z ${ip4_addr} ${port} > /dev/null 2>&1
+
+[ $? -ne 0 ] && err 1 "${MAGENTA}SSH port unavailable: ${GREEN}${ip4_addr}:${port}${NORMAL}"
+
+if [ -n "${cmd}" ]; then
+/usr/bin/ssh -i ${sshdir}/id_rsa ubuntu@${ip4_addr} /bin/sh <<CBSD_EOF
+${cmd}
+CBSD_EOF
+elif [ -n "${script}" ]; then
+	[ ! -r "${script}" ] && err 1 "${MAGENTA}No such script: ${GREEN}${script}${NORMAL}"
+	scr_name=$( /usr/bin/basename ${script} )
+	echo "/usr/bin/sftp -i ${sshdir}/id_rsa ${script} ubuntu@${ip4_addr}:/tmp/${scr_name}"
+	/usr/bin/scp -i ${sshdir}/id_rsa ${script} ubuntu@${ip4_addr}:/tmp/${scr_name}
+	/usr/bin/ssh -i ${sshdir}/id_rsa ubuntu@${ip4_addr} "cd /tmp ; /bin/sh /tmp/${scr_name}"
+fi
+
+exit 0

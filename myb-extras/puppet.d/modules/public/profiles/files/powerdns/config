@@ -1,0 +1,4 @@
+API_KEY="test"
+
+# extra overrides
+[ -r /usr/local/etc/powerdns-curl.conf ] && . /usr/local/etc/powerdns-curl.conf

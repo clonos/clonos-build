@@ -1,0 +1,3 @@
+---
+yarn::manage_repo: false
+yarn::install_method: 'source'

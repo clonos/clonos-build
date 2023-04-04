@@ -1,0 +1,39 @@
+#!/usr/local/bin/cbsd
+#v12.1.1
+MYARG="mode"
+MYOPTARG=""
+MYDESC="Mass start or stop VNC server for active jail"
+ADDHELP="mode=run, stop, status\n"
+
+. ${subrdir}/nc.subr
+. ${subrdir}/system.subr
+. ${subrdir}/tools.subr
+. ${subrdir}/strings.subr
+
+. ${cbsdinit}
+
+active_jname=$( cbsdsqlro local SELECT jname FROM jails WHERE emulator=\"jail\" AND status=\"1\" 2>/dev/null | ${XARGS_CMD} )
+
+[ -z "${active_jname}" ] && err 1 "${N1_COLOR}No active jail ;-(${N0_COLOR}"
+
+case "${mode}" in
+	run)
+		for i in ${active_jname}; do
+			${ECHO} "${N1_COLOR}Starting VNC for: ${N2_COLOR}${i}${N0_COLOR}"
+			vncterm jname=${i} mode=run addr=127.0.0.1
+			sleep 2
+		done
+		;;
+	stop)
+		for i in ${active_jname}; do
+			${ECHO} "${N1_COLOR}Starting VNC for: ${N2_COLOR}${i}${N0_COLOR}"
+			vncterm jname=${i} mode=stop
+			sleep 2
+		done
+		;;
+	*)
+		err 1 "${N1_COLOR}Please set mode to 'run' or 'stop'${N0_COLOR}"
+		;;
+esac
+
+exit 0

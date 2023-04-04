@@ -1,0 +1,70 @@
+{
+  "name": "puppetlabs-yumrepo_core",
+  "version": "1.0.7",
+  "author": "puppetlabs",
+  "summary": "Manage client yum repo configurations by parsing yum INI configuration files.",
+  "license": "Apache-2.0",
+  "source": "https://github.com/puppetlabs/puppetlabs-yumrepo_core",
+  "project_page": "https://github.com/puppetlabs/puppetlabs-yumrepo_core",
+  "issues_url": "https://tickets.puppetlabs.com/projects/MODULES",
+  "dependencies": [
+  
+  ],
+  "data_provider": null,
+  "operatingsystem_support": [
+    {
+      "operatingsystem": "CentOS",
+      "operatingsystemrelease": [
+        "5",
+        "6",
+        "7",
+        "8"
+      ]
+    },
+    {
+      "operatingsystem": "OracleLinux",
+      "operatingsystemrelease": [
+        "5",
+        "6",
+        "7"
+      ]
+    },
+    {
+      "operatingsystem": "RedHat",
+      "operatingsystemrelease": [
+        "5",
+        "6",
+        "7",
+        "8"
+      ]
+    },
+    {
+      "operatingsystem": "Scientific",
+      "operatingsystemrelease": [
+        "5",
+        "6",
+        "7"
+      ]
+    },
+    {
+      "operatingsystem": "Fedora",
+      "operatingsystemrelease": [
+        "26",
+        "27",
+        "28",
+        "29",
+        "30",
+        "31"
+      ]
+    }
+  ],
+  "requirements": [
+    {
+      "name": "puppet",
+      "version_requirement": ">= 4.7.0 < 7.0.0"
+    }
+  ],
+  "pdk-version": "1.14.0",
+  "template-url": "https://github.com/puppetlabs/pdk-templates#1.14.0",
+  "template-ref": "1.14.0-0-g1bf3a4e"
+}

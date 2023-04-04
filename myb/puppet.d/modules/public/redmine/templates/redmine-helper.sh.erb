@@ -1,0 +1,116 @@
+#!/bin/sh
+export PATH="/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin"
+
+[ ! -d /var/db/redmine ] && mkdir /var/db/redmine
+
+current_ver=$( /usr/sbin/pkg info <%= @redmine_package %> | /usr/bin/grep ^Version | /usr/bin/cut -d : -f 2 | /usr/bin/awk '{printf $1}' )
+
+truncate -s0 /var/log/redmine-helper.log
+
+if [ -z "${current_ver}" ]; then
+	date | tee -a /var/log/redmine-helper.log
+	echo "unable to determine redmine verion: /usr/sbin/pkg info <%= @redmine_package %>" | tee -a /var/log/redmine-helper.log
+	exit 1
+fi
+
+BUNDLE_CMD=$( which bundle )
+
+if [ ! -x ${BUNDLE_CMD} ]; then
+	echo "no such bundle executable" | tee -a /var/log/redmine-helper.log
+	exit 1
+fi
+
+if [ ! -r "/var/db/redmine/bootstraped.log" ]; then
+
+	truncate -s0 /var/db/redmine/bootstraped.log.wip
+
+	cd /usr/local/www/redmine
+	${BUNDLE_CMD} install --without development test > /var/db/redmine/bootstraped.log.wip 2>&1
+	ret=$?
+	if [ ${ret} -ne 0 ]; then
+		echo "failed: ${BUNDLE_CMD} install --without development test" | tee -a /var/log/redmine-helper.log
+		cat /var/db/redmine/bootstraped.log.wip | tee -a /var/log/redmine-helper.log
+		exit ${ret}
+	fi
+	${BUNDLE_CMD} exec rake generate_secret_token > /var/db/redmine/bootstraped.log.wip 2>&1
+	ret=$?
+	if [ ${ret} -ne 0 ]; then
+		echo "failed: ${BUNDLE_CMD} exec rake generate_secret_token" | tee -a /var/log/redmine-helper.log
+		cat /var/db/redmine/bootstraped.log.wip | tee -a /var/log/redmine-helper.log
+		exit ${ret}
+	fi
+
+	env RAILS_ENV=production ${BUNDLE_CMD} exec rake db:migrate > /var/db/redmine/bootstraped.log.wip 2>&1
+	ret=$?
+	if [ ${ret} -ne 0 ]; then
+		echo "failed: env RAILS_ENV=production ${BUNDLE_CMD} exec rake db:migrate" | tee -a /var/log/redmine-helper.log
+		cat /var/db/redmine/bootstraped.log.wip | tee -a /var/log/redmine-helper.log
+		exit ${ret}
+	fi
+
+	env REDMINE_LANG=en RAILS_ENV=production ${BUNDLE_CMD} exec rake redmine:load_default_data > /var/db/redmine/bootstraped.log.wip 2>&1
+	ret=$?
+	if [ ${ret} -ne 0 ]; then
+		echo "failed: env REDMINE_LANG=en RAILS_ENV=production ${BUNDLE_CMD} exec rake redmine:load_default_data" | tee -a /var/log/redmine-helper.log
+		cat /var/db/redmine/bootstraped.log.wip | tee -a /var/log/redmine-helper.log
+		exit ${ret}
+	fi
+
+	mkdir -p tmp tmp/pdf public/plugin_assets
+	chmod -R 755 files log tmp public/plugin_assets
+	chown -R www:www files log tmp public/plugin_assets
+	find files log tmp public/plugin_assets -type f -exec chmod -x {} +
+
+	mv /var/db/redmine/bootstraped.log.wip /var/db/redmine/bootstraped.log
+fi
+
+if [ ! -r "/var/db/redmine/upgrade-${current_ver}" ]; then
+	echo "upgrade required for ${current_ver}" | tee -a /var/log/redmine-helper.log
+	cd /usr/local/www/redmine
+	${BUNDLE_CMD} exec rake generate_secret_token > /var/db/redmine/upgrade-${current_ver}.wip 2>&1
+	ret=$?
+	if [ ${ret} -ne 0 ]; then
+		echo "failed: ${BUNDLE_CMD} exec rake generate_secret_token" | tee -a /var/db/redmine/upgrade-${current_ver}.wip
+		cat /var/db/redmine/upgrade-${current_ver}.wip | tee -a /var/log/redmine-helper.log
+		exit ${ret}
+	fi
+	${BUNDLE_CMD} exec rake db:migrate RAILS_ENV=production > /var/db/redmine/upgrade-${current_ver}.wip 2>&1
+	ret=$?
+	if [ ${ret} -ne 0 ]; then
+		echo "failed: ${BUNDLE_CMD} exec rake generate_secret_token" | tee -a /var/db/redmine/upgrade-${current_ver}.wip
+		cat /var/db/redmine/upgrade-${current_ver}.wip | tee -a /var/log/redmine-helper.log
+		exit ${ret}
+	fi
+	${BUNDLE_CMD} exec rake redmine:plugins:migrate RAILS_ENV=production > /var/db/redmine/upgrade-${current_ver}.wip 2>&1
+	ret=$?
+	if [ ${ret} -ne 0 ]; then
+		echo "failed: ${BUNDLE_CMD} exec rake generate_secret_token" | tee -a /var/db/redmine/upgrade-${current_ver}.wip
+		cat /var/db/redmine/upgrade-${current_ver}.wip | tee -a /var/log/redmine-helper.log
+		exit ${ret}
+	fi
+	${BUNDLE_CMD} exec rake tmp:cache:clear RAILS_ENV=production > /var/db/redmine/upgrade-${current_ver}.wip 2>&1
+	ret=$?
+	if [ ${ret} -ne 0 ]; then
+		echo "failed: ${BUNDLE_CMD} exec rake generate_secret_token" | tee -a /var/db/redmine/upgrade-${current_ver}.wip
+		cat /var/db/redmine/upgrade-${current_ver}.wip | tee -a /var/log/redmine-helper.log
+		exit ${ret}
+	fi
+
+	mv /var/db/redmine/upgrade-${current_ver}.wip /var/db/redmine/upgrade-${current_ver}
+fi
+
+# chase /usr/local/etc/rc.d/redmine + /usr/local/www/redmine/config/settings.yml + /usr/local/www/redmine/config/database.yml for restart required ?
+new_md5=$( md5 -q /usr/local/etc/rc.d/redmine /usr/local/www/redmine/config/settings.yml /usr/local/www/redmine/config/database.yml | md5 -q )
+old_md5=
+
+if [ -r "/var/db/redmine/config.md5" ]; then
+	. /var/db/redmine/config.md5
+fi
+
+if [ "${old_md5}" != "${new_md5}" ]; then
+	echo "config file was changed (by md5), refresh service" | tee -a /var/log/redmine-helper.log
+	service redmine restart >> /var/log/redmine-helper.log 2>&1
+	echo "old_md5=\"${new_md5}\"" > /var/db/redmine/config.md5
+fi
+
+exit 0

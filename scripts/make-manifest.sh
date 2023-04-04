@@ -17,6 +17,7 @@ src="System source tree"
 lib32="32-bit compatibility libraries"
 tests="Test suite"
 clonos="ClonOS components"
+cbsd="CBSD components"
 
 desc_base="${base} (MANDATORY)"
 desc_base_dbg="${base} (Debugging)"
@@ -31,6 +32,7 @@ desc_ports="${ports}"
 desc_src="${src}"
 desc_tests="${tests}"
 desc_clonos="ClonOS components"
+desc_cbsd="CBSD components"
 
 default_doc=off
 default_src=off
@@ -42,6 +44,7 @@ default_kernel_alt=off
 default_kernel_dbg=on
 default_kernel_alt_dbg=off
 default_clonos=on
+default_cbsd=on
 
 for i in ${*}; do
 	dist="${i}"
@@ -70,6 +73,10 @@ for i in ${*}; do
 		clonos*.txz)
 			desc="${desc_clonos}"
 			default="$(eval echo \"${default_clonos}\")"
+			;;
+		cbsd*.txz)
+			desc="${desc_cbsd}"
+			default="$(eval echo \"${default_cbsd}\")"
 			;;
 		*)
 			;;

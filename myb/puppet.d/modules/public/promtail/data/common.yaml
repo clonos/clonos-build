@@ -1,0 +1,12 @@
+---
+lookup_options:
+  '^promtail::(.+)_config(s)?_hash$':
+    merge:
+      strategy: deep
+  '^promtail::password_file_content$':
+    convert_to: 'Sensitive'
+
+promtail::bin_dir: '/usr/local/bin'
+promtail::service_ensure: 'running'
+promtail::version: 'v1.2.0'
+

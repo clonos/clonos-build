@@ -1,0 +1,61 @@
+#!/bin/sh
+. /etc/rc.subr
+
+name=elasticsearch_<%= @resource[:instance] %>
+rcvar=elasticsearch_enable
+
+load_rc_config ${name}
+
+: ${elasticsearch_enable:=NO}
+: ${elasticsearch_<%= @resource[:instance] %>_user=elasticsearch}
+: ${elasticsearch_<%= @resource[:instance] %>_group=elasticsearch}
+: ${elasticsearch_config=/etc/elasticsearch/<%= @resource[:instance] %>}
+: ${elasticsearch_login_class=root}
+: ${elasticsearch_java_home="/usr/local/openjdk11-jre"}
+
+required_files="${elasticsearch_config}/elasticsearch.yml"
+pidfile=<%= @resource[:pid_dir] %>/elasticsearch-<%= @resource[:instance] %>.pid
+procname=${elasticsearch_java_home}/bin/java
+
+extra_commands="console status"
+console_cmd=elasticsearch_console
+start_precmd=elasticsearch_precmd
+command=/usr/local/lib/elasticsearch/bin/elasticsearch
+command_args="-d --pidfile=${pidfile}"
+
+export ES_PATH_CONF=/etc/elasticsearch/<%= @resource[:instance] %>
+export JAVA_HOME=${elasticsearch_java_home}
+
+elasticsearch_precmd()
+{
+#/var/log/elasticsearch/es.my.domain
+#/var/db/elasticsearch/data/es.my.domain
+    /usr/bin/install -d -o ${elasticsearch_<%= @resource[:instance] %>_user} -g ${elasticsearch_<%= @resource[:instance] %>_group} -m 755 ${pidfile%/*}
+    /usr/bin/install -d -o ${elasticsearch_<%= @resource[:instance] %>_user} -g ${elasticsearch_<%= @resource[:instance] %>_group} -m 755 /var/db/elasticsearch
+    /usr/bin/install -d -o ${elasticsearch_<%= @resource[:instance] %>_user} -g ${elasticsearch_<%= @resource[:instance] %>_group} -m 755 /var/log/elasticsearch
+
+    /usr/bin/install -d -o ${elasticsearch_<%= @resource[:instance] %>_user} -g ${elasticsearch_<%= @resource[:instance] %>_group} -m 755 /var/db/elasticsearch/data/<%= @resource[:instance] %>
+    #/usr/bin/install -d -o ${elasticsearch_<%= @resource[:instance] %>_user} -g ${elasticsearch_<%= @resource[:instance] %>_group} -m 755 /var/log/elasticsearch/<%= @resource[:instance] %>
+}
+
+elasticsearch_console()
+{
+    command_args=""
+    run_rc_command "start"
+}
+
+if [ "x${elasticsearch_mem_min}" != "x" ]; then
+    echo "The elasticsearch_mem_min variable is no longer supported please set this in ${elasticsearch_config}/jvm.options"
+    exit 1;
+fi
+if [ "x${elasticsearch_mem_max}" != "x" ]; then
+    echo "The elasticsearch_mem_max variable is no longer supported please set this in ${elasticsearch_config}/jvm.options"
+    exit 1;
+fi
+if [ "x${elasticsearch_props}" != "x" ]; then
+    echo "The elasticsearch_props variable is no longer supported please set this in ${elasticsearch_config}/jvm.options"
+    exit 1;
+fi
+
+run_rc_command "$1"
+

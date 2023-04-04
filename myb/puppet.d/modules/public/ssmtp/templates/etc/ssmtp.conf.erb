@@ -1,0 +1,46 @@
+### ssmtpd.conf
+#
+# sSMTP configuation file
+#
+# managed by Puppet, local changes will be overwritten
+#
+
+Root=<%= @root_email %>
+Mailhub=<%= @mail_hub %>
+
+FromLineOverride=<%= @from_line_override %>
+
+<% if @hostname -%>
+Hostname=<%= @hostname %>
+<% end -%>
+<% if @rewritedomain -%>
+RewriteDomain=<%= @rewritedomain %>
+<% end -%>
+
+<% if @authuser -%>
+AuthUser=<%= @authuser %>
+<% end -%>
+<%- if @authpass -%>
+AuthPass=<%= @authpass %>
+<% end -%>
+<% if @authmethod -%>
+AuthMethod=<%= @authmethod %>
+<% end -%>
+<% if @usetls -%>
+UseTLS=<%= @usetls %>
+<% end -%>
+<% if @usestarttls -%>
+UseSTARTTLS=<%= @usestarttls %>
+<% end -%>
+<% if @tlscert -%>
+TLSCert=<%= @tlscert %>
+<% end -%>
+<% if @tlskey -%>
+TLSKey=<%= @tlskey %>
+<% end -%>
+<% if @tlscafile -%>
+TLS_CA_File=<%= @tlscafile %>
+<% end -%>
+<% if @tlscadir -%>
+TLS_CA_Dir=<%= @tlscadir %>
+<% end -%>

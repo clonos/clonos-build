@@ -1,0 +1,184 @@
+#!/bin/sh
+
+#defines
+INSTALLLOOP=1
+PRODUCT="ConvIX"
+# mount point for zfsinstall and operation in installed environment
+MPT="/tmp/zroot"
+
+show_menu()
+{
+
+    if [ -n "${ip}" ]; then
+	echo
+	${ECHO} "   ${BOLD}${PRODUCT}${N1_COLOR} installer available via: ${N2_COLOR}http://${ip}/${N0_COLOR}"
+	echo
+    else
+	echo
+	echo
+	echo
+    fi
+
+    ${ECHO} "   ${BOLD}1 .. ${N1_COLOR}Network setup (inteface: ${N2_COLOR}${MYNIC}${N1_COLOR})${N0_COLOR}"
+#    ${ECHO} "   ${BOLD}2 .. ${N1_COLOR}Storage setup (disks: ${N2_COLOR}${MYDSK}${N1_COLOR})${N0_COLOR}"
+
+    ${ECHO} "   ${BOLD}0 .. ${N1_COLOR}Reboot.${N0_COLOR}"
+
+    echo
+    echo
+    echo
+
+    ${ECHO} "  ${N1_COLOR} For drop in shell just interrupt script by Ctrl+C ${N0_COLOR}"
+}
+
+
+cfg_web() {
+
+    [ -n "${ip}" ] && ifconfig ${MYNIC} ${ip} -alias
+
+    arp -ad > /dev/null 2>&1
+
+    ip=${newip}
+
+    if [ -n "${newmask}" ]; then
+	mask=${newmask}
+	IPCFG="${IFCONFIG_CMD} ${MYNIC} inet ${getip} netmask ${mask}"
+    else
+	unset mask
+        IPCFG="${IFCONFIG_CMD} ${MYNIC} inet ${getip}"
+    fi
+
+    $IPCFG
+
+    if [ -n "${newgw}" ]; then
+	route add default ${newgw}
+	gw=$newgw
+    else
+	unset gw
+    fi
+
+}
+
+
+
+network() {
+    local _testmask
+    ip_with_prefix=0
+
+    printf "${N1_COLOR}Enter IP (valid form sample: ${N2_COLOR}192.168.0.10 ${N1_COLOR}or${N2_COLOR} 192.168.0.10/24${N1_COLOR}): ${N0_COLOR}"
+    read getip
+
+    newip=$(echo $getip |cut -d "/" -f 1)
+    _testmask=$(echo $getip|grep /)
+
+    if [ -n "${_testmask}" ]; then
+	unset newmask
+    else
+         printf "${N1_COLOR}Enter network mask (valid form sample: ${N2_COLOR}255.255.255.0${N1_COLOR}): ${N0_COLOR}"
+         read newmask
+    fi
+    printf "${N1_COLOR}Enter network gateway (valid form sample: ${N2_COLOR}192.168.0.1${N1_COLOR}): ${N0_COLOR}"
+    read newgw
+
+    [ -n "${newip}" ] && cfg_web
+
+}
+
+storage() {
+    local _testmask
+    ip_with_prefix=0
+    local IFS
+
+    printf "${N1_COLOR}Select disk for installing ${PRODUCT}: (valid form sample: ${N2_COLOR}ada0${N1_COLOR} or ${N2_COLOR}da0 da1 da3${N1_COLOR}): ${N0_COLOR}"
+    ${ECHO} "${N1_COLOR} Visible disks in your system: ${N0_COLOR}${N2_COLOR}"
+    echo
+    IFS=":"
+    /usr/jails/misc/disks-list |while read a b c; do
+	SIZE=""
+	VENDOR=""
+	if [ -n "${c}" ]; then
+	    c=$(( c / 1024 / 1024 / 1024 ))
+	    SIZE=": ${c} GB"
+	fi
+	if [ -n "${b}" ]; then
+	    VENDOR="(${b})"
+	fi
+	echo ">> ${a} << ${VENDOR} ${SIZE}"
+    done
+    IFS=" "
+    echo
+    ${ECHO} "${N0_COLOR}Enter one or multiple disks (${N1_COLOR}${BOLD}Warning! All data on selected disk will be desroyed!!!${N0_COLOR})"
+    echo
+    read getdsk
+
+    MYDSK=${getdsk}
+}
+
+disk_test()
+{
+    local nic_num=0 ALLNIC
+
+    dsk_num=`/usr/jails/misc/disks-list|wc -l`
+
+    if [ ${dsk_num} -eq 0 ]; then
+	${ECHO} "${N1_COLOR}No storage detected. Exit${N0_COLOR}"
+	exit
+    fi
+}
+
+
+# remove all gpt index and destroy gpart data
+cleandisk()
+{
+    local dsk=${1}
+    local i j
+
+    gpart recover ${dsk} ||true
+
+    for i in 10 9 8 7 6 5 4 3 2 1; do
+        echo "gpart delete -i ${i} ${dsk}"
+        gpart delete -i ${i} ${dsk}||true
+
+    done
+
+    gpart destroy ${dsk}||true
+}
+
+
+install()
+{
+    local DSKARG=""
+
+    for i in ${MYDSK}; do
+	cleandisk ${i}
+	DSKARG="${DSKARG} -d ${i}"
+    done
+
+	${ECHO} "${N1_COLOR}READY FOR ACTION: ${N2_COLOR} please standby${N2_COLOR}"
+
+	[ ! -d "${MPT}" ] && mkdir -p ${MPT}
+
+	${_MYDIR}/zfsinstall -u /usr/freebsd-dist ${DSKARG} -p zroot -m ${MPT} > /tmp/zfsinstall.log
+
+	${ECHO} "Complete${N0_COLOR}."
+	sleep 2
+}
+
+
+post_install()
+{
+    . /etc/rc.conf
+
+    if [ ! -f "${MPT}/bin/sh" ]; then
+	${ECHO} "${N1_COLOR}Installation failed: can't find necessary file in ${N2_COLOR}/mnt${N1_COLOR}"
+	read p
+	return 0
+    fi
+
+    # No populate new FS, configure all possible stuff before reboot
+    sysrc -f ${MPT}/etc/rc.conf hostname="${hostname}"
+
+    # chroot /mnt pkg install cbsd
+    # shutdown -r now
+
+}

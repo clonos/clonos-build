@@ -1,0 +1,29 @@
+#!/bin/sh
+
+# TODO: multi-pool/workdir support
+
+. /usr/jails/etc/puppetd.conf
+
+export NOCOLOR=1
+
+for i in ${PUPPET_PASS}; do
+	logdir=$( realpath ~cbsd/jails-system/y )
+	logfile="${logdir}/puppetpass.log"
+
+	printf "check for ${i}: "
+	pid=$( /usr/local/bin/cbsd jstatus jname=${i} 2>/dev/null )
+	ret=$?
+	if [ ${ret} -eq 0 ]; then
+		echo "not exist"
+		continue
+	fi
+	if [ "${pid}" = "0" ]; then
+		echo "not running"
+		continue
+	fi
+
+	# copy in jail /var/log/ for user info?
+	/usr/bin/lockf -s -t0 /tmp/puppetpass-${i}.lock /usr/local/bin/cbsd puppet mode=pass jname=${i} logfile=${logfile} &
+done
+
+exit 0

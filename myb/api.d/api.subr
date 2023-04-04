@@ -1,0 +1,20 @@
+[ -z "${cbsd_api_dbdir}" ] && cbsd_api_dbdir="/var/db/cbsd-api"
+[ -z "${cbsd_api_logdir}" ] && cbsd_api_logdir="/var/log/cbsd-api"
+if [ ! -d "${cbsd_api_dbdir}" ]; then
+	${MKDIR_CMD} -m 0770 "${cbsd_api_dbdir}"
+	${CHOWN_CMD} ${cbsduser}:${cbsduser} "${cbsd_api_dbdir}"
+fi
+[ ! -d "${cbsd_api_logdir}" ] && ${MKDIR_CMD} -m 0770 "${cbsd_api_logdir}"
+
+logtime()
+{
+	local _dt
+	_dt=$( ${DATE_CMD} +"%Y-%m-%d %H:%M:%S" )
+	echo -n "${_dt}"
+}
+
+log()
+{
+	[ -z "${MY_LOG}" ] && err 1 "${N1_COLOR}no MY_LOG vars${N0_COLOR}"
+	echo "`logtime` $*" >> ${MY_LOG}
+}

@@ -11,6 +11,14 @@ progdir=$( dirname ${progdir} )
 [ ! -r "${distdir}/subr/cbsdbootstrap.subr" ] && exit 1
 . ${distdir}/subr/cbsdbootstrap.subr || exit 1
 
+# lookup for RSYNC
+. /etc/rc.conf
+
+if [ -z "${CLONOS_UPLOAD_132}" ]; then
+	echo "no such CLONOS_UPLOAD_132 string in rc.conf"
+	exit 1
+fi
+
 [ -z "${PKG_CMD}" ] && PKG_CMD="/usr/sbin/pkg"
 
 echo "pkg: $PKG_CMD"
@@ -19,7 +27,7 @@ echo "pkg: $PKG_CMD"
 grep -v '^#' ${progdir}/myb.list | sed 's:/usr/ports/::g' > ${progdir}/myb/myb.list
 
 rm -rf /usr/ports/packages/All
-DT=$( date "+%Y%m%d%H%M" )
+DT=$( date "+%d%H" )
 . ${progdir}/myb-extras/version
 VER="${myb_version}.${DT}"
 sed "s:%%VER%%:${VER}:g" /root/myb-build/ports/myb/Makefile-tpl > /root/myb-build/ports/myb/Makefile
@@ -35,5 +43,10 @@ mv /usr/ports/packages/All/*.pkg ${progdir}/cbsd/
 cp -a ${progdir}/cbsd/*.pkg /usr/ports/packages/All/
 
 ${PKG_CMD} repo .
+
+cp -a ${progdir}/cbsd/clonos_ver.conf /usr/ports/packages/All/
+cp -a ${progdir}/cbsd/clonos_ver.json /usr/ports/packages/All/
+
+${RSYNC_CMD} --delete -avz ./ ${CLONOS_UPLOAD_132}
 
 # retcode

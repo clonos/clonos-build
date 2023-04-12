@@ -52,6 +52,13 @@ cp -a /root/myb-build/ports/cbsd /usr/ports/sysutils/
 [ -d /root/myb-build/myb-extras/clonosdb.d ] && rm -rf /root/myb-build/myb-extras/clonosdb.d
 
 
+# forms
+# broken: php
+for i in memcached redis grafana matomo elasticsearch postgresql rabbitmq roundcube powerdns redmine mysql; do
+	[ -d /usr/local/cbsd/modules/forms.d/${i} ] && rm -rf /usr/local/cbsd/modules/forms.d/${i}
+	cbsd module mode=install forms-${i}
+done
+
 cbsd module mode=install clonos-database || true
 cbsd module mode=upgrade clonos-database || true
 

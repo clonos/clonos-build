@@ -8,9 +8,19 @@ export workdir="${cbsd_workdir}"
 . /usr/local/cbsd/subr/nc.subr
 . /usr/jails/cmd.subr
 
+# MAIN
+web=0
+check_for_updates=0
+
+while getopts "c:w:" opt; do
+	case "${opt}" in
+		c) check_for_updates="${OPTARG}" ;;
+		w) web="${OPTARG}:" ;;
+	esac
+	shift $(($OPTIND - 1))
+done
 
 export PATH=/usr/local/bin:/usr/local/sbin:$PATH
-check_for_updates=0
 clear
 
 [ -z "${1}" ] && check_for_updates=1
@@ -65,7 +75,7 @@ echo
 ${ECHO} "${H2_COLOR} update modules ${N0_COLOR}"
 echo
 
-/usr/local/myb/mybinst.sh
+/usr/local/myb/mybinst.sh -w ${web}
 ret=$?
 
 # save timestamp for last upgrade?

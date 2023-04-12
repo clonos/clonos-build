@@ -2,6 +2,17 @@
 # TODO: sync with upgrade.sh
 #
 export PATH=/usr/local/bin:/usr/local/sbin:$PATH
+
+# grafefull restart for WEB services?
+web=0
+
+while getopts "w:" opt; do
+	case "${opt}" in
+		w) web="${OPTARG}:" ;;
+	esac
+	shift $(($OPTIND - 1))
+done
+
 myb_firstboot="1"				# already initialized ?
 [ -r /etc/rc.conf ] && . /etc/rc.conf
 if [ -z "${myb_default_network}" ]; then
@@ -404,13 +415,13 @@ chown www:www /usr/local/www/clonos/media_import
 chmod 0700 /usr/local/www/clonos/media_import
 
 sysrc php_fpm_enable="YES"
-service php-fpm restart
+[ ${web} -eq 0 ] && service php-fpm restart
 
 service clonos-ws enable
-service clonos-ws restart
+[ ${web} -eq 0 ] && service clonos-ws restart
 
 service clonos-node-ws enable
-service clonos-node-ws restart
+[ ${web} -eq 0 ] && service clonos-node-ws restart
 
 sysrc clonos_vnc2wss_enable="YES"
 

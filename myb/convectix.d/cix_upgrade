@@ -23,11 +23,11 @@ upgrade_packages()
 {
 	case "${dryrun}" in
 		1)
-			/root/bin/upgrade.sh
+			/root/bin/upgrade.sh -c 1 -w 1
 			;;
 		0)
-			#/root/bin/upgrade.sh start
-			# CBSD QUEUE
+			# not for DEV server:
+			myhost=$( ${HOSTNAME_CMD} | ${AWK_CMD} '{printf $1}' )
 			if [ "${mod_cbsd_queue_enabled}" = "YES" -a -z "${MOD_CBSD_QUEUE_DISABLED}" ]; then
 				readconf cbsd_queue.conf
 				if [ -z "${cbsd_queue_backend}" ]; then
@@ -37,23 +37,24 @@ upgrade_packages()
 				fi
 			fi
 
-			echo "Upgrade in progress..."
-			for i in $( seq 1 5 ); do
-				echo "Phase ${i}..."
-				if [ "${mod_cbsd_queue_enabled}" = "YES" -a -z "${MOD_CBSD_QUEUE_DISABLED}" ]; then
-					if [ -z "${cbsd_queue_backend}" ]; then
-						MOD_CBSD_QUEUE_DISABLED="1"
-					else
-						p=$(( 15 * i ))
-						[ -n "${cbsd_jail_queue_name}" ] && ${cbsd_queue_backend} cbsd_queue_name=${cbsd_settings_queue_name} id=update cmd=update status=${p} workdir="${workdir}" jname="0" data_msg="update phase ${i}/5.."
-					fi
-			fi
+			if [ -z "${myhost}" -o "${myhost}" = "home.olevole.ru" ]; then
+				echo "Dev server"
+				echo "Upgrade in progress..."
+				for i in $( seq 1 5 ); do
+					echo "Phase ${i}..."
+					if [ "${mod_cbsd_queue_enabled}" = "YES" -a -z "${MOD_CBSD_QUEUE_DISABLED}" ]; then
+						if [ -z "${cbsd_queue_backend}" ]; then
+							MOD_CBSD_QUEUE_DISABLED="1"
+						else
+							p=$(( 15 * i ))
+							[ -n "${cbsd_jail_queue_name}" ] && ${cbsd_queue_backend} cbsd_queue_name=${cbsd_settings_queue_name} id=update cmd=update status=${p} workdir="${workdir}" jname="0" data_msg="update phase ${i}/5.."
+						fi
+				fi
 				sleep 1
-			done
-#			[ -r /var/spool/myb/state.conf ] && ${RM_CMD} -f /var/spool/myb/state.conf
-#			[ -r /var/spool/myb/last_result.txt ] && ${RM_CMD} -f /var/spool/myb/last_result.txt
-
-#			/root/bin/upgrade.sh
+				done
+			else
+				/root/bin/upgrade.sh -c 0 -w 1
+			fi
 
 			if [ "${mod_cbsd_queue_enabled}" = "YES" -a -z "${MOD_CBSD_QUEUE_DISABLED}" ]; then
 				if [ -z "${cbsd_queue_backend}" ]; then
@@ -93,8 +94,8 @@ list_packages()
 	PATH="${OPATH}"
 
 	if [ ${save_repo} -eq 1 ]; then
-		STD_OUT="/tmp/clonos_ver.conf"
-		STD_OUT_JSON="/tmp/clonos_ver.json"
+		STD_OUT="/tmp/cix_upgrade.conf"
+		STD_OUT_JSON="/tmp/cix_upgrade.conf.json"
 		${TRUNCATE_CMD} -s0 ${STD_OUT} ${STD_OUT_JSON}
 	fi
 
@@ -161,7 +162,7 @@ EOF
 		return 0
 	fi
 
-	[ -r /tmp/clonos_ver.conf ] && . /tmp/clonos_ver.conf
+	[ -r ${cache_file} ] && . ${cache_file}
 
 	${CAT_CMD} <<EOF
   },
@@ -210,11 +211,14 @@ EOF
 json=0
 save_repo=0
 
+cache_file="/tmp/cix_upgrade_latest.conf"
+
 case "${mode}" in
 	list)
 		list_packages
 		;;
-	listjson)
+	listjson|listjson2)
+		cache_file="/tmp/cix_upgrade_latest.conf"
 		json=1
 		list_packages
 		;;
@@ -222,9 +226,23 @@ case "${mode}" in
 		dryrun=0
 		upgrade_packages
 		;;
+#	check_upgrade)
+#		dryrun=1
+#		upgrade_packages
+#		;;
 	check_upgrade)
-		dryrun=1
-		upgrade_packages
+		URL="https://clonos-pkg.convectix.com/FreeBSD:13:amd64/latest/clonos_ver.conf"
+		_res=$( timeout 10 ${FETCH_CMD} -o ${cache_file} ${URL} 2>&1 )
+		ret=$?
+		if [ ${ret} -eq 0 ]; then
+			cache_file="/tmp/cix_upgrade_latest.conf"
+			json=1
+			list_packages
+			chmod 0777 ${cache_file}
+		else
+			${RM_CMD} -f ${cache_file}
+			err 1 "check_uprade fetch error: ${_res}"
+		fi
 		;;
 	repo)
 		json=1

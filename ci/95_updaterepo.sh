@@ -47,6 +47,8 @@ ${PKG_CMD} repo .
 cp -a ${progdir}/cbsd/clonos_ver.conf /usr/ports/packages/All/
 cp -a ${progdir}/cbsd/clonos_ver.json /usr/ports/packages/All/
 
+sysrc -qf ${progdir}/cbsd/clonos_ver.conf myb_ver_new="${myb_version}.${DT}"
+
 ${RSYNC_CMD} --delete -avz ./ ${CLONOS_UPLOAD_132}
 
 # retcode

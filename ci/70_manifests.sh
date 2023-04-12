@@ -46,6 +46,7 @@ rm -rf /usr/ports/packages/All
 
 make -C /root/myb-build/ports/myb clean
 make -C /root/myb-build/ports/myb package
+
 cp -a /usr/ports/packages/All/myb-*.pkg ${progdir}/cbsd/
 
 tar cf cbsd.tar cbsd

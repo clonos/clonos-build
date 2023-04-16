@@ -21,8 +21,6 @@ fi
 
 [ -z "${PKG_CMD}" ] && PKG_CMD="/usr/sbin/pkg"
 
-echo "pkg: $PKG_CMD"
-
 # save package list
 grep -v '^#' ${progdir}/myb.list | sed 's:/usr/ports/::g' > ${progdir}/myb/myb.list
 
@@ -44,10 +42,10 @@ cp -a ${progdir}/cbsd/*.pkg /usr/ports/packages/All/
 
 ${PKG_CMD} repo .
 
+sysrc -qf ${progdir}/cbsd/clonos_ver.conf myb_ver_new="${myb_version}.${DT}"
+
 cp -a ${progdir}/cbsd/clonos_ver.conf /usr/ports/packages/All/
 cp -a ${progdir}/cbsd/clonos_ver.json /usr/ports/packages/All/
-
-sysrc -qf ${progdir}/cbsd/clonos_ver.conf myb_ver_new="${myb_version}.${DT}"
 
 ${RSYNC_CMD} --delete -avz ./ ${CLONOS_UPLOAD_132}
 

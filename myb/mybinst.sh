@@ -1,14 +1,15 @@
 #!/bin/sh
 # TODO: sync with upgrade.sh
 #
-export PATH=/usr/local/bin:/usr/local/sbin:$PATH
+OPATH="${PATH}"
+export PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin
 
 # grafefull restart for WEB services?
 web=0
 
 while getopts "w:" opt; do
 	case "${opt}" in
-		w) web="${OPTARG}:" ;;
+		w) web="1" ;;
 	esac
 	shift $(($OPTIND - 1))
 done
@@ -415,13 +416,22 @@ chown www:www /usr/local/www/clonos/media_import
 chmod 0700 /usr/local/www/clonos/media_import
 
 sysrc php_fpm_enable="YES"
-[ ${web} -eq 0 ] && service php-fpm restart
+if [ ${web} -eq 0 ]; then
+	echo "Restart php-fpm service"
+	service php-fpm restart
+fi
 
 service clonos-ws enable
-[ ${web} -eq 0 ] && service clonos-ws restart
+if [ ${web} -eq 0 ]; then
+	echo "Restart clonos-ws service"
+	service clonos-ws restart
+fi
 
 service clonos-node-ws enable
-[ ${web} -eq 0 ] && service clonos-node-ws restart
+if [ ${web} -eq 0 ]; then
+	echo "Restart clonos-node-ws service"
+	service clonos-node-ws restart
+fi
 
 sysrc clonos_vnc2wss_enable="YES"
 
@@ -643,6 +653,7 @@ sync
 /sbin/reboot
 
 else
+	echo "Restart API, Router, Beanstalkd"
 	/usr/sbin/service cbsd-mq-api stop
 	/usr/sbin/service cbsd-mq-router stop
 	/usr/sbin/service beanstalkd stop
@@ -655,14 +666,6 @@ else
 	/usr/local/etc/rc.d/cbsd-statsd-hoster stop
 	/usr/local/etc/rc.d/cbsd-statsd-jail stop
 
-	/usr/local/etc/rc.d/clonos-node-ws stop
-	/usr/local/etc/rc.d/clonos-vnc2wss stop
-	/usr/local/etc/rc.d/clonos-ws stop
-
-	/usr/local/etc/rc.d/clonos-node-ws start
-	/usr/local/etc/rc.d/clonos-vnc2wss start
-	/usr/local/etc/rc.d/clonos-ws start
-
 	/usr/local/etc/rc.d/cbsd-statsd-bhyve start
 	/usr/local/etc/rc.d/cbsd-statsd-hoster start
 	/usr/local/etc/rc.d/cbsd-statsd-jail start
@@ -674,5 +677,6 @@ fi
 
 /usr/local/bin/cbsd get_bhyve_profiles src=cloud
 /usr/local/bin/cbsd get_bhyve_profiles src=vm clonos=1
+echo "mybinst.sh done"
 
 exit 0

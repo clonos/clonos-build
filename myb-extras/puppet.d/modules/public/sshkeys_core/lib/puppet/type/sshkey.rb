@@ -1,16 +1,18 @@
 module Puppet
   Type.newtype(:sshkey) do
-    @doc = "Installs and manages ssh host keys.  By default, this type will
-      install keys into `/etc/ssh/ssh_known_hosts`. To manage ssh keys in a
-      different `known_hosts` file, such as a user's personal `known_hosts`,
-      pass its path to the `target` parameter. See the `ssh_authorized_key`
-      type to manage authorized keys."
+    @doc = "@summary Installs and manages ssh host keys.
+      By default, this type will install keys into `/etc/ssh/ssh_known_hosts`.
+      To manage ssh keys in a different `known_hosts` file, such as a user's personal
+      `known_hosts`, pass its path to the `target` parameter. See the
+      `ssh_authorized_key` type to manage authorized keys."
 
     ensurable
 
     def name
       "#{self[:name]}@#{self[:type]}"
     end
+
+    alias_method :title, :name
 
     def self.parameters_to_include
       [:name, :type]
@@ -80,10 +82,10 @@ module Puppet
       end
 
       validate do |value|
-        if value =~ %r{\s}
+        if %r{\s}.match?(value)
           raise Puppet::Error, _('Aliases cannot include whitespace')
         end
-        if value =~ %r{,}
+        if %r{,}.match?(value)
           raise Puppet::Error, _('Aliases must be provided as an array, not a comma-separated list')
         end
       end
@@ -95,7 +97,7 @@ module Puppet
       isnamevar
 
       validate do |value|
-        raise Puppet::Error, _('Resourcename cannot include whitespaces') if value =~ %r{\s}
+        raise Puppet::Error, _('Resourcename cannot include whitespaces') if %r{\s}.match?(value)
         raise Puppet::Error, _('No comma in resourcename allowed. If you want to specify aliases use the host_aliases property') if value.include?(',')
       end
     end

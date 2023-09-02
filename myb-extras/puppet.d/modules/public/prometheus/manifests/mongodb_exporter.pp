@@ -51,39 +51,52 @@
 #  Since version 0.7.0, the mongodb exporter uses kingpin, thus
 #  this param to define how we call the mongodb.uri in the $options
 #  https://github.com/percona/mongodb_exporter/blob/v0.7.0/CHANGELOG.md
+# @param proxy_server
+#  Optional proxy server, with port number if needed. ie: https://example.com:8080
+# @param proxy_type
+#  Optional proxy server type (none|http|https|ftp)
 class prometheus::mongodb_exporter (
-  String[1] $cnf_uri,
-  String[1] $download_extension,
-  String[1] $download_url_base,
-  Array  $extra_groups,
-  String[1] $group,
-  String[1] $package_ensure,
-  String[1] $package_name,
-  String[1] $service_name,
-  String[1] $user,
-  String[1] $version,
-  Boolean $use_kingpin,
-  Boolean $purge_config_dir               = true,
-  Boolean $restart_on_change              = true,
-  Boolean $service_enable                 = true,
-  Stdlib::Ensure::Service $service_ensure = 'running',
-  Prometheus::Initstyle $init_style       = $facts['service_provider'],
-  String[1] $install_method               = $prometheus::install_method,
-  Boolean $manage_group                   = true,
-  Boolean $manage_service                 = true,
-  Boolean $manage_user                    = true,
-  String[1] $os                           = downcase($facts['kernel']),
-  String $extra_options                   = '',
-  Optional[String] $download_url          = undef,
-  String[1] $arch                         = $prometheus::real_arch,
-  String[1] $bin_dir                      = $prometheus::bin_dir,
-  Boolean $export_scrape_job              = false,
-  Stdlib::Port $scrape_port               = 9216,
-  String[1] $scrape_job_name              = 'mongodb',
-  Optional[Hash] $scrape_job_labels       = undef,
+  String[1] $cnf_uri                                         = 'mongodb://localhost:27017',
+  String $download_extension                                 = 'tar.gz',
+  Prometheus::Uri $download_url_base                         = 'https://github.com/percona/mongodb_exporter/releases',
+  Array $extra_groups                                        = [],
+  String[1] $group                                           = 'mongodb-exporter',
+  String[1] $package_ensure                                  = 'latest',
+  String[1] $package_name                                    = 'mongodb_exporter',
+  String[1] $service_name                                    = 'mongodb_exporter',
+  String[1] $user                                            = 'mongodb-exporter',
+  String[1] $version                                         = '0.20.4',
+  Boolean $use_kingpin                                       = true,
+  Boolean $purge_config_dir                                  = true,
+  Boolean $restart_on_change                                 = true,
+  Boolean $service_enable                                    = true,
+  Stdlib::Ensure::Service $service_ensure                    = 'running',
+  Prometheus::Initstyle $init_style                          = $facts['service_provider'],
+  Prometheus::Install $install_method                        = $prometheus::install_method,
+  Boolean $manage_group                                      = true,
+  Boolean $manage_service                                    = true,
+  Boolean $manage_user                                       = true,
+  String[1] $os                                              = downcase($facts['kernel']),
+  Optional[String[1]] $extra_options                         = undef,
+  Optional[Prometheus::Uri] $download_url                    = undef,
+  String[1] $arch                                            = $prometheus::real_arch,
+  Stdlib::Absolutepath $bin_dir                              = $prometheus::bin_dir,
+  Boolean $export_scrape_job                                 = false,
+  Optional[Stdlib::Host] $scrape_host                        = undef,
+  Stdlib::Port $scrape_port                                  = 9216,
+  String[1] $scrape_job_name                                 = 'mongodb',
+  Optional[Hash] $scrape_job_labels                          = undef,
+  Optional[String[1]] $proxy_server                          = undef,
+  Optional[Enum['none', 'http', 'https', 'ftp']] $proxy_type = undef,
 ) inherits prometheus {
   #Please provide the download_url for versions < 0.9.0
   $real_download_url = pick($download_url,"${download_url_base}/download/v${version}/${package_name}-${version}.${os}-${arch}.${download_extension}")
+
+  if versioncmp($version, '0.7.0') < 0 or versioncmp($version, '0.20.4') >= 0 {
+    $archive_bin_path = undef  # use default
+  } else {
+    $archive_bin_path = '/opt/mongodb_exporter'
+  }
 
   $notify_service = $restart_on_change ? {
     true    => Service[$service_name],
@@ -105,6 +118,7 @@ class prometheus::mongodb_exporter (
     arch               => $arch,
     real_download_url  => $real_download_url,
     bin_dir            => $bin_dir,
+    archive_bin_path   => $archive_bin_path,
     notify_service     => $notify_service,
     package_name       => $package_name,
     package_ensure     => $package_ensure,
@@ -120,8 +134,11 @@ class prometheus::mongodb_exporter (
     service_enable     => $service_enable,
     manage_service     => $manage_service,
     export_scrape_job  => $export_scrape_job,
+    scrape_host        => $scrape_host,
     scrape_port        => $scrape_port,
     scrape_job_name    => $scrape_job_name,
     scrape_job_labels  => $scrape_job_labels,
+    proxy_server       => $proxy_server,
+    proxy_type         => $proxy_type,
   }
 }

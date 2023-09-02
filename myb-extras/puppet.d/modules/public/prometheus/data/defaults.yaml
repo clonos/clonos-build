@@ -3,7 +3,7 @@ prometheus::usershell: '/usr/bin/nologin'
 prometheus::extra_options: ~
 prometheus::download_url: ~
 prometheus::bin_dir: '/usr/local/bin'
-prometheus::version: '2.20.1'
+prometheus::version: '2.30.3'
 prometheus::install_method: 'url'
 prometheus::manage_prometheus_server: false
 prometheus::extract_command: ~
@@ -60,6 +60,7 @@ prometheus::alertmanager::route:
   'group_interval': '5m'
   'repeat_interval': '3h'
   'receiver': 'Admin'
+prometheus::alertmanager::mute_time_intervals: []
 prometheus::alertmanager::storage_path: '/var/lib/alertmanager'
 prometheus::alertmanager::templates: [ "%{lookup('prometheus::alertmanager::config_dir')}/*.tmpl" ]
 prometheus::alertmanager::user: 'alertmanager'
@@ -104,6 +105,7 @@ prometheus::global_config:
   'external_labels':
     'monitor': 'master'
 prometheus::group: 'prometheus'
+prometheus::include_default_scrape_configs: true
 prometheus::localstorage: '/var/lib/prometheus'
 prometheus::manage_config: true
 prometheus::mesos_exporter::server_type: 'master'
@@ -184,17 +186,6 @@ prometheus::mysqld_exporter::package_name: 'mysqld_exporter'
 prometheus::mysqld_exporter::service_name: 'mysqld_exporter'
 prometheus::mysqld_exporter::user: 'mysqld-exporter'
 prometheus::mysqld_exporter::version: '0.12.1'
-prometheus::mongodb_exporter::cnf_uri: 'mongodb://localhost:27017'
-prometheus::mongodb_exporter::download_extension: 'tar.gz'
-prometheus::mongodb_exporter::download_url_base: 'https://github.com/percona/mongodb_exporter/releases'
-prometheus::mongodb_exporter::extra_groups: []
-prometheus::mongodb_exporter::group: 'mongodb-exporter'
-prometheus::mongodb_exporter::package_ensure: 'latest'
-prometheus::mongodb_exporter::package_name: 'mongodb_exporter'
-prometheus::mongodb_exporter::service_name: 'mongodb_exporter'
-prometheus::mongodb_exporter::user: 'mongodb-exporter'
-prometheus::mongodb_exporter::version: '0.11.0'
-prometheus::mongodb_exporter::use_kingpin: false
 prometheus::node_exporter::download_extension: 'tar.gz'
 prometheus::node_exporter::download_url_base: 'https://github.com/prometheus/node_exporter/releases'
 prometheus::node_exporter::extra_groups: []
@@ -205,7 +196,7 @@ prometheus::node_exporter::user: 'node-exporter'
 prometheus::node_exporter::version: '1.0.1'
 prometheus::beanstalkd_exporter::exporter_listen: ':9371'
 prometheus::beanstalkd_exporter::beanstalkd_address: '127.0.0.1:11300'
-prometheus::beanstalkd_exporter::download_extension: 'tar.gz'
+prometheus::beanstalkd_exporter::download_extension: ''
 prometheus::beanstalkd_exporter::download_url_base: 'https://github.com/messagebird/beanstalkd_exporter/releases'
 prometheus::beanstalkd_exporter::extra_groups: []
 prometheus::beanstalkd_exporter::group: 'beanstalkd-exporter'
@@ -219,15 +210,7 @@ prometheus::beanstalkd_exporter::config: '/etc/beanstalkd-exporter.conf'
 prometheus::package_ensure: 'latest'
 prometheus::package_name: 'prometheus'
 prometheus::rule_files: []
-prometheus::scrape_configs:
-  - 'job_name': 'prometheus'
-    'scrape_interval': '10s'
-    'scrape_timeout': '10s'
-    'static_configs':
-      - 'targets':
-        - 'localhost:9090'
-        'labels':
-          'alias': 'Prometheus'
+prometheus::scrape_configs: []
 prometheus::remote_read_configs: []
 prometheus::remote_write_configs: []
 prometheus::shared_dir: '/usr/local/share/prometheus'
@@ -266,7 +249,7 @@ prometheus::blackbox_exporter::config_file: '/etc/blackbox-exporter.yaml'
 prometheus::blackbox_exporter::version: '0.17.0'
 prometheus::postgres_exporter::data_source_uri: 'host=/var/run/postgresql/ sslmode=disable'
 prometheus::postgres_exporter::download_extension: 'tar.gz'
-prometheus::postgres_exporter::download_url_base: 'https://github.com/wrouesnel/postgres_exporter/releases'
+prometheus::postgres_exporter::download_url_base: 'https://github.com/prometheus-community/postgres_exporter/releases'
 prometheus::postgres_exporter::extra_groups: []
 prometheus::postgres_exporter::group: 'postgres-exporter'
 prometheus::postgres_exporter::package_ensure: 'latest'
@@ -319,7 +302,7 @@ prometheus::collectd_exporter::service_name: 'collectd_exporter'
 prometheus::collectd_exporter::user: 'collectd-exporter'
 prometheus::collectd_exporter::version: '0.5.0'
 prometheus::collectd_exporter::options: ''
-prometheus::apache_exporter::scrape_uri: 'http://localhost/server-status?auto'
+prometheus::apache_exporter::scrape_uri: 'http://localhost/server-status/?auto'
 prometheus::apache_exporter::download_extension: 'tar.gz'
 prometheus::apache_exporter::download_url_base: 'https://github.com/Lusitaniae/apache_exporter/releases'
 prometheus::apache_exporter::extra_groups: []

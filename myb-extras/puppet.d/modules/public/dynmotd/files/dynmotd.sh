@@ -59,9 +59,10 @@ username=$( whoami )
 
 if [ -e /tmp/puppet.info ]; then
 	puppetinfo=$(cat /tmp/puppet.info)
-fi
-if [ -e /etc/puppetlabs/puppet/puppet.conf ]; then
-	puppetenv="\n              environment is \"$(grep 'environment' /etc/puppetlabs/puppet/puppet.conf | cut -d'=' -f2| tr -d ' ')\""
+	puppetenv=
+	if [ -e /etc/puppetlabs/puppet/puppet.conf ]; then
+		puppetenv=$( grep "^environment" /usr/local/etc/puppet/puppet.conf | tr -d '=' | awk '{printf $2}' )
+	fi
 fi
 echo -e "
 ------------------: System Data :-------------------------------
@@ -72,8 +73,8 @@ CPU:          $CPUName ($NCores cores)
 Memory(Mb):   $mem
 Env info:     $puppetinfo${puppetenv}
 ------------------------: Logged as: [\033[0;32m`whoami`\033[0m]  ------------------------------
-"
+" 1>&2
 if Tx=$( tmux ls 2> /dev/null ); then
-	echo -e "\033[0;31mTmux Sessions:\033[0m"
-	echo $Tx
+	echo -e "\033[0;31mTmux Sessions:\033[0m" 1>&2
+	echo $Tx 1>&2
 fi

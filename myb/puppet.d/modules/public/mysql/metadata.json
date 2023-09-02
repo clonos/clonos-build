@@ -1,6 +1,6 @@
 {
   "name": "puppetlabs-mysql",
-  "version": "12.0.1",
+  "version": "13.3.0",
   "author": "puppetlabs",
   "summary": "Installs, configures, and manages the MySQL service.",
   "license": "Apache-2.0",
@@ -17,15 +17,14 @@
     {
       "operatingsystem": "RedHat",
       "operatingsystemrelease": [
-        "6",
         "7",
-        "8"
+        "8",
+        "9"
       ]
     },
     {
       "operatingsystem": "CentOS",
       "operatingsystemrelease": [
-        "6",
         "7",
         "8"
       ]
@@ -33,14 +32,19 @@
     {
       "operatingsystem": "OracleLinux",
       "operatingsystemrelease": [
-        "6",
         "7"
+      ]
+    },
+    {
+      "operatingsystem": "Debian",
+      "operatingsystemrelease": [
+        "10",
+        "11"
       ]
     },
     {
       "operatingsystem": "Scientific",
       "operatingsystemrelease": [
-        "6",
         "7"
       ]
     },
@@ -54,20 +58,32 @@
     {
       "operatingsystem": "Ubuntu",
       "operatingsystemrelease": [
-        "16.04",
         "18.04",
-        "20.04"
+        "20.04",
+        "22.04"
+      ]
+    },
+    {
+      "operatingsystem": "Rocky",
+      "operatingsystemrelease": [
+        "8"
+      ]
+    },
+    {
+      "operatingsystem": "AlmaLinux",
+      "operatingsystemrelease": [
+        "8"
       ]
     }
   ],
   "requirements": [
     {
       "name": "puppet",
-      "version_requirement": ">= 6.0.0 < 8.0.0"
+      "version_requirement": ">= 6.24.0 < 8.0.0"
     }
   ],
   "description": "MySQL module",
   "template-url": "https://github.com/puppetlabs/pdk-templates#main",
-  "template-ref": "heads/main-0-g51828b4",
-  "pdk-version": "2.2.0"
+  "template-ref": "2.7.1-0-g9a16c87",
+  "pdk-version": "2.5.0"
 }

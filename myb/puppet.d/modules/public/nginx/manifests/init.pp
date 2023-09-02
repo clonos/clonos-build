@@ -1,28 +1,12 @@
-# @summary
-#   This module manages NGINX.
+# @summary Manage NGINX
 #
-# Parameters:
+# Packaged NGINX
+#   - RHEL: EPEL or custom package
+#   - Debian/Ubuntu: Default Install or custom package
+#   - SuSE: Default Install or custom package
 #
-# Actions:
-#
-# Requires:
-#  puppetlabs-stdlib - https://github.com/puppetlabs/puppetlabs-stdlib
-#
-#  Packaged NGINX
-#    - RHEL: EPEL or custom package
-#    - Debian/Ubuntu: Default Install or custom package
-#    - SuSE: Default Install or custom package
-#
-#  stdlib
-#    - puppetlabs-stdlib module >= 0.1.6
-#
-# Sample Usage:
-#
-# The module works with sensible defaults:
-#
-# node default {
+# @example Use the sensible defaults
 #   include nginx
-# }
 #
 # @param include_modules_enabled
 #   When set, nginx will include module configurations files installed in the
@@ -46,6 +30,9 @@
 #
 # @param service_config_check
 #  whether to en- or disable the config check via nginx -t on config changes
+#
+# @param service_config_check_command
+#  Command to execute to validate the generated configuration.
 #
 class nginx (
   ### START Nginx Configuration ###
@@ -93,6 +80,8 @@ class nginx (
   $client_body_timeout                                       = '60s',
   $send_timeout                                              = '60s',
   $lingering_timeout                                         = '5s',
+  Optional[Enum['on','off','always']] $lingering_close       = undef,
+  Optional[String[1]] $lingering_time                        = undef,
   Optional[Enum['on', 'off']] $etag                          = undef,
   Optional[String] $events_use                               = undef,
   Array[Nginx::DebugConnection] $debug_connections           = [],
@@ -209,6 +198,7 @@ class nginx (
   $service_name                                              = 'nginx',
   $service_manage                                            = true,
   Boolean $service_config_check                              = false,
+  String $service_config_check_command                       = 'nginx -t',
   ### END Service Configuration ###
 
   ### START Hiera Lookups ###

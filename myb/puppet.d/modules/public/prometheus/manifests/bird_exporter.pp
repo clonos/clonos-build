@@ -47,40 +47,59 @@
 #  User which runs the service
 # @param version
 #  The binary release version
+# @param env_vars
+#  hash with custom environment variables thats passed to the exporter via init script / unit file
+# @param env_file_path
+#  The path to the file with the environmetn variable that is read from the init script/systemd unit
+# @param proxy_server
+#  Optional proxy server, with port number if needed. ie: https://example.com:8080
+# @param proxy_type
+#  Optional proxy server type (none|http|https|ftp)
+#
+# @example configure bird_exporter on Arch Linux via the repository package
+#  class { 'prometheus::bird_exporter':
+#    env_vars => { 'BIRD_EXPORTER_ARGS'=> '-bird.v2 -web.listen-address=127.0.0.1:9324 -format.new=true -bird.socket=/var/run/bird/bird.ctl -format.description-labels' },
+#    require  => Service['bird'],
+#  }
 #
 # @see https://github.com/czerwonk/bird_exporter
 #
 # @author Tim Meusel <tim@bastelfreak.de>
 #
 class prometheus::bird_exporter (
-  String $download_extension              = '',
-  String[1] $download_url_base            = 'https://github.com/czerwonk/bird_exporter/releases',
-  Array[String] $extra_groups             = ['bird'],
-  String[1] $group                        = 'bird-exporter',
-  String[1] $package_ensure               = 'installed',
-  String[1] $package_name                 = 'bird_exporter',
-  String[1] $user                         = 'bird-exporter',
-  String[1] $version                      = '1.2.4',
-  Boolean $purge_config_dir               = true,
-  Boolean $restart_on_change              = true,
-  Boolean $service_enable                 = true,
-  Stdlib::Ensure::Service $service_ensure = 'running',
-  String[1] $service_name                 = 'bird_exporter',
-  Prometheus::Initstyle $init_style       = $facts['service_provider'],
-  String[1] $install_method               = 'url',
-  Boolean $manage_group                   = true,
-  Boolean $manage_service                 = true,
-  Boolean $manage_user                    = true,
-  String[1] $os                           = downcase($facts['kernel']),
-  String[1] $extra_options                = '-bird.v2 -web.listen-address=127.0.0.1:9324 -format.new=true',
-  Optional[String] $download_url          = undef,
-  String[1] $arch                         = $prometheus::real_arch,
-  String[1] $bin_dir                      = '/usr/local/bin',
-  Boolean $export_scrape_job              = false,
-  Stdlib::Port $scrape_port               = 9324,
-  String[1] $scrape_job_name              = 'bird',
-  Optional[Hash] $scrape_job_labels       = undef,
-  Optional[String[1]] $bin_name           = undef,
+  String $download_extension                                 = '', # lint:ignore:params_empty_string_assignment
+  Prometheus::Uri $download_url_base                         = 'https://github.com/czerwonk/bird_exporter/releases',
+  Array[String] $extra_groups                                = ['bird'],
+  String[1] $group                                           = 'bird-exporter',
+  String[1] $package_ensure                                  = 'installed',
+  String[1] $package_name                                    = 'bird_exporter',
+  String[1] $user                                            = 'bird-exporter',
+  String[1] $version                                         = '1.2.5',
+  Boolean $purge_config_dir                                  = true,
+  Boolean $restart_on_change                                 = true,
+  Boolean $service_enable                                    = true,
+  Stdlib::Ensure::Service $service_ensure                    = 'running',
+  String[1] $service_name                                    = 'bird_exporter',
+  Prometheus::Initstyle $init_style                          = $facts['service_provider'],
+  Prometheus::Install $install_method                        = 'url',
+  Boolean $manage_group                                      = true,
+  Boolean $manage_service                                    = true,
+  Boolean $manage_user                                       = true,
+  String[1] $os                                              = downcase($facts['kernel']),
+  String[1] $extra_options                                   = '-bird.v2 -web.listen-address=127.0.0.1:9324 -format.new=true',
+  Optional[Prometheus::Uri] $download_url                    = undef,
+  String[1] $arch                                            = $prometheus::real_arch,
+  Stdlib::Absolutepath $bin_dir                              = $prometheus::bin_dir,
+  Boolean $export_scrape_job                                 = false,
+  Optional[Stdlib::Host] $scrape_host                        = undef,
+  Stdlib::Port $scrape_port                                  = 9324,
+  String[1] $scrape_job_name                                 = 'bird',
+  Optional[Hash] $scrape_job_labels                          = undef,
+  Optional[String[1]] $bin_name                              = undef,
+  Hash[String[1], Scalar] $env_vars                          = {},
+  Stdlib::Absolutepath $env_file_path                        = $prometheus::env_file_path,
+  Optional[String[1]] $proxy_server                          = undef,
+  Optional[Enum['none', 'http', 'https', 'ftp']] $proxy_type = undef,
 ) inherits prometheus {
   $real_download_url = pick($download_url,"${download_url_base}/download/${version}/${package_name}-${version}_${os}_${arch}")
 
@@ -112,9 +131,14 @@ class prometheus::bird_exporter (
     service_enable     => $service_enable,
     manage_service     => $manage_service,
     export_scrape_job  => $export_scrape_job,
+    scrape_host        => $scrape_host,
     scrape_port        => $scrape_port,
     scrape_job_name    => $scrape_job_name,
     scrape_job_labels  => $scrape_job_labels,
     bin_name           => $bin_name,
+    env_vars           => $env_vars,
+    env_file_path      => $env_file_path,
+    proxy_server       => $proxy_server,
+    proxy_type         => $proxy_type,
   }
 }

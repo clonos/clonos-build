@@ -85,6 +85,10 @@ class profiles::db::postgresql (
 
   class { 'postgresql::server::contrib': }
 
+#  postgresql::server::role { 'listmonk':
+#    password_hash => postgresql::postgresql_password('listmonk', 'mypasswd'),
+#  }
+
   create_resources('::postgresql::server::config_entry', deep_merge($_conf, $db_configs))
   create_resources('::postgresql::server::role', $roles)
   create_resources('::postgresql::server::database', $databases)

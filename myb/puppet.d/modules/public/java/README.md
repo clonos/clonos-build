@@ -55,6 +55,8 @@ java::download { 'jdk8' :
 }
 ```
 
+## AdoptOpenJDK
+
 The defined type `java::adopt` installs one or more versions of AdoptOpenJDK Java. `java::adopt` depends on [puppet/archive](https://github.com/voxpupuli/puppet-archive).
 
 ```puppet
@@ -70,7 +72,7 @@ java::adopt { 'jdk11' :
   java => 'jdk',
 }
 ```
-#TODO
+
 To install a specific release of a AdoptOpenJDK Java version, e.g. 8u202-b08, provide both parameters `version_major` and `version_minor` as follows:
 
 ```puppet
@@ -105,9 +107,111 @@ java::adopt { 'jdk8' :
 }
 ```
 
+## Adoptium Temurin
+
+Adoptium Temurin is the successor of AdoptOpenJDK and is supported using the defined type `java::adoptium`. It depends on [puppet/archive](https://github.com/voxpupuli/puppet-archive).
+
+The `java::adoptium` defined type expects a major, minor, patch and build version to download the specific release. It doesn't support jre downloads as the other distributions.
+
+```puppet
+java::adoptium { 'jdk16' :
+  ensure  => 'present',
+  version_major => '16',
+  version_minor => '0',
+  version_patch => '2',
+  version_build => '7',
+}
+java::adoptium { 'jdk17' :
+  ensure  => 'present',
+  version_major => '17',
+  version_minor => '0',
+  version_patch => '1',
+  version_build => '12',
+}
+```
+
+To install Adoptium to a non-default basedir (defaults: /usr/lib/jvm for Debian; /usr/java for RedHat):
+
+```puppet
+java::adoptium { 'jdk7' :
+  ensure  => 'present',
+  version_major => '17',
+  version_minor => '0',
+  version_patch => '1',
+  version_build => '12',
+  basedir => '/custom/java',
+}
+```
+
+To ensure that a custom basedir is a directory before Adoptium is installed (note: manage separately for custom ownership or perms):
+
+```puppet
+java::adoptium { 'jdk8' :
+  ensure  => 'present',
+  version_major => '17',
+  version_minor => '0',
+  version_patch => '1',
+  version_build => '12',
+  manage_basedir => true,
+  basedir => '/custom/java',
+}
+```
+
+## SAP Java (sapjvm / sapmachine)
+
+SAP also offers JVM distributions. They are mostly required for their SAP products. In earlier versions it is called "sapjvm", in newer versions they call it "sapmachine".
+
+The defined type `java::sap` installs one or more versions of sapjvm (if version 7 or 8) or sapmachine (if version > 8) Java. `java::sap` depends on [puppet/archive](https://github.com/voxpupuli/puppet-archive).
+By using this defined type with versions 7 or 8 you agree with the EULA presented at https://tools.hana.ondemand.com/developer-license-3_1.txt!
+
+```puppet
+java::sap { 'sapjvm8' :
+  ensure  => 'present',
+  version => '8',
+  java => 'jdk',
+}
+
+java::sap { 'sapmachine11' :
+  ensure  => 'present',
+  version => '11',
+  java => 'jdk',
+}
+```
+
+To install a specific release of a SAP Java version, e.g. sapjvm 8.1.063, provide parameter `version_full`:
+
+```puppet
+java::sap { 'jdk8' :
+  ensure  => 'present',
+  version_full => '8.1.063',
+  java => 'jdk',
+}
+```
+
+To install SAP Java to a non-default basedir (defaults: /usr/lib/jvm for Debian; /usr/java for RedHat):
+```puppet
+java::adopt { 'sapjvm8' :
+  ensure  => 'present',
+  version_full => '8.1.063',
+  java => 'jdk',
+  basedir => '/custom/java',
+}
+```
+
+To ensure that a custom basedir is a directory before SAP Java is installed (note: manage separately for custom ownership or perms):
+```puppet
+java::adopt { 'sapjvm8' :
+  ensure  => 'present',
+  version_full => '8.1.063',
+  java => 'jdk',
+  manage_basedir => true,
+  basedir => '/custom/java',
+}
+```
+
 ## Reference
 
-For information on the classes and types, see the [REFERENCE.md](https://github.com/puppetlabs/puppetlabs-java/blob/master/REFERENCE.md). For information on the facts, see below.
+For information on the classes and types, see the [REFERENCE.md](https://github.com/puppetlabs/puppetlabs-java/blob/main/REFERENCE.md). For information on the facts, see below.
 
 ### Facts
 
@@ -123,7 +227,7 @@ The java module includes a few facts to describe the version of Java installed o
 
 ## Limitations
 
-For an extensive list of supported operating systems, see [metadata.json](https://github.com/puppetlabs/puppetlabs-java/blob/master/metadata.json)
+For an extensive list of supported operating systems, see [metadata.json](https://github.com/puppetlabs/puppetlabs-java/blob/main/metadata.json)
 
 This module cannot guarantee installation of Java versions that are not available on platform repositories.
 
@@ -135,18 +239,14 @@ This module is officially [supported](https://forge.puppetlabs.com/supported) fo
 
 OpenJDK is supported on:
 
-* Red Hat Enterprise Linux (RHEL) 5, 6, 7
-* CentOS 5, 6, 7
+* Red Hat Enterprise Linux (RHEL) 6, 7
+* CentOS 6, 7
 * Oracle Linux 6, 7
 * Scientific Linux 6
-* Debian 8, 9
-* Ubuntu 14.04, 16.04, 18.04
+* Debian 9
+* Ubuntu 18.04, 20.04
 * Solaris 11
 * SLES 11, 12
-
-Sun Java is supported on:
-
-* Debian 6
 
 Oracle Java is supported on:
 
@@ -160,6 +260,23 @@ AdoptOpenJDK Java is supported on:
 * Red Hat Enterprise Linux (RHEL)
 * Amazon Linux
 * Debian
+
+Adoptium Temurin Java is supported on:
+
+* CentOS
+* Red Hat Enterprise Linux (RHEL)
+* Amazon Linux
+* Debian
+
+SAP Java 7 and 8 (=sapjvm) are supported (by SAP) on:
+
+* SLES 12, 15
+* Oracle Linux 7, 8
+* Red Hat Enterprise Linux (RHEL) 7, 8
+
+(however installations on other distributions mostly also work well)
+
+For SAP Java > 8 (=sapmachine) please refer to the OpenJDK list as it is based on OpenJDK and has no special requirements.
 
 ### Known issues
 

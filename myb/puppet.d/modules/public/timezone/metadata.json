@@ -1,36 +1,45 @@
 {
   "name": "saz-timezone",
-  "version": "6.0.0",
+  "version": "6.2.0",
   "author": "saz",
   "summary": "Manage timezone settings via Puppet",
   "license": "Apache-2.0",
   "source": "https://github.com/saz/puppet-timezone",
   "project_page": "https://github.com/saz/puppet-timezone",
   "issues_url": "https://github.com/saz/puppet-timezone/issues",
-  "dependencies": [
-    {
-      "name": "puppetlabs/stdlib",
-      "version_requirement": ">= 2.6.0 < 7.0.0"
-    },
-    {
-      "name": "stm/debconf",
-      "version_requirement": ">= 2.0.0 < 3.0.0"
-    }
-  ],
-  "data_provider": null,
   "description": "Manage timezone settings via Puppet",
   "operatingsystem_support": [
     {
-      "operatingsystem": "Ubuntu"
+      "operatingsystem": "Ubuntu",
+      "operatingsystemrelease": [
+        "18.04",
+        "20.04",
+        "22.04"
+      ]
     },
     {
-      "operatingsystem": "Debian"
+      "operatingsystem": "Debian",
+      "operatingsystemrelease": [
+        "9",
+        "10",
+        "11"
+      ]
     },
     {
-      "operatingsystem": "RedHat"
+      "operatingsystem": "RedHat",
+      "operatingsystemrelease": [
+        "7",
+        "8",
+        "9"
+      ]
     },
     {
-      "operatingsystem": "CentOS"
+      "operatingsystem": "CentOS",
+      "operatingsystemrelease": [
+        "7",
+        "8",
+        "9"
+      ]
     },
     {
       "operatingsystem": "OracleLinux"
@@ -63,10 +72,15 @@
   "requirements": [
     {
       "name": "puppet",
-      "version_requirement": ">= 5.0.0 < 7.0.0"
+      "version_requirement": ">= 6.0.0 < 8.0.0"
+    }
+  ],
+  "dependencies": [
+    {
+      "name": "stm/debconf",
+      "version_requirement": ">= 2.0.0 < 5.0.0"
     }
   ],
   "tags": [
-  
   ]
 }

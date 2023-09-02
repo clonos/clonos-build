@@ -4,7 +4,225 @@ All notable changes to this project will be documented in this file.
 Each new release typically also includes the latest modulesync defaults.
 These should not affect the functionality of the module.
 
-## [v10.1.0](https://github.com/voxpupuli/puppet-prometheus/tree/v10.1.0) (2020-08-21)
+## [v12.4.0](https://github.com/voxpupuli/puppet-prometheus/tree/v12.4.0) (2022-06-03)
+
+[Full Changelog](https://github.com/voxpupuli/puppet-prometheus/compare/v12.3.0...v12.4.0)
+
+**Implemented enhancements:**
+
+- Adding a Proxy option [\#186](https://github.com/voxpupuli/puppet-prometheus/issues/186)
+- Implement web-config.yml handling [\#622](https://github.com/voxpupuli/puppet-prometheus/pull/622) ([rwaffen](https://github.com/rwaffen))
+- Support new download format for openldap\_exporter [\#619](https://github.com/voxpupuli/puppet-prometheus/pull/619) ([treydock](https://github.com/treydock))
+- Add php-fpm exporter [\#605](https://github.com/voxpupuli/puppet-prometheus/pull/605) ([kubicgruenfeld](https://github.com/kubicgruenfeld))
+- Add Debian 11 support [\#601](https://github.com/voxpupuli/puppet-prometheus/pull/601) ([towo](https://github.com/towo))
+- Allow to set storage parameters to false [\#598](https://github.com/voxpupuli/puppet-prometheus/pull/598) ([kubicgruenfeld](https://github.com/kubicgruenfeld))
+- \(\#186\) Add proxy parameters [\#596](https://github.com/voxpupuli/puppet-prometheus/pull/596) ([ShaunMaxwell](https://github.com/ShaunMaxwell))
+
+**Fixed bugs:**
+
+- make process exporter service name propagate correctly [\#617](https://github.com/voxpupuli/puppet-prometheus/pull/617) ([anarcat](https://github.com/anarcat))
+
+**Closed issues:**
+
+- We should be able to download from custom url with credentials [\#603](https://github.com/voxpupuli/puppet-prometheus/issues/603)
+- Prometheus Agent mode not supported yet [\#597](https://github.com/voxpupuli/puppet-prometheus/issues/597)
+- Support for node exporter 1.x [\#520](https://github.com/voxpupuli/puppet-prometheus/issues/520)
+
+**Merged pull requests:**
+
+- Update ipmi\_exporter URL, project moved [\#620](https://github.com/voxpupuli/puppet-prometheus/pull/620) ([treydock](https://github.com/treydock))
+- extra\_options: Switch from String to Optional\[String\[1\]\] [\#610](https://github.com/voxpupuli/puppet-prometheus/pull/610) ([bastelfreak](https://github.com/bastelfreak))
+- Beaker: Install lsb-release during CI [\#609](https://github.com/voxpupuli/puppet-prometheus/pull/609) ([bastelfreak](https://github.com/bastelfreak))
+
+## [v12.3.0](https://github.com/voxpupuli/puppet-prometheus/tree/v12.3.0) (2021-11-17)
+
+[Full Changelog](https://github.com/voxpupuli/puppet-prometheus/compare/v12.2.0...v12.3.0)
+
+**Implemented enhancements:**
+
+- Add a parameter to validate alertmanager config [\#593](https://github.com/voxpupuli/puppet-prometheus/pull/593) ([roidelapluie](https://github.com/roidelapluie))
+- Add sachet webhook receiver [\#590](https://github.com/voxpupuli/puppet-prometheus/pull/590) ([BDelacour](https://github.com/BDelacour))
+
+**Fixed bugs:**
+
+- fix download url for new asset url schema [\#591](https://github.com/voxpupuli/puppet-prometheus/pull/591) ([reini-1](https://github.com/reini-1))
+
+**Closed issues:**
+
+- Alertmanager configuration is not checked when installed from RPM [\#592](https://github.com/voxpupuli/puppet-prometheus/issues/592)
+- postgres\_exporter 0.10.0 cannot be downloaded [\#584](https://github.com/voxpupuli/puppet-prometheus/issues/584)
+- found multiple scrape configs with job name `x` [\#573](https://github.com/voxpupuli/puppet-prometheus/issues/573)
+
+**Merged pull requests:**
+
+- Update prometheus version from 2.20.1 to 2.30.3 [\#587](https://github.com/voxpupuli/puppet-prometheus/pull/587) ([saz](https://github.com/saz))
+- Run CI nightly [\#586](https://github.com/voxpupuli/puppet-prometheus/pull/586) ([bastelfreak](https://github.com/bastelfreak))
+
+## [v12.2.0](https://github.com/voxpupuli/puppet-prometheus/tree/v12.2.0) (2021-10-04)
+
+[Full Changelog](https://github.com/voxpupuli/puppet-prometheus/compare/v12.1.1...v12.2.0)
+
+**Implemented enhancements:**
+
+- add nginx exporter [\#583](https://github.com/voxpupuli/puppet-prometheus/pull/583) ([kubicgruenfeld](https://github.com/kubicgruenfeld))
+
+**Fixed bugs:**
+
+- conflict with camptocamp-systemd latest  release 3.0.0 [\#560](https://github.com/voxpupuli/puppet-prometheus/issues/560)
+
+## [v12.1.1](https://github.com/voxpupuli/puppet-prometheus/tree/v12.1.1) (2021-08-26)
+
+[Full Changelog](https://github.com/voxpupuli/puppet-prometheus/compare/v12.1.0...v12.1.1)
+
+**Merged pull requests:**
+
+- Allow up-to-date dependencies [\#579](https://github.com/voxpupuli/puppet-prometheus/pull/579) ([smortex](https://github.com/smortex))
+
+## [v12.1.0](https://github.com/voxpupuli/puppet-prometheus/tree/v12.1.0) (2021-08-24)
+
+[Full Changelog](https://github.com/voxpupuli/puppet-prometheus/compare/v12.0.0...v12.1.0)
+
+**Implemented enhancements:**
+
+- $bin\_dir: Update datatype to Stdlib::Absolutepath [\#575](https://github.com/voxpupuli/puppet-prometheus/pull/575) ([bastelfreak](https://github.com/bastelfreak))
+- Arch Linux: Install bird\_exporter via packages [\#574](https://github.com/voxpupuli/puppet-prometheus/pull/574) ([bastelfreak](https://github.com/bastelfreak))
+
+**Fixed bugs:**
+
+- Arch Linux: Fix node\_exporter installation [\#576](https://github.com/voxpupuli/puppet-prometheus/pull/576) ([bastelfreak](https://github.com/bastelfreak))
+
+## [v12.0.0](https://github.com/voxpupuli/puppet-prometheus/tree/v12.0.0) (2021-07-27)
+
+[Full Changelog](https://github.com/voxpupuli/puppet-prometheus/compare/v11.2.0...v12.0.0)
+
+**Breaking changes:**
+
+- Overhaul and fix ipmi\_exporter class [\#562](https://github.com/voxpupuli/puppet-prometheus/pull/562) ([treydock](https://github.com/treydock))
+
+**Implemented enhancements:**
+
+- Support SSL exporter [\#567](https://github.com/voxpupuli/puppet-prometheus/pull/567) ([treydock](https://github.com/treydock))
+- Add support for SSH exporter [\#566](https://github.com/voxpupuli/puppet-prometheus/pull/566) ([treydock](https://github.com/treydock))
+- Support mute\_time\_intervals for Alertmanager [\#563](https://github.com/voxpupuli/puppet-prometheus/pull/563) ([treydock](https://github.com/treydock))
+- Support Stdlib::Filesource as type for download urls [\#561](https://github.com/voxpupuli/puppet-prometheus/pull/561) ([gburton1](https://github.com/gburton1))
+
+**Fixed bugs:**
+
+- Fix wrong undef datatypes [\#570](https://github.com/voxpupuli/puppet-prometheus/pull/570) ([bastelfreak](https://github.com/bastelfreak))
+
+**Closed issues:**
+
+- Alertmanger service will not start \(public IP\) [\#558](https://github.com/voxpupuli/puppet-prometheus/issues/558)
+
+**Merged pull requests:**
+
+- switch from camptocamp/systemd to voxpupuli/systemd [\#569](https://github.com/voxpupuli/puppet-prometheus/pull/569) ([bastelfreak](https://github.com/bastelfreak))
+- Fix IPMI exporter sudo config, add dependency on saz/sudo [\#565](https://github.com/voxpupuli/puppet-prometheus/pull/565) ([treydock](https://github.com/treydock))
+- Misc fixes to make IPMI exporter more consistent [\#564](https://github.com/voxpupuli/puppet-prometheus/pull/564) ([treydock](https://github.com/treydock))
+- Allow default scrape\_configs to be optional [\#542](https://github.com/voxpupuli/puppet-prometheus/pull/542) ([treydock](https://github.com/treydock))
+
+## [v11.2.0](https://github.com/voxpupuli/puppet-prometheus/tree/v11.2.0) (2021-06-09)
+
+[Full Changelog](https://github.com/voxpupuli/puppet-prometheus/compare/v11.1.0...v11.2.0)
+
+**Implemented enhancements:**
+
+- Exporters: Use Prometheus::Initstyle for $init\_style [\#557](https://github.com/voxpupuli/puppet-prometheus/pull/557) ([bastelfreak](https://github.com/bastelfreak))
+- Exporters: Use Prometheus::Install for $install\_method [\#556](https://github.com/voxpupuli/puppet-prometheus/pull/556) ([bastelfreak](https://github.com/bastelfreak))
+- Exporters: Use Prometheus::Uri for $download\_url\_base [\#554](https://github.com/voxpupuli/puppet-prometheus/pull/554) ([bastelfreak](https://github.com/bastelfreak))
+- Add openvpn\_exporter [\#553](https://github.com/voxpupuli/puppet-prometheus/pull/553) ([JosephKav](https://github.com/JosephKav))
+- mongodb\_exporter supporting newer versions [\#550](https://github.com/voxpupuli/puppet-prometheus/pull/550) ([kuldazbraslav](https://github.com/kuldazbraslav))
+- Add openldap\_exporter [\#549](https://github.com/voxpupuli/puppet-prometheus/pull/549) ([dabelenda](https://github.com/dabelenda))
+- Add ipsec\_exporter [\#547](https://github.com/voxpupuli/puppet-prometheus/pull/547) ([kuldazbraslav](https://github.com/kuldazbraslav))
+
+**Merged pull requests:**
+
+- Exporters: Use Optional\[Prometheus::Uri\] for $download\_url [\#555](https://github.com/voxpupuli/puppet-prometheus/pull/555) ([bastelfreak](https://github.com/bastelfreak))
+
+## [v11.1.0](https://github.com/voxpupuli/puppet-prometheus/tree/v11.1.0) (2021-04-25)
+
+[Full Changelog](https://github.com/voxpupuli/puppet-prometheus/compare/v11.0.0...v11.1.0)
+
+**Implemented enhancements:**
+
+- puppetlabs/stdlib: Allow 7.x [\#545](https://github.com/voxpupuli/puppet-prometheus/pull/545) ([bastelfreak](https://github.com/bastelfreak))
+- camptocamp/systemd: allow 3.x [\#544](https://github.com/voxpupuli/puppet-prometheus/pull/544) ([bastelfreak](https://github.com/bastelfreak))
+- puppet/archive: allow 5.x [\#543](https://github.com/voxpupuli/puppet-prometheus/pull/543) ([bastelfreak](https://github.com/bastelfreak))
+- bird\_exporter: Update 1.2.4 -\> 1.2.5 [\#538](https://github.com/voxpupuli/puppet-prometheus/pull/538) ([bastelfreak](https://github.com/bastelfreak))
+- Implement unbound\_exporter [\#498](https://github.com/voxpupuli/puppet-prometheus/pull/498) ([bastelfreak](https://github.com/bastelfreak))
+- Add Bind exporter [\#312](https://github.com/voxpupuli/puppet-prometheus/pull/312) ([anarcat](https://github.com/anarcat))
+
+**Fixed bugs:**
+
+- fix quoting in apache exporter [\#541](https://github.com/voxpupuli/puppet-prometheus/pull/541) ([anarcat](https://github.com/anarcat))
+- fix default scrape\_uri in apache\_exporter [\#532](https://github.com/voxpupuli/puppet-prometheus/pull/532) ([anarcat](https://github.com/anarcat))
+- Fix download of beanstalkd\_exporter for versions newer than 1.0.0 [\#508](https://github.com/voxpupuli/puppet-prometheus/pull/508) ([TuningYourCode](https://github.com/TuningYourCode))
+- Update network denendency in daemon systemd template [\#489](https://github.com/voxpupuli/puppet-prometheus/pull/489) ([moonape1226](https://github.com/moonape1226))
+
+**Closed issues:**
+
+- Support for IPMI exporter [\#521](https://github.com/voxpupuli/puppet-prometheus/issues/521)
+- env\_file\_path has no effect on prometheus::server [\#323](https://github.com/voxpupuli/puppet-prometheus/issues/323)
+
+**Merged pull requests:**
+
+- check node exporter config file instead of bird in node exporter test [\#531](https://github.com/voxpupuli/puppet-prometheus/pull/531) ([anarcat](https://github.com/anarcat))
+- pass options through env\_vars if no control over init files [\#530](https://github.com/voxpupuli/puppet-prometheus/pull/530) ([anarcat](https://github.com/anarcat))
+- convert daemon.env template to EPP [\#529](https://github.com/voxpupuli/puppet-prometheus/pull/529) ([anarcat](https://github.com/anarcat))
+- deploy env\_file\_path on server [\#527](https://github.com/voxpupuli/puppet-prometheus/pull/527) ([anarcat](https://github.com/anarcat))
+- Support for IPMI exporter [\#522](https://github.com/voxpupuli/puppet-prometheus/pull/522) ([benibr](https://github.com/benibr))
+
+## [v11.0.0](https://github.com/voxpupuli/puppet-prometheus/tree/v11.0.0) (2021-01-18)
+
+[Full Changelog](https://github.com/voxpupuli/puppet-prometheus/compare/v10.2.0...v11.0.0)
+
+**Breaking changes:**
+
+- Drop Puppet 5; require at least Puppet 6.1.0 [\#518](https://github.com/voxpupuli/puppet-prometheus/pull/518) ([bastelfreak](https://github.com/bastelfreak))
+- puppetdb\_exporter: Update 1.0.0-\>1.1.0 [\#513](https://github.com/voxpupuli/puppet-prometheus/pull/513) ([bastelfreak](https://github.com/bastelfreak))
+- Drop EOL CentOS 6 support [\#512](https://github.com/voxpupuli/puppet-prometheus/pull/512) ([bastelfreak](https://github.com/bastelfreak))
+- Drop Debian 8 support/compatibility [\#496](https://github.com/voxpupuli/puppet-prometheus/pull/496) ([bastelfreak](https://github.com/bastelfreak))
+
+**Implemented enhancements:**
+
+- Support Puppet 7.x [\#515](https://github.com/voxpupuli/puppet-prometheus/pull/515) ([bastelfreak](https://github.com/bastelfreak))
+- Add Ubuntu 20.04 support [\#514](https://github.com/voxpupuli/puppet-prometheus/pull/514) ([bastelfreak](https://github.com/bastelfreak))
+- Daemon: create env files only if required [\#493](https://github.com/voxpupuli/puppet-prometheus/pull/493) ([bastelfreak](https://github.com/bastelfreak))
+
+**Fixed bugs:**
+
+- Purge collected configs based on $purge\_config\_dir [\#517](https://github.com/voxpupuli/puppet-prometheus/pull/517) ([towo](https://github.com/towo))
+- \(FACT-2880\) fact: call Puppet within setcode block [\#511](https://github.com/voxpupuli/puppet-prometheus/pull/511) ([bastelfreak](https://github.com/bastelfreak))
+- Allow download\_extension to be empty string [\#507](https://github.com/voxpupuli/puppet-prometheus/pull/507) ([treydock](https://github.com/treydock))
+- fix sysv init scripts [\#502](https://github.com/voxpupuli/puppet-prometheus/pull/502) ([kubicgruenfeld](https://github.com/kubicgruenfeld))
+
+**Closed issues:**
+
+- haproxy\_exporter fails scraping when haproxy.scrape-uri contains specials characters  [\#516](https://github.com/voxpupuli/puppet-prometheus/issues/516)
+- scrape\_job exported resources are ignoring custom collect dir [\#490](https://github.com/voxpupuli/puppet-prometheus/issues/490)
+- config.pp does not honor $prometheus::purge\_config\_dir value [\#460](https://github.com/voxpupuli/puppet-prometheus/issues/460)
+- SysV init script leaves dangling shell processes [\#293](https://github.com/voxpupuli/puppet-prometheus/issues/293)
+
+**Merged pull requests:**
+
+- Fix typo in init.pp docs [\#504](https://github.com/voxpupuli/puppet-prometheus/pull/504) ([genebean](https://github.com/genebean))
+
+## [v10.2.0](https://github.com/voxpupuli/puppet-prometheus/tree/v10.2.0) (2020-09-26)
+
+[Full Changelog](https://github.com/voxpupuli/puppet-prometheus/compare/v10.1.0...v10.2.0)
+
+Debian 8 is EOL since a few months now. This release will be the last with official Debian 8 compatibility and support. The next release will be v11.0.0 without Debian 8 support!
+
+**Implemented enhancements:**
+
+- Allow filtering scrape jobs by nodes [\#488](https://github.com/voxpupuli/puppet-prometheus/pull/488) ([fbs](https://github.com/fbs))
+- Add option to override `scrape_host` for exporters [\#487](https://github.com/voxpupuli/puppet-prometheus/pull/487) ([fbs](https://github.com/fbs))
+
+**Merged pull requests:**
+
+- Extend puppet type check for install\_method [\#492](https://github.com/voxpupuli/puppet-prometheus/pull/492) ([bastelfreak](https://github.com/bastelfreak))
+
+## [v10.1.0](https://github.com/voxpupuli/puppet-prometheus/tree/v10.1.0) (2020-08-23)
 
 [Full Changelog](https://github.com/voxpupuli/puppet-prometheus/compare/v10.0.0...v10.1.0)
 
@@ -557,7 +775,7 @@ These should not affect the functionality of the module.
 - Ruby 1.8 compatibility \(Agent-side\) [\#146](https://github.com/voxpupuli/puppet-prometheus/pull/146) ([sathieu](https://github.com/sathieu))
 - Fail silently when service is not installed [\#145](https://github.com/voxpupuli/puppet-prometheus/pull/145) ([vladgh](https://github.com/vladgh))
 - Add support for snmp\_exporter [\#125](https://github.com/voxpupuli/puppet-prometheus/pull/125) ([sathieu](https://github.com/sathieu))
-- new feature - consul\_exporter [\#36](https://github.com/voxpupuli/puppet-prometheus/pull/36) ([pjfbashton](https://github.com/pjfbashton))
+- new feature - consul\_exporter [\#36](https://github.com/voxpupuli/puppet-prometheus/pull/36) ([pavloos](https://github.com/pavloos))
 
 ## [v4.0.0](https://github.com/voxpupuli/puppet-prometheus/tree/v4.0.0) (2018-01-04)
 

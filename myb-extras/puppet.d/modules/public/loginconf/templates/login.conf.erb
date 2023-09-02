@@ -7,7 +7,7 @@
 # This file controls resource limits, accounting limits and
 # default user environment settings.
 #
-# $FreeBSD: head/usr.bin/login/login.conf 357707 2020-02-09 22:35:49Z kevans $
+# $FreeBSD$
 #
 
 # Default settings effectively disable resource limits, see the
@@ -47,14 +47,13 @@ default:\
 	:umtxp=unlimited:\
 	:priority=0:\
 	:ignoretime@:\
+	:umask=022:\
 <% if @charset -%>
 	:charset=<%= @charset %>:\
 <%end-%>
 <% if @lang -%>
-	:lang=<%= @lang %>:\
+	:lang=<%= @lang %>:
 <%end-%>
-	:umask=022:
-
 
 #
 # A collection of common class names - forward them all to 'default'

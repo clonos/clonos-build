@@ -2,28 +2,31 @@
 
 Puppet::Type.newtype(:debconf) do
   desc <<-EOT
-    Manage debconf database entries on Debian based systems. This type
-    can either set or remove a value for a debconf database entry. It
-    uses multiple programs from the 'debconf' package.
+    @summary
+      Manage debconf database entries on Debian based systems.
 
-    Examples:
+    This type can either set or remove a value for a debconf database
+    entry. It uses multiple programs from the `debconf` package.
 
-        debconf { 'tzdata/Areas':
-          type  => 'select',
-          value => 'Europe',
-        }
+    @example Set a select value
+      debconf { 'tzdata/Areas':
+        type  => 'select',
+        value => 'Europe',
+      }
 
-        debconf { 'dash/sh':
-          type  => 'boolean',
-          value => 'true',
-        }
+    @example Set a boolean value
+      debconf { 'dash/sh':
+        type  => 'boolean',
+        value => 'true',
+      }
 
-        debconf { 'libraries/restart-without-asking':
-          package => 'libc6',
-          type    => 'boolean',
-          value   => 'true',
-          seen    => true,
-        }
+    @example Set a boolean value in a specified package and mark as seen
+      debconf { 'libraries/restart-without-asking':
+        package => 'libc6',
+        type    => 'boolean',
+        value   => 'true',
+        seen    => true,
+      }
   EOT
 
   def munge_boolean(value)
@@ -38,15 +41,26 @@ Puppet::Type.newtype(:debconf) do
   end
 
   ensurable do
+    desc 'Specifies whether the resource should exist. Setting this to
+      "absent" tells Puppet to remove the debconf entry if it exists, and
+      negates the effect of any other parameters.'
+
     defaultvalues
     defaultto :present
   end
 
-  newparam(:item, namevar: true) do
+  newparam(:name, namevar: true) do
+    desc "The name of the resource. If the parameter 'item' is not set, then
+      this value will be used for it. You can set the same item in different
+      packages by using different names for the resources."
+  end
+
+  newparam(:item) do
     desc "The item name. This string must have the following format: the
       package name, a literal slash char and the name of the question (e.g.
-      'tzdata/Areas')."
+      'tzdata/Areas'). The default value is the title of the resource."
 
+    defaultto { @resource[:name] }
     newvalues(%r{^[a-z0-9][a-z0-9:.+-]+\/[a-zA-Z0-9\/_.+-]+$})
   end
 

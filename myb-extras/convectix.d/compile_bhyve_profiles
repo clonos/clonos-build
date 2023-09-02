@@ -91,19 +91,19 @@ def main(args):
   clonos=0
 
   if(args.cloud):
-    vm_filter="(^long_description=|^vm_profile=|^vm_os_type=|^clonos_active=|^is_template=|^is_cloud=|^imgsize_min=)"
+    vm_filter="(^long_description=|^vm_profile=|^vm_os_type=|^clonos_active=|^is_template=|^is_cloud=|^imgsize=|^imgsize_min=|^default_jailname=)"
     tpl=0
     cloud=1
     vm=0
   if(args.is_clonos):
     clonos=1
   if(args.template):
-    vm_filter="(^long_description=|^vm_profile=|^vm_os_type=|^clonos_active=|^is_template=|^imgsize_min=)"
+    vm_filter="(^long_description=|^vm_profile=|^vm_os_type=|^clonos_active=|^is_template=|^imgsize=|^imgsize_min=|^default_jailname=)"
     tpl=1
     cloud=0
     vm=0
   if(args.vm):
-    vm_filter="(^long_description=|^vm_profile=|^vm_os_type=|^clonos_active=|^is_template=|^imgsize_min=)"
+    vm_filter="(^long_description=|^vm_profile=|^vm_os_type=|^clonos_active=|^is_template=|^imgsize=|^imgsize_min=|^default_jailname=)"
     tpl=0
     cloud=0
     vm=1
@@ -121,12 +121,16 @@ def main(args):
     _locals['vm_os_type']=""
     _locals['vm_profile']=""
     _locals['vm_description']=""
+    _locals['imgsize']=0
     _locals['imgsize_min']=0
+    _locals['default_jailname']="vm"
     clonos_active=0
     is_template=0
     is_cloud=0
     vm_profile=""
     vm_os_type=""
+    imgsize=0
+    imgsize_min=0
     long_description=""
     temp_vm_os=""
 
@@ -149,7 +153,9 @@ def main(args):
       long_description = _locals['long_description']
       vm_profile = _locals['vm_profile']
       vm_os_type = _locals['vm_os_type']
+      imgsize = _locals['imgsize']
       imgsize_min = _locals['imgsize_min']
+      default_jailname = _locals['default_jailname']
       is_template = _locals['is_template']
     except:
       continue
@@ -163,11 +169,11 @@ def main(args):
     if ( vm==1 and is_template==1 ):
       continue
 
-    arr_profile = {
-      "name": long_description,
-      "profile": vm_profile,
-      "type": vm_os_type,
-      }
+    if ( type(imgsize) != int ):
+      imgsize = human_readable_to_bytes(imgsize)
+
+    if ( type(imgsize) != int ):
+      imgsize = 0
 
     if ( type(imgsize_min) != int ):
       imgsize_min = human_readable_to_bytes(imgsize_min)
@@ -175,8 +181,17 @@ def main(args):
     if ( type(imgsize_min) != int ):
       imgsize_min = 0
 
-    if (int(imgsize_min) > 0 ):
-      arr_profile['imgsize_min']=int(imgsize_min)
+#    if (int(imgsize_min) > 0 ):
+#      arr_profile['imgsize_min']=int(imgsize_min)
+
+    arr_profile = {
+      "name": long_description,
+      "profile": vm_profile,
+      "type": vm_os_type,
+      "default_name": default_jailname,
+      "imgsize": imgsize,
+      "imgsize_min": imgsize_min
+    }
 
     arr_all_profiles.append(arr_profile)
 

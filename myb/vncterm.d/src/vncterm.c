@@ -1889,19 +1889,27 @@ main (int argc, char** argv)
 	struct winsize dimensions;
 	char *ep;
 	char *command = NULL;
+	char *blogin = NULL;
 
 	int pflags =0;
 	int jflags = 0;
 	int lastjid = 0;
 
+	char jid[10];
+
 	memset(vncpassword,0,sizeof(vncpassword));
 
-	while ((c = getopt(argc, argv, "a:c:i:j:p:s:t:w:")) >= 0)
+	while ((c = getopt(argc, argv, "a:b:c:i:j:p:s:t:w:")) >= 0)
 		switch (c) {
 			case 'a':
 				listen_str = malloc(strlen(optarg) + 1);
 				memset(listen_str, 0, strlen(optarg) + 1);
 				strcpy(listen_str, optarg);
+				break;
+			case 'b':
+				blogin = malloc(strlen(optarg) + 1);
+				memset(blogin, 0, strlen(optarg) + 1);
+				strcpy(blogin, optarg);
 				break;
 			case 'c':
 				storeconfig = malloc(strlen(optarg) + 1);
@@ -1936,36 +1944,39 @@ main (int argc, char** argv)
 				break;
 		}
 
-	if ((findjid==-1)&&(!findjname)) {
-		printf("usage: svncterm -j [ jid or jname] [-a listen addr ] [-p port ] [-s command/shell (/bin/csh)] [-t connect timeout] [-w password] [-c storeconfig] [-i pidfile]\n");
-		return 1;
+	if (findjid!=0) {
+		if ((findjid==-1)&&(!findjname)) {
+			printf("usage: svncterm -j [jid or jname] [-a listen addr ] [-b blogin jname (-j 0)] [-p port ] [-s command/shell (/bin/csh)] [-t connect timeout] [-w password] [-c storeconfig] [-i pidfile]\n");
+			return 1;
+		}
 	}
 
 	if ( command == NULL ) command="/bin/csh";
 
-	/* Add the parameters to print. */
-	add_param("jid", NULL, (size_t)0, NULL, JP_USER);
-	add_param("name", NULL, (size_t)0, NULL, JP_USER);
-	add_param("lastjid", &lastjid, sizeof(lastjid), NULL, 0);
+	if (findjid!=0) {
+		/* Add the parameters to print. */
+		add_param("jid", NULL, (size_t)0, NULL, JP_USER);
+		add_param("name", NULL, (size_t)0, NULL, JP_USER);
+		add_param("lastjid", &lastjid, sizeof(lastjid), NULL, 0);
 
-	for (lastjid = 0; (lastjid = print_jail(pflags, jflags)) >= 0; ) {
-	}
-
-	if (isnum==1) {
-		if (!findjname) {
-			printf("Can't find jail\n");
-			exit(1);
+		for (lastjid = 0; (lastjid = print_jail(pflags, jflags)) >= 0; ) {
 		}
-	} else {
-		if (findjid < 1) {
-			printf("Can't find jail\n");
-			exit(1);
-		}
-	}
 
-	char jid[10];
-	memset(jid,0,sizeof(jid));
-	sprintf(jid,"%d",findjid);
+		if (isnum==1) {
+			if (!findjname) {
+				printf("Can't find jail\n");
+				exit(1);
+			}
+		} else {
+			if (findjid < 1) {
+				printf("Can't find jail\n");
+				exit(1);
+			}
+		}
+
+		memset(jid,0,sizeof(jid));
+		sprintf(jid,"%d",findjid);
+	}
 
 #ifdef DEBUG
   rfbLogEnable (1);
@@ -1973,9 +1984,9 @@ main (int argc, char** argv)
   rfbLogEnable (0);
 #endif
 
-    pid=getpid();
+	pid=getpid();
 
-     if (strlen(pidfile)>2) {
+	if (strlen(pidfile)>2) {
 		FILE *fp=fopen(pidfile,"w");
 		fprintf(fp,"%d\n",pid);
 		fclose(fp);
@@ -2007,7 +2018,11 @@ main (int argc, char** argv)
     signal (SIGTERM, SIG_DFL);
     signal (SIGINT, SIG_DFL);
 
-    execlp("/usr/sbin/jexec", "/usr/sbin/jexec", jid, command, (char *)NULL);
+	if (findjid!=0) {
+		execlp("/usr/sbin/jexec", "/usr/sbin/jexec", jid, command, (char *)NULL);
+	} else {
+		execlp(command,command,"blogin",blogin,(char *)NULL);
+	}
     perror ("Error: exec failed\n");
     exit (-1); // should not be reached
   } else if (pid == -1) {

@@ -22,6 +22,7 @@ shared_examples "when using default parameters" do
             'mode'    => '0775',
             'recurse' => false,
             'seltype' => 'httpd_sys_content_t',
+            'before'  => 'Exec[createrepo-testyumrepo]',
         })
 
         should contain_file('/var/cache/yumrepos/testyumrepo').only_with({
@@ -30,6 +31,7 @@ shared_examples "when using default parameters" do
             'owner'  => 'root',
             'group'  => 'root',
             'mode'   => '0775',
+            'before'  => 'Exec[createrepo-testyumrepo]',
         })
     end
 
@@ -39,7 +41,7 @@ shared_examples "when using default parameters" do
             'user'    => 'root',
             'group'   => 'root',
             'creates' => "/var/yumrepos/testyumrepo/repodata",
-            'require' => ['Package[createrepo]', "File[/var/yumrepos/testyumrepo]", "File[/var/cache/yumrepos/testyumrepo]"]
+            'require' => 'Package[createrepo]'
         })
     end
 
@@ -49,7 +51,8 @@ shared_examples "when using default parameters" do
             'user'    => 'root',
             'minute'  => '*/10',
             'hour'    => '*',
-            'require' => "Exec[createrepo-#{title}]"
+            'weekday' => '*',
+            'require' => ["Exec[createrepo-#{title}]", "File[/usr/local/bin/createrepo-update-#{title}]"]
         })
     end
 
@@ -66,8 +69,37 @@ shared_examples "when using default parameters" do
         # The createrepo update command is :osfamily specific
         it "with correct user check" do
             should contain_file("/usr/local/bin/createrepo-update-#{title}") \
-                .with_content(/.*\$\(whoami\) != 'root'.*/) \
-                .with_content(/.*You really should be root.*/)
+                .with_content(/.*"\$\(whoami\)" != 'root'.*/) \
+                .with_content(/.*You really should be 'root'.*/)
+        end
+    end
+end
+
+shared_examples "when using createrepo_c package" do
+    let :params do
+        {
+            :createrepo_package => 'createrepo_c',
+            :createrepo_cmd => '/usr/bin/createrepo_c',
+        }
+    end
+
+    it "installs different package" do
+        should contain_package('createrepo_c')
+    end
+
+    it "creates repository" do
+        should contain_exec("createrepo-#{title}").with({
+            'user'    => 'root',
+            'group'   => 'root',
+            'creates' => "/var/yumrepos/testyumrepo/repodata",
+            'require' => 'Package[createrepo_c]'
+        })
+    end
+
+    describe "affects update script" do
+        it "contents" do
+            should contain_file("/usr/local/bin/createrepo-update-#{title}") \
+                .with_content(/.*\/usr\/bin\/createrepo_c.*/)
         end
     end
 end
@@ -105,7 +137,8 @@ shared_examples "when name contains slashes" do
             'user'    => 'root',
             'minute'  => '*/10',
             'hour'    => '*',
-            'require' => "Exec[createrepo-el7/common]"
+            'weekday' => '*',
+            'require' => ["Exec[createrepo-el7/common]", 'File[/usr/local/bin/createrepo-update-el7-common]']
         })
     end
 end
@@ -172,11 +205,34 @@ shared_examples "when owner and group are provided"  do
                     :enable_cron => false,
                 })
             end
+            it "should not contain cron job" do
+                should_not contain_cron("update-createrepo-#{title}")
+            end
+        end
+    end
+
+    describe "with enable_update" do
+        context "as true" do
+            let :params do
+                super().merge({
+                    :enable_update => true,
+                })
+            end
             it "affects update exec" do
                 should contain_exec("update-createrepo-#{title}").with({
                     'user'  => 'yumuser',
                     'group' => 'yumgroup',
                 })
+            end
+        end
+        context "as false" do
+            let :params do
+                super().merge({
+                    :enable_update => false,
+                })
+            end
+            it "affects update exec" do
+                should_not contain_exec("update-createrepo-#{title}")
             end
         end
     end
@@ -190,8 +246,8 @@ shared_examples "when owner and group are provided"  do
         end
         it "contents" do
             should contain_file("/usr/local/bin/createrepo-update-#{title}") \
-                .with_content(/.*\$\(whoami\) != 'yumuser'.*/) \
-                .with_content(/.*You really should be yumuser.*/)
+                .with_content(/.*"\$\(whoami\)" != 'yumuser'.*/) \
+                .with_content(/.*You really should be 'yumuser'.*/)
         end
     end
 end
@@ -228,7 +284,7 @@ shared_examples "when repository_dir and repository_cache_dir are provided" do
             end
             it "affects cron job" do
                 should contain_cron("update-createrepo-#{title}").with({
-                    'command' => /^\/usr\/bin\/createrepo.*--cachedir \/var\/cache\/myrepos\/repo1.*--update \/var\/myrepos\/repo1$/
+                    'command' => "/usr/local/bin/createrepo-update-#{title}"
                 })
             end
         end
@@ -238,10 +294,33 @@ shared_examples "when repository_dir and repository_cache_dir are provided" do
                     :enable_cron => false,
                 })
             end
+            it "should not contain cron" do
+                should_not contain_cron("update-createrepo-#{title}")
+            end
+        end
+    end
+
+    describe "with enable_update" do
+        context "as true" do
+            let :params do
+                super().merge({
+                    :enable_update => true,
+                })
+            end
             it "affects update exec" do
                 should contain_exec("update-createrepo-#{title}").with({
-                    'command' => /^\/usr\/bin\/createrepo.*--cachedir \/var\/cache\/myrepos\/repo1.*--update \/var\/myrepos\/repo1$/
+                    'command' => "/usr/local/bin/createrepo-update-#{title}"
                 })
+            end
+        end
+        context "as false" do
+            let :params do
+                super().merge({
+                    :enable_update => false,
+                })
+            end
+            it "should not contain exec" do
+                should_not contain_exec("update-createrepo-#{title}")
             end
         end
     end
@@ -254,19 +333,26 @@ shared_examples "when repository_dir and repository_cache_dir are provided" do
     end
 end
 
-shared_examples "when enable_cron" do |command_line|
+shared_examples "when use_lockfile" do
+    context "is true" do
+        let :params do
+            { :use_lockfile => true }
+        end
+        it "contents update exec" do
+            should contain_file("/usr/local/bin/createrepo-update-#{title}") \
+                .with_content(/.*flock -e.*/)
+        end
+    end
+end
+
+shared_examples "when enable_cron" do
     # FIXME figure out a clean way of getting rid of the command_line parameter
     context "is false" do
         let :params do
             { :enable_cron => false }
         end
-        it "it should exec createrepo update" do
-            should contain_exec("update-createrepo-#{title}").with({
-                'command' => "#{command_line}",
-                'user'    => 'root',
-                'group'   => 'root',
-                'require' => "Exec[createrepo-#{title}]"
-            })
+        it "should not contain a cron enrty" do
+            should_not contain_cron("update-createrepo-#{title}")
         end
     end
     context "is true" do
@@ -275,11 +361,37 @@ shared_examples "when enable_cron" do |command_line|
         end
         it "it should contain cron entry" do
             should contain_cron("update-createrepo-#{title}").with({
-                'command' => "#{command_line}",
+                'command' => "/usr/local/bin/createrepo-update-#{title}",
                 'user'    => 'root',
                 'minute'  => '*/10',
                 'hour'    => '*',
-                'require' => "Exec[createrepo-#{title}]"
+                'weekday' => '*',
+                'require' => ["Exec[createrepo-#{title}]", "File[/usr/local/bin/createrepo-update-#{title}]"]
+            })
+        end
+    end
+end
+
+shared_examples "when enable_update" do
+    # FIXME figure out a clean way of getting rid of the command_line parameter
+    context "is false" do
+        let :params do
+            { :enable_update => false }
+        end
+        it "it should not contain exec createrepo update" do
+            should_not contain_exec("update-createrepo-#{title}")
+        end
+    end
+    context "is true" do
+        let :params do
+            { :enable_update => true }
+        end
+        it "it should exec createrepo update" do
+            should contain_exec("update-createrepo-#{title}").with({
+                'command' => "/usr/local/bin/createrepo-update-#{title}",
+                'user'    => 'root',
+                'group'   => 'root',
+                'require' => ["Exec[createrepo-#{title}]", "File[/usr/local/bin/createrepo-update-#{title}]"]
             })
         end
     end
@@ -288,8 +400,9 @@ end
 shared_examples "when cron schedule is modified" do
     let :params do
         {
-            :cron_minute => '30',
-            :cron_hour   => '5',
+            :cron_minute  => '30',
+            :cron_hour    => '5',
+            :cron_weekday => '3',
         }
     end
 
@@ -297,6 +410,7 @@ shared_examples "when cron schedule is modified" do
         should contain_cron("update-createrepo-#{title}").with({
             'minute'  => '30',
             'hour'    => '5',
+            'weekday' => '3',
         })
     end
 end
@@ -323,6 +437,7 @@ shared_examples "when exec timeout is provided" do
     let :params do
         {
             :timeout => 900,
+            :enable_update => true,
         }
     end
     it "it affects createrepo exec" do
@@ -425,7 +540,7 @@ shared_examples "createrepo command changes" do |command_matcher|
             end
             it "affects repo updates via cron" do
                 should contain_cron("update-createrepo-#{title}").with({
-                    'command' => command_matcher,
+                    'command' => "/usr/local/bin/createrepo-update-#{title}",
                 })
             end
         end
@@ -435,10 +550,33 @@ shared_examples "createrepo command changes" do |command_matcher|
                     :enable_cron => false,
                 })
             end
+            it "should not contain cron entry" do
+                should_not contain_cron("update-createrepo-#{title}")
+            end
+        end
+    end
+
+    describe "with enable_update" do
+        context "as true" do
+            let :params do
+                super().merge({
+                    :enable_update => true,
+                })
+            end
             it "affects repo updates via exec" do
                 should contain_exec("update-createrepo-#{title}").with({
-                    'command' => command_matcher,
+                    'command' => "/usr/local/bin/createrepo-update-#{title}",
                 })
+            end
+        end
+        context "as false" do
+            let :params do
+                super().merge({
+                    :enable_update => false,
+                })
+            end
+            it "should not contain exec" do
+                should_not contain_exec("update-createrepo-#{title}")
             end
         end
     end
@@ -537,6 +675,17 @@ shared_examples "when supplying invalid parameters" do
         let :params do
             {
                 :enable_cron => "false",
+            }
+        end
+
+        it 'should fail' do
+            should raise_error(Puppet::Error, /is not a boolean/)
+        end
+    end
+    context "for enable_update" do
+        let :params do
+            {
+                :enable_update => "false",
             }
         end
 

@@ -35,12 +35,12 @@ if [ -r ${DST_DIR}/buildok ]; then
 	exit 0
 fi
 
-my_packages="python${PY_VER} py${PY_VER}-pip git www/yarn libxml2 libxslt openldap${LDAP_VER}-client py${PY_VER}-ldap3 mysql${MY_VER}-client postgresql${PG_VER}-client xmlsec1 py${PY_VER}-xmlsec"
+my_packages="python${PY_VER} py${PY_VER}-pip git yarn-node19 node19 npm-node19 libxml2 libxslt openldap${LDAP_VER}-client py${PY_VER}-ldap3 mysql${MY_VER}-client postgresql${PG_VER}-client xmlsec1 py${PY_VER}-xmlsec"
 # most of pip/py- module version is hardcoded in requirenments.txt, but several module not strictly ( >= ): install from the pkg:
-my_packages="${my_packages} py${PY_VER}-bcrypt py${PY_VER}-dnspython py${PY_VER}-python3-saml py${PY_VER}-pillow"
+my_packages="${my_packages} py${PY_VER}-bcrypt py${PY_VER}-dnspython py${PY_VER}-python3-saml py${PY_VER}-pillow openjpeg py${PY_VER}-sqlite3"
 
 # notes: py-bcrypt and py-cryptography require rust via pip install
-my_packages="${my_packages} rust npm-node18"
+my_packages="${my_packages} rust"
 
 # use pyXX-ldap from pkg due to we need to remove 'ldap_r' deps: /usr/ports/net/py-ldap/files/patch-setup.py
 my_packages="${my_packages} py${PY_VER}-ldap"
@@ -48,7 +48,6 @@ my_packages="${my_packages} py${PY_VER}-ldap"
 
 # append PostgresQL support via py-psycopg2:
 my_packages="${my_packages} py${PY_VER}-psycopg2"
-
 
 pkg install -y ${my_packages} || true
 if [ ! -r ${DST_DIR}/.git/config ]; then
@@ -80,6 +79,11 @@ if [ ${ret} -ne 0 ]; then
 	exit ${ret}
 fi
 
+/usr/bin/env yarn install --pure-lockfile || true
+
+# work-around for: 
+# XXX: Unexpected token \u0000 in JSON at position 0
+yarn cache clean || true
 /usr/bin/env yarn install --pure-lockfile
 ret=$?
 

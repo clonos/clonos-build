@@ -12,7 +12,7 @@ class Puppet::Provider::Cron
       # autoloader meaning that, without this wrapper, the crontab filetypes
       # would be re-defined, causing Puppet to raise an exception.
       def newfiletype(name, &block)
-        return if @filetypes && @filetypes.key?(name)
+        return if @filetypes&.key?(name)
 
         base_newfiletype(name, &block)
       end
@@ -26,7 +26,7 @@ class Puppet::Provider::Cron
     # implementation in the future. This way, we can refactor all three of
     # our cron file types into a common crontab file type.
     newfiletype(:crontab) do
-      def initialize(user)
+      def initialize(user) # rubocop:disable Lint/MissingSuper
         self.path = user
       end
 
@@ -54,11 +54,11 @@ class Puppet::Provider::Cron
       rescue => detail
         case detail.to_s
         when %r{no crontab for}
-          return ''
+          ''
         when %r{are not allowed to}
           Puppet.debug _('The %{path} user is not authorized to use cron. Their crontab file is treated as empty in case Puppet authorizes them in the middle of the run (by, for example, modifying the cron.deny or cron.allow files).') % { path: @path }
 
-          return ''
+          ''
         else
           raise FileReadError, _('Could not read crontab for %{path}: %{detail}') % { path: @path, detail: detail }, detail.backtrace
         end
@@ -117,11 +117,11 @@ class Puppet::Provider::Cron
       rescue => detail
         case detail.to_s
         when %r{can't open your crontab}
-          return ''
+          ''
         when %r{you are not authorized to use cron}
           Puppet.debug _('The %{path} user is not authorized to use cron. Their crontab file is treated as empty in case Puppet authorizes them in the middle of the run (by, for example, modifying the cron.deny or cron.allow files).') % { path: @path }
 
-          return ''
+          ''
         else
           raise FileReadError, _('Could not read crontab for %{path}: %{detail}') % { path: @path, detail: detail }, detail.backtrace
         end
@@ -168,11 +168,11 @@ class Puppet::Provider::Cron
       rescue => detail
         case detail.to_s
         when %r{open.*in.*directory}
-          return ''
+          ''
         when %r{not.*authorized.*cron}
           Puppet.debug _('The %{path} user is not authorized to use cron. Their crontab file is treated as empty in case Puppet authorizes them in the middle of the run (by, for example, modifying the cron.deny or cron.allow files).') % { path: @path }
 
-          return ''
+          ''
         else
           raise FileReadError, _('Could not read crontab for %{path}: %{detail}') % { path: @path, detail: detail }, detail.backtrace
         end

@@ -1,8 +1,5 @@
-# Class: nginx::params
-# ====================
-#
-# nginx default settings and according to operating system
-#
+# @summary default settings and according to operating system
+# @api private
 class nginx::params {
   ### Operating System Configuration
   ## This is my hacky... no hiera system. Oh well. :)
@@ -109,8 +106,17 @@ class nginx::params {
       }
     }
     'Debian': {
-      if ($facts['os']['name'] == 'ubuntu' and $facts['os']['distro']['codename'] in ['bionic'])
-      or ($facts['os']['name'] == 'debian' and $facts['os']['release']['major'] in ['9', '10']) {
+      if ($facts['os']['name'] == 'ubuntu' and $facts['os']['distro']['codename'] == 'xenial') {
+        $_module_os_overrides = {
+          'manage_repo' => true,
+          'daemon_user' => 'www-data',
+          'log_user'    => 'root',
+          'log_group'   => 'adm',
+          'log_mode'    => '0755',
+          'run_dir'     => '/run/nginx',
+        }
+        # The following was designed/tested on Ubuntu 18 and Debian 9/10 but probably works on newer versions as well
+      } else {
         $_module_os_overrides = {
           'manage_repo'             => true,
           'daemon_user'             => 'www-data',
@@ -120,23 +126,6 @@ class nginx::params {
           'run_dir'                 => '/run/nginx',
           'passenger_package_name'  => 'libnginx-mod-http-passenger',
           'include_modules_enabled' => true,
-        }
-      } elsif ($facts['os']['name'] == 'ubuntu' and $facts['os']['distro']['codename'] in ['lucid', 'precise', 'trusty', 'xenial']) {
-        $_module_os_overrides = {
-          'manage_repo' => true,
-          'daemon_user' => 'www-data',
-          'log_user'    => 'root',
-          'log_group'   => 'adm',
-          'log_mode'    => '0755',
-          'run_dir'     => '/run/nginx',
-        }
-      } else {
-        $_module_os_overrides = {
-          'daemon_user' => 'www-data',
-          'log_user'    => 'root',
-          'log_group'   => 'adm',
-          'log_mode'    => '0755',
-          'run_dir'     => '/run/nginx',
         }
       }
     }

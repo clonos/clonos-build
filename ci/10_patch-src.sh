@@ -1,5 +1,5 @@
 #!/bin/sh
-mybbasever="13.2"
+mybbasever="14.0"
 set +e
 
 pgm="${0##*/}"				# Program basename

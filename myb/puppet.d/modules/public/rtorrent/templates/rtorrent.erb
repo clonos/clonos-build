@@ -11,7 +11,7 @@ rcvar=rtorrent_enable
 : ${rtorrent_enable="NO"}
 
 PATH=$PATH:/usr/bin:/usr/local/bin:/usr/local/sbin:/sbin:/bin:/usr/sbin
-required_files="/usr/home/web/.rtorrent.rc"
+required_files="/home/web/.rtorrent.rc"
 command="/usr/bin/su"
 command_args="<%= scope['rtorrent::user'] -%> -c '/usr/local/bin/tmux -u new -d -s rtorrent /usr/local/bin/rtorrent'"
 start_precmd="${name}_prestart"

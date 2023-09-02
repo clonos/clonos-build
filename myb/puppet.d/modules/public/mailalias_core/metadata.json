@@ -1,6 +1,6 @@
 {
   "name": "puppetlabs-mailalias_core",
-  "version": "1.1.0",
+  "version": "1.0.6",
   "author": "puppetlabs",
   "summary": "Creates an email alias in the local alias database.",
   "license": "Apache-2.0",
@@ -8,53 +8,78 @@
   "project_page": "https://github.com/puppetlabs/puppetlabs-mailalias_core",
   "issues_url": "https://tickets.puppetlabs.com/projects/MODULES",
   "dependencies": [
-
+  
   ],
+  "data_provider": null,
   "operatingsystem_support": [
     {
-      "operatingsystem": "CentOS"
+      "operatingsystem": "CentOS",
+      "operatingsystemrelease": [
+        "7"
+      ]
     },
     {
-      "operatingsystem": "OracleLinux"
+      "operatingsystem": "OracleLinux",
+      "operatingsystemrelease": [
+        "7"
+      ]
     },
     {
-      "operatingsystem": "RedHat"
+      "operatingsystem": "RedHat",
+      "operatingsystemrelease": [
+        "7"
+      ]
     },
     {
-      "operatingsystem": "Scientific"
+      "operatingsystem": "Scientific",
+      "operatingsystemrelease": [
+        "7"
+      ]
     },
     {
-      "operatingsystem": "Debian"
+      "operatingsystem": "Debian",
+      "operatingsystemrelease": [
+        "8"
+      ]
     },
     {
-      "operatingsystem": "Ubuntu"
+      "operatingsystem": "Ubuntu",
+      "operatingsystemrelease": [
+        "16.04"
+      ]
     },
     {
-      "operatingsystem": "Fedora"
+      "operatingsystem": "Fedora",
+      "operatingsystemrelease": [
+        "25"
+      ]
     },
     {
-      "operatingsystem": "Darwin"
+      "operatingsystem": "Darwin",
+      "operatingsystemrelease": [
+        "16"
+      ]
     },
     {
-      "operatingsystem": "SLES"
+      "operatingsystem": "SLES",
+      "operatingsystemrelease": [
+        "12"
+      ]
     },
     {
-      "operatingsystem": "Solaris"
-    },
-    {
-      "operatingsystem": "Rocky"
-    },
-    {
-      "operatingsystem": "AlmaLinux"
+      "operatingsystem": "Solaris",
+      "operatingsystemrelease": [
+        "11"
+      ]
     }
   ],
   "requirements": [
     {
       "name": "puppet",
-      "version_requirement": ">= 6.0.0 < 8.0.0"
+      "version_requirement": ">= 4.10.0 < 7.0.0"
     }
   ],
-  "pdk-version": "2.0.0",
-  "template-url": "https://github.com/puppetlabs/pdk-templates#2.2.0",
-  "template-ref": "tags/2.2.0-0-g2381db6"
+  "pdk-version": "1.16.0",
+  "template-url": "https://github.com/puppetlabs/pdk-templates#1.16.0",
+  "template-ref": "1.16.0-0-gaf44904"
 }

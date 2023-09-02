@@ -4,19 +4,20 @@ require 'puppet/util/filetype'
 
 Puppet::Type.newtype(:cron) do
   @doc = <<-'EOT'
-    Installs and manages cron jobs. Every cron resource created by Puppet
-    requires a command and at least one periodic attribute (hour, minute,
-    month, monthday, weekday, or special). While the name of the cron job is
-    not part of the actual job, the name is stored in a comment beginning with
-    `# Puppet Name: `. These comments are used to match crontab entries created
-    by Puppet with cron resources.
+    @summary Installs and manages cron jobs.
+
+    Every cron resource created by Puppet requires a command and at least one
+    periodic attribute (hour, minute, month, monthday, weekday, or special). While
+    the name of the cron job is not part of the actual job, the name is stored in a
+    comment beginning with `# Puppet Name: `. These comments are used to match
+    crontab entries created by Puppet with cron resources.
 
     If an existing crontab entry happens to match the scheduling and command of a
     cron resource that has never been synced, Puppet defers to the existing
     crontab entry and does not create a new entry tagged with the `# Puppet Name: `
     comment.
 
-    Example:
+    @example
 
         cron { 'logrotate':
           command => '/usr/sbin/logrotate',
@@ -25,7 +26,7 @@ Puppet::Type.newtype(:cron) do
           minute  => 0,
         }
 
-    Note that all periodic attributes can be specified as an array of values:
+    @example Note that all periodic attributes can be specified as an array of values:
 
         cron { 'logrotate':
           command => '/usr/sbin/logrotate',
@@ -33,8 +34,7 @@ Puppet::Type.newtype(:cron) do
           hour    => [2, 4],
         }
 
-    ...or using ranges or the step syntax `*/2` (although there's no guarantee
-    that your `cron` daemon supports these):
+    @example ...or using ranges or the step syntax `*/2` (although there's no guarantee that your `cron` daemon supports these):
 
         cron { 'logrotate':
           command => '/usr/sbin/logrotate',
@@ -118,7 +118,7 @@ Puppet::Type.newtype(:cron) do
       end
     end
 
-    def is_to_s(value = @is) # rubocop: disable Style/PredicateName
+    def is_to_s(value = @is) # rubocop: disable Naming/PredicateName
       if value
         if value.is_a?(Array) && (name == :command || value[0].is_a?(Symbol))
           value = value[0]
@@ -155,17 +155,17 @@ Puppet::Type.newtype(:cron) do
       end
 
       # Allow step syntax
-      if value.to_s =~ %r{^\*/[0-9]+$}
+      if %r{^\*/[0-9]+$}.match?(value.to_s)
         return value
       end
 
       # Allow ranges
-      if value.to_s =~ %r{^[0-9]+-[0-9]+$}
+      if %r{^[0-9]+-[0-9]+$}.match?(value.to_s)
         return value
       end
 
       # Allow ranges with step
-      if value.to_s =~ %r{^[0-9]+-[0-9]+/[0-9]+$}
+      if %r{^[0-9]+-[0-9]+/[0-9]+$}.match?(value.to_s)
         return value
       end
 
@@ -210,7 +210,7 @@ Puppet::Type.newtype(:cron) do
 
     def retrieve
       return_value = super
-      return_value = return_value[0] if return_value && return_value.is_a?(Array)
+      return_value = return_value[0] if return_value&.is_a?(Array)
 
       return_value
     end

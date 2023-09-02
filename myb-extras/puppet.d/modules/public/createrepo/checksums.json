@@ -1,12 +1,12 @@
 {
-  "CHANGELOG": "a9bd52f3670d89053df79077546dbd91",
-  "Gemfile": "007656d7dab445ecf41023d51208106e",
+  "CHANGELOG": "230192ea62e01318ba0342c041a662e0",
+  "Gemfile": "ffef5dda8bcfe4064ae2205ee1ffe6ef",
   "LICENSE": "d32239bcb673463ab874e80d47fae504",
-  "README.md": "1519fd211641aea72e93d5531d530489",
+  "README.md": "61531dfbe20737eddfc60c35afca581d",
   "Rakefile": "d66283d5178b71942bc5998e5e9e6080",
-  "manifests/init.pp": "a7dfc34a9de25dda1986f265ab0e968a",
-  "metadata.json": "e4edef00f707cb1cea2398198e6f62ad",
-  "spec/acceptance/define_spec.rb": "ad1f9acaba65f357a8014de41538e5c3",
+  "manifests/init.pp": "2562e23b45f549a3955df0c81e4196b9",
+  "metadata.json": "13ed5a7d7d70b3b2b99fce141d0ca798",
+  "spec/acceptance/define_spec.rb": "6073aa1b5d297da11096be955fcbd849",
   "spec/acceptance/nodesets/centos-511-x64.yml": "8499fb2eea63cfffe37bc935063e82c1",
   "spec/acceptance/nodesets/centos-5_docker.yml": "ea65182e74d915171ca6c1614e8ca628",
   "spec/acceptance/nodesets/centos-65-x64.yml": "1db398c917726f34787def3d287014f7",
@@ -24,9 +24,9 @@
   "spec/acceptance/nodesets/ubuntu-server-10044-x64.yml": "75e86400b7889888dc0781c0ae1a1297",
   "spec/acceptance/nodesets/ubuntu-server-1204-x64.yml": "656f7d92e1fc9d3605fec24d4b3efba3",
   "spec/acceptance/nodesets/ubuntu-server-1404-x64.yml": "4ab46b06af94c63b06a0742abcf006c6",
-  "spec/defines/createrpo_spec.rb": "6532a1cf939700f359d1e7c9beb0cb24",
+  "spec/defines/createrpo_spec.rb": "9eee9f778acdb52ed675a577fe4797f8",
   "spec/spec_helper.rb": "657b17f52da108a0ab26f8707e541a6c",
-  "spec/spec_helper_acceptance.rb": "e3b69ceeec576b9fce69e77a67bb7d08",
-  "spec/support/createrepo_shared_examples.rb": "dfd74e16ec827b6bbba2f5a5b787192d",
-  "templates/createrepo-update.erb": "5a9e5e87d534ccb2af54920874ee1ce5"
+  "spec/spec_helper_acceptance.rb": "1d8046a810ff21dd40c3413a495d42fd",
+  "spec/support/createrepo_shared_examples.rb": "a7d3224eb338645e1732e0801ee9aa07",
+  "templates/createrepo-update.sh.erb": "39fc1751c567d33dc81c49f9129f7d2b"
 }

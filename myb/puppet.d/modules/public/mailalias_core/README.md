@@ -1,11 +1,5 @@
 # mailalias
 
-[![Modules Status](https://github.com/puppetlabs/puppetlabs-mailalias_core/workflows/%5BDaily%5D%20Unit%20Tests%20with%20nightly%20Puppet%20gem/badge.svg?branch=main)](https://github.com/puppetlabs/puppetlabs-mailalias_core/actions)
-[![Modules Status](https://github.com/puppetlabs/puppetlabs-mailalias_core/workflows/Static%20Code%20Analysis/badge.svg?branch=main)](https://github.com/puppetlabs/puppetlabs-mailalias_core/actions) 
-[![Modules Status](https://github.com/puppetlabs/puppetlabs-mailalias_core/workflows/Unit%20Tests%20with%20nightly%20Puppet%20gem/badge.svg?branch=main)](https://github.com/puppetlabs/puppetlabs-mailalias_core/actions) 
-[![Modules Status](https://github.com/puppetlabs/puppetlabs-mailalias_core/workflows/Unit%20Tests%20with%20released%20Puppet%20gem/badge.svg?branch=main)](https://github.com/puppetlabs/puppetlabs-mailalias_core/actions)
-
-
 #### Table of Contents
 
 1. [Description](#description)
@@ -21,9 +15,9 @@ The mailalias module is used to manage entries in the local alias database.
 
 ### Beginning with mailalias
 To manage a mail alias, add the mailalias type to a class:
-```puppet
+```
 mailalias { 'ftp':
-  ensure    => present,
+  ensure => present,
   recipient => 'root',
 }
 ```
@@ -37,19 +31,19 @@ For details on usage, please see REFERENCE.md for the reference documentation.
 
 #### file
 A file containing the alias’s contents. The file and the recipient entries are mutually exclusive.
-```puppet
+```
 mailalias { 'usenet':
   ensure => present,
-  file   => '/tmp/foo/usenet-alias',
+  file => '/tmp/foo/usenet-alias',
 }
 ```
 This will result in an entry such as `usenet: :include: /tmp/foo/usenet-alias`
 
 #### recipient
 Where email should be sent. Multiple values should be specified as an array. The file and the recipient entries are mutually exclusive.
-```puppet
+```
 mailalias { 'ftp':
-  ensure    => present,
+  ensure => present,
   recipient => 'root',
 }
 ```
@@ -57,15 +51,15 @@ This will result in an entry such as  `ftp: root`
 
 #### target
 The file in which to store the aliases. Only used by those providers that write to disk.
-```puppet
+```
 mailalias { 'ftp':
-  ensure    => present,
+  ensure => present,
   recipient => 'root',
-  target    => `/etc/mail/aliases`
+  target => `/etc/mail/aliases`
 }
 ```
 This will ensure the entry exists in the file specified, such as:
-```sh-session
+```
 $ cat /etc/mail/aliases
 ftp: root
 ```

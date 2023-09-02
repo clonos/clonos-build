@@ -4,6 +4,93 @@ All notable changes to this project will be documented in this file.
 Each new release typically also includes the latest modulesync defaults.
 These should not affect the functionality of the module.
 
+## [v6.1.2](https://github.com/voxpupuli/puppet-archive/tree/v6.1.2) (2023-04-13)
+
+[Full Changelog](https://github.com/voxpupuli/puppet-archive/compare/v6.1.1...v6.1.2)
+
+**Fixed bugs:**
+
+- Fix catalog compilation failure when net/ftp is not available [\#491](https://github.com/voxpupuli/puppet-archive/pull/491) ([smortex](https://github.com/smortex))
+- ruby provider: ensure cleanup happens [\#474](https://github.com/voxpupuli/puppet-archive/pull/474) ([pillarsdotnet](https://github.com/pillarsdotnet))
+
+**Closed issues:**
+
+- Missing gem with ruby 3.1 [\#488](https://github.com/voxpupuli/puppet-archive/issues/488)
+- Cannot clean up unless 'creates' is specified. [\#328](https://github.com/voxpupuli/puppet-archive/issues/328)
+
+**Merged pull requests:**
+
+- README: add missing backtick [\#487](https://github.com/voxpupuli/puppet-archive/pull/487) ([kenyon](https://github.com/kenyon))
+
+## [v6.1.1](https://github.com/voxpupuli/puppet-archive/tree/v6.1.1) (2023-01-16)
+
+[Full Changelog](https://github.com/voxpupuli/puppet-archive/compare/v6.1.0...v6.1.1)
+
+**Fixed bugs:**
+
+- curl provider: array of multiple headers does not work [\#481](https://github.com/voxpupuli/puppet-archive/issues/481)
+- Bug fix when passing multiple headers [\#482](https://github.com/voxpupuli/puppet-archive/pull/482) ([sprankle](https://github.com/sprankle))
+
+## [v6.1.0](https://github.com/voxpupuli/puppet-archive/tree/v6.1.0) (2022-11-29)
+
+[Full Changelog](https://github.com/voxpupuli/puppet-archive/compare/v6.0.2...v6.1.0)
+
+**Implemented enhancements:**
+
+- feature: Artifactory authentication support [\#265](https://github.com/voxpupuli/puppet-archive/issues/265)
+- add array of headers as optional parameter [\#475](https://github.com/voxpupuli/puppet-archive/pull/475) ([prolixalias](https://github.com/prolixalias))
+- Mark CentOS 9 and RHEL 9 as supported operating systems [\#473](https://github.com/voxpupuli/puppet-archive/pull/473) ([kajinamit](https://github.com/kajinamit))
+- Update CA certificate bundle to 2021-10-26 [\#468](https://github.com/voxpupuli/puppet-archive/pull/468) ([l-avila](https://github.com/l-avila))
+- modulesync 5.3 & update EoL URI syntax + a lot of rubocop rework [\#463](https://github.com/voxpupuli/puppet-archive/pull/463) ([bastelfreak](https://github.com/bastelfreak))
+
+**Merged pull requests:**
+
+- Improve/fix examples in README [\#470](https://github.com/voxpupuli/puppet-archive/pull/470) ([pillarsdotnet](https://github.com/pillarsdotnet))
+
+## [v6.0.2](https://github.com/voxpupuli/puppet-archive/tree/v6.0.2) (2021-11-23)
+
+[Full Changelog](https://github.com/voxpupuli/puppet-archive/compare/v6.0.1...v6.0.2)
+
+**Merged pull requests:**
+
+- puppet-lint: fix top\_scope\_facts warnings [\#462](https://github.com/voxpupuli/puppet-archive/pull/462) ([bastelfreak](https://github.com/bastelfreak))
+
+## [v6.0.1](https://github.com/voxpupuli/puppet-archive/tree/v6.0.1) (2021-08-26)
+
+[Full Changelog](https://github.com/voxpupuli/puppet-archive/compare/v6.0.0...v6.0.1)
+
+**Fixed bugs:**
+
+- Fix `archive::download::digest_type` data type \(reverts 6.0.0 breaking change\) [\#460](https://github.com/voxpupuli/puppet-archive/pull/460) ([alexjfisher](https://github.com/alexjfisher))
+
+## [v6.0.0](https://github.com/voxpupuli/puppet-archive/tree/v6.0.0) (2021-08-25)
+
+[Full Changelog](https://github.com/voxpupuli/puppet-archive/compare/v5.0.0...v6.0.0)
+
+**Breaking changes:**
+
+- Drop Virtuozzo 6 [\#455](https://github.com/voxpupuli/puppet-archive/pull/455) ([genebean](https://github.com/genebean))
+- Drop EoL AIX versions [\#454](https://github.com/voxpupuli/puppet-archive/pull/454) ([genebean](https://github.com/genebean))
+- Drop EoL Windows versions [\#453](https://github.com/voxpupuli/puppet-archive/pull/453) ([genebean](https://github.com/genebean))
+- Drop Debian 9 [\#452](https://github.com/voxpupuli/puppet-archive/pull/452) ([genebean](https://github.com/genebean))
+- Drop Ubuntu 16.04 [\#451](https://github.com/voxpupuli/puppet-archive/pull/451) ([genebean](https://github.com/genebean))
+- Set optional param to undef to fix failing test \(REVERTED IN 6.0.1\) [\#449](https://github.com/voxpupuli/puppet-archive/pull/449) ([yachub](https://github.com/yachub))
+
+**Implemented enhancements:**
+
+- Add support for Debian 11 [\#458](https://github.com/voxpupuli/puppet-archive/pull/458) ([smortex](https://github.com/smortex))
+- Add ubuntu 20.04 [\#456](https://github.com/voxpupuli/puppet-archive/pull/456) ([genebean](https://github.com/genebean))
+- Update CA certificate bundle to 2021-05-25 [\#444](https://github.com/voxpupuli/puppet-archive/pull/444) ([l-avila](https://github.com/l-avila))
+
+**Fixed bugs:**
+
+- Fix Could not set 'present' on ensure: wrong number of arguments \(given 1, expected 0\) [\#443](https://github.com/voxpupuli/puppet-archive/pull/443) ([jeffmccune](https://github.com/jeffmccune))
+- Write downloaded files as binary [\#442](https://github.com/voxpupuli/puppet-archive/pull/442) ([benohara](https://github.com/benohara))
+
+**Merged pull requests:**
+
+- Allow stdlib 8.0.0 [\#457](https://github.com/voxpupuli/puppet-archive/pull/457) ([smortex](https://github.com/smortex))
+
 ## [v5.0.0](https://github.com/voxpupuli/puppet-archive/tree/v5.0.0) (2021-04-16)
 
 [Full Changelog](https://github.com/voxpupuli/puppet-archive/compare/v4.6.0...v5.0.0)

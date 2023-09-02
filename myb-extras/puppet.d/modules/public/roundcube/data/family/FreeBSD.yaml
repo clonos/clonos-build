@@ -1,6 +1,6 @@
 ---
 roundcube::archive_provider: package
-roundcube::package_name: 'roundcube-php80'
+roundcube::package_name: 'roundcube-php81'
 roundcube::process: www
 roundcube::composer_manage: false
 roundcube::install_dir: /usr/local/www/roundcube

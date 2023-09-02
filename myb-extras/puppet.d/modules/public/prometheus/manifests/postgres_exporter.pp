@@ -55,9 +55,13 @@
 #  Using 'custom' requires 'data_source_custom' values
 # @param data_source_uri
 #  Uri on howto connect to the database
+# @param proxy_server
+#  Optional proxy server, with port number if needed. ie: https://example.com:8080
+# @param proxy_type
+#  Optional proxy server type (none|http|https|ftp)
 class prometheus::postgres_exporter (
-  String[1] $download_extension,
-  String[1] $download_url_base,
+  String $download_extension,
+  Prometheus::Uri $download_url_base,
   Array[String[1]] $extra_groups,
   String[1] $group,
   String[1] $package_ensure,
@@ -66,32 +70,39 @@ class prometheus::postgres_exporter (
   String[1] $version,
   String[1] $data_source_uri,
   Enum['custom', 'env', 'file'] $postgres_auth_method,
-  Hash[String[1],String[1]] $data_source_custom = {},
-  Boolean $purge_config_dir                     = true,
-  Boolean $restart_on_change                    = true,
-  Boolean $service_enable                       = true,
-  Stdlib::Ensure::Service $service_ensure       = 'running',
-  String[1] $service_name                       = 'postgres_exporter',
-  Prometheus::Initstyle $init_style             = $facts['service_provider'],
-  String[1] $install_method                     = $prometheus::install_method,
-  Boolean $manage_group                         = true,
-  Boolean $manage_service                       = true,
-  Boolean $manage_user                          = true,
-  String[1] $os                                 = downcase($facts['kernel']),
-  String $options                               = '',
-  Optional[String] $download_url                = undef,
-  Optional[String] $postgres_pass               = undef,
-  Optional[String] $postgres_user               = undef,
-  String[1] $arch                               = $prometheus::real_arch,
-  String[1] $bin_dir                            = $prometheus::bin_dir,
-  Boolean $export_scrape_job                    = false,
-  Stdlib::Port $scrape_port                     = 9187,
-  String[1] $scrape_job_name                    = 'postgres',
-  Optional[Hash] $scrape_job_labels             = undef,
+  Hash[String[1],String[1]] $data_source_custom              = {},
+  Boolean $purge_config_dir                                  = true,
+  Boolean $restart_on_change                                 = true,
+  Boolean $service_enable                                    = true,
+  Stdlib::Ensure::Service $service_ensure                    = 'running',
+  String[1] $service_name                                    = 'postgres_exporter',
+  Prometheus::Initstyle $init_style                          = $facts['service_provider'],
+  Prometheus::Install $install_method                        = $prometheus::install_method,
+  Boolean $manage_group                                      = true,
+  Boolean $manage_service                                    = true,
+  Boolean $manage_user                                       = true,
+  String[1] $os                                              = downcase($facts['kernel']),
+  String $options                                            = '', # lint:ignore:params_empty_string_assignment
+  Optional[Prometheus::Uri] $download_url                    = undef,
+  Optional[String] $postgres_pass                            = undef,
+  Optional[String] $postgres_user                            = undef,
+  String[1] $arch                                            = $prometheus::real_arch,
+  Stdlib::Absolutepath $bin_dir                              = $prometheus::bin_dir,
+  Boolean $export_scrape_job                                 = false,
+  Optional[Stdlib::Host] $scrape_host                        = undef,
+  Stdlib::Port $scrape_port                                  = 9187,
+  String[1] $scrape_job_name                                 = 'postgres',
+  Optional[Hash] $scrape_job_labels                          = undef,
+  Optional[String[1]] $proxy_server                          = undef,
+  Optional[Enum['none', 'http', 'https', 'ftp']] $proxy_type = undef,
 ) inherits prometheus {
   $release = "v${version}"
 
-  $real_download_url = pick($download_url, "${download_url_base}/download/${release}/${package_name}_${release}_${os}-${arch}.${download_extension}")
+  if versioncmp($version, '0.9.0') < 0 {
+    $real_download_url = pick($download_url, "${download_url_base}/download/${release}/${package_name}_${release}_${os}-${arch}.${download_extension}")
+  } else {
+    $real_download_url = pick($download_url, "${download_url_base}/download/${release}/${package_name}-${version}.${os}-${arch}.${download_extension}")
+  }
 
   $notify_service = $restart_on_change ? {
     true    => Service[$service_name],
@@ -178,8 +189,11 @@ class prometheus::postgres_exporter (
     service_enable     => $service_enable,
     manage_service     => $manage_service,
     export_scrape_job  => $export_scrape_job,
+    scrape_host        => $scrape_host,
     scrape_port        => $scrape_port,
     scrape_job_name    => $scrape_job_name,
     scrape_job_labels  => $scrape_job_labels,
+    proxy_server       => $proxy_server,
+    proxy_type         => $proxy_type,
   }
 }

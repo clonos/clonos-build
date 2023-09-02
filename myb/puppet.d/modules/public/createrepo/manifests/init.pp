@@ -31,14 +31,20 @@
 #   Set the SELinux type for the repo directory.
 #
 # [*enable_cron*]
-#   Enable automatic repository updates by cron. If disabled,
-#   Puppet will update repository on each run. Default: true
+#   Enable automatic repository updates by cron. Default: true
+#
+# [*enable_update*]
+#   Enable automatic repository updates during the puppet run.
+#   Default: false
 #
 # [*cron_minute*]
 #   Minute parameter for cron metadata update job. Default: '*/10'
 #
 # [*cron_hour*]
 #   Hour parameter for cron metadata update job. Default: '*'
+#
+# [*cron_weekday*]
+#   Weekday parameter for cron metadata update job. Default '*'
 #
 # [*changelog_limit*]
 #   Import only last N changelog entries from rpm into metadata. Default: 5
@@ -67,6 +73,27 @@
 # [*manage_repo_dirs*]
 #   Manage the repository directory. If false the repository and cache
 #   directories must be created manually/externally.
+#
+# [*cleanup*]
+#   Should the cron/script clean up old rpm versions for each rpm?
+#
+# [*cleanup_keep*]
+#   Set how many versions of each rpm to keep. Default: 2
+#
+# [*use_lockfile*]
+#   Prevents corruption of the repodata, when multiple createrepo processes
+#   start building repodata at the same time. (eg in combination with incrond)
+#
+# [*lockfile*]
+#   full path/name of the lockfile
+#
+# [*createrepo_package*]
+#   Select which createrepo package needs to be used. Allows to select createrepo_c
+#   instead of createrepo.
+#
+# [*createrepo_cmd*]
+#   The path of the createrepo binary to use. Allows, combined with setting
+#   createrepo_package, to select /usr/bin/createrepo_c instead of /usr/bin/createrepo.
 #
 # === Variables
 #
@@ -97,8 +124,10 @@ define createrepo (
     $repo_ignore          = undef,
     $repo_seltype         = 'httpd_sys_content_t',
     $enable_cron          = true,
+    $enable_update        = false,
     $cron_minute          = '*/10',
     $cron_hour            = '*',
+    $cron_weekday         = '*',
     $changelog_limit      = 5,
     $checksum_type        = undef,
     $update_file_path     = undef,
@@ -107,7 +136,13 @@ define createrepo (
     $groupfile            = undef,
     $workers              = undef,
     $timeout              = 300,
-    $manage_repo_dirs     = true
+    $manage_repo_dirs     = true,
+    $cleanup              = false,
+    $cleanup_keep         = 2,
+    $use_lockfile         = false,
+    $lockfile             = "/tmp/createrepo-update-${name}.lock",
+    $createrepo_package   = 'createrepo',
+    $createrepo_cmd       = '/usr/bin/createrepo',
 ) {
     if $update_file_path != undef {
         $real_update_file_path = $update_file_path
@@ -135,19 +170,31 @@ define createrepo (
             recurse => $repo_recurse,
             ignore  => $repo_ignore,
             seltype => $repo_seltype,
+            before  => Exec["createrepo-${name}"],
         }
         file { $repo_cache_dir:
             ensure => directory,
             owner  => $repo_owner,
             group  => $repo_group,
             mode   => '0775',
+            before => Exec["createrepo-${name}"],
         }
     }
 
-    if ! defined(Package['createrepo']) {
-        package { 'createrepo':
+    if ! defined(Package[$createrepo_package]) {
+        package { $createrepo_package:
             ensure => present,
         }
+    }
+
+    validate_bool($cleanup)
+    if $cleanup {
+      if ! defined(Package['yum-utils']) {
+        package { 'yum-utils':
+            ensure => present,
+        }
+      }
+      Package['yum-utils'] -> File[$real_update_file_path]
     }
 
     case $::osfamily {
@@ -196,12 +243,12 @@ define createrepo (
       $_arg_workers = ''
     }
 
-    $cmd = '/usr/bin/createrepo'
     $_arg_cachedir = "--cachedir ${repo_cache_dir}"
     $arg = "${_arg_cachedir}${_arg_changelog}${_arg_checksum}${_arg_groupfile}${_arg_workers}"
     $cron_output_suppression = "${_stdout_suppress}${_stderr_suppress}"
-    $createrepo_create = "${cmd} ${arg} --database ${repository_dir}"
-    $createrepo_update = "${cmd} ${arg} --update ${repository_dir}"
+    $createrepo_create = "${createrepo_cmd} ${arg} --database ${repository_dir}"
+    $createrepo_update = "${createrepo_cmd} ${arg} --update ${repository_dir}"
+    $repomanage_cleanup = "/usr/bin/repomanage --keep=${cleanup_keep} --old ${repository_dir} | /usr/bin/xargs -r rm"
 
     exec { "createrepo-${name}":
         command => $createrepo_create,
@@ -209,30 +256,7 @@ define createrepo (
         group   => $repo_group,
         creates => "${repository_dir}/repodata",
         timeout => $timeout,
-        require => [
-            Package['createrepo'],
-            File[$repository_dir],
-            File[$repo_cache_dir],
-        ],
-    }
-
-    validate_bool($enable_cron)
-    if $enable_cron == true {
-        cron { "update-createrepo-${name}":
-            command => "${createrepo_update}${cron_output_suppression}",
-            user    => $repo_owner,
-            minute  => $cron_minute,
-            hour    => $cron_hour,
-            require => Exec["createrepo-${name}"],
-        }
-    } else {
-        exec { "update-createrepo-${name}":
-            command => $createrepo_update,
-            user    => $repo_owner,
-            group   => $repo_group,
-            timeout => $timeout,
-            require => Exec["createrepo-${name}"],
-        }
+        require => Package[$createrepo_package],
     }
 
     validate_absolute_path($real_update_file_path)
@@ -241,6 +265,29 @@ define createrepo (
         owner   => $repo_owner,
         group   => $repo_group,
         mode    => '0755',
-        content => template('createrepo/createrepo-update.erb'),
+        content => template('createrepo/createrepo-update.sh.erb'),
+    }
+
+    validate_bool($enable_cron)
+    if $enable_cron == true {
+        cron { "update-createrepo-${name}":
+            command => "${real_update_file_path}${cron_output_suppression}",
+            user    => $repo_owner,
+            minute  => $cron_minute,
+            hour    => $cron_hour,
+            weekday => $cron_weekday,
+            require => [Exec["createrepo-${name}"], File[$real_update_file_path]],
+        }
+    }
+
+    validate_bool($enable_update)
+    if $enable_update {
+        exec { "update-createrepo-${name}":
+            command => $real_update_file_path,
+            user    => $repo_owner,
+            group   => $repo_group,
+            timeout => $timeout,
+            require => [Exec["createrepo-${name}"], File[$real_update_file_path]],
+        }
     }
 }

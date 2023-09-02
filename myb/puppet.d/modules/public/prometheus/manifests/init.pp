@@ -1,4 +1,4 @@
-# #sammary This module manages prometheus
+# @summary This module manages prometheus
 # @param configname
 #  the name of the configfile, defaults to prometheus.yaml or prometheus.yml on most operating systems
 # @param manage_user
@@ -67,6 +67,8 @@
 #  Prometheus rule files
 # @param scrape_configs
 #  Prometheus scrape configs
+# @param include_default_scrape_configs
+#  Include the module default scrape configs
 # @param remote_read_configs
 #  Prometheus remote_read config to scrape prometheus 1.8+ instances
 # @param remote_write_configs
@@ -89,6 +91,8 @@
 #  If omitted, relevant URL components will be derived automatically.
 # @param extract_command
 #  Custom command passed to the archive resource to extract the downloaded archive.
+# @param collect_tag
+#  Only collect scrape jobs tagged with this label. Allowing to split jobs over multiple prometheuses.
 # @param collect_scrape_jobs
 #  Array of scrape_configs. Format, e.g.:
 #  - job_name: some_exporter
@@ -212,6 +216,10 @@
 # @param config_show_diff
 #  Whether to show prometheus configuration file diff in the Puppet logs.
 # @param extra_groups Extra groups of which the user should be a part
+# @param proxy_server
+#  Optional proxy server, with port number if needed. ie: https://example.com:8080
+# @param proxy_type
+#  Optional proxy server type (none|http|https|ftp)
 class prometheus (
   String $user,
   String $group,
@@ -282,7 +290,8 @@ class prometheus (
   Hash $config_defaults                                                         = {},
   String[1] $os                                                                 = downcase($facts['kernel']),
   Optional[Variant[Stdlib::HTTPUrl, Stdlib::Unixpath, String[1]]] $external_url = undef,
-  Optional[Array[Hash[String[1], Any]]] $collect_scrape_jobs                    = [],
+  Array[Hash[String[1], Any]] $collect_scrape_jobs                              = [],
+  Optional[String[1]] $collect_tag                                              = undef,
   Optional[Integer] $max_open_files                                             = undef,
   String[1] $configname                                                         = 'prometheus.yaml',
   Boolean $service_enable                                                       = true,
@@ -295,6 +304,9 @@ class prometheus (
   Boolean $purge_config_dir                                                     = true,
   Boolean $manage_user                                                          = true,
   Boolean $config_show_diff                                                     = true,
+  Boolean $include_default_scrape_configs                                       = true,
+  Optional[String[1]] $proxy_server                                             = undef,
+  Optional[Enum['none', 'http', 'https', 'ftp']] $proxy_type                    = undef,
 ) {
   case $arch {
     'x86_64', 'amd64': { $real_arch = 'amd64' }

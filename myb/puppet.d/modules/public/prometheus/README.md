@@ -33,6 +33,8 @@ This module supports below Prometheus architectures:
 - i386
 - armv71 (Tested on raspberry pi 3)
 
+The `prometheus::ipmi_exporter` class has a dependency on [saz/sudo](https://forge.puppet.com/modules/saz/sudo) Puppet module.
+
 ## Background
 
 This module automates the install and configuration of Prometheus monitoring tool: [Prometheus web site](https://prometheus.io/docs/introduction/overview/)
@@ -45,7 +47,7 @@ This module automates the install and configuration of Prometheus monitoring too
 * Installs a configuration file for prometheus daemon (/etc/prometheus/prometheus.yaml) or for alertmanager (/etc/prometheus/alert.rules)
 * Manages the services via upstart, sysv, or systemd
 * Optionally creates alert rules
-* The following exporters are currently implemented: node_exporter, statsd_exporter, process_exporter, haproxy_exporter, mysqld_exporter, blackbox_exporter, consul_exporter, redis_exporter, varnish_exporter, graphite_exporter, postgres_exporter, collectd_exporter
+* The following exporters are currently implemented: node_exporter, statsd_exporter, process_exporter, haproxy_exporter, mysqld_exporter, blackbox_exporter, consul_exporter, redis_exporter, varnish_exporter, graphite_exporter, postgres_exporter, collectd_exporter, grok_exporter, ipsec_exporter, openldap_exporter, openvpn_exporter, ssh_exporter, ssl_exporter
 
 ## Usage
 

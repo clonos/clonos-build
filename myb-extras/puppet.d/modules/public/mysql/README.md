@@ -99,6 +99,10 @@ To implement version specific parameters, specify the version, such as [mysqld-5
 If you don’t want to use the default configuration, you can also supply your options to the `$options` parameter instead of `$override_options`.
 Please note that `$options` and `$override_options` are mutually exclusive, you can only use one of them.
 
+By default, the puppet won't reload/restart mysqld when you change an existing
+configuration. If you want to do that, you can set
+`mysql::server::reload_on_config_change` to true.
+
 ### Create a database
 
 To create a database with a user and some assigned privileges:
@@ -143,7 +147,7 @@ mysql::db { 'mydb':
   password        => 'mypass',
   host            => 'localhost',
   grant           => ['SELECT', 'UPDATE'],
-  sql             => '/path/to/sqlfile.gz',
+  sql             => ['/path/to/sqlfile.gz'],
   import_cat_cmd  => 'zcat',
   import_timeout  => 900,
   mysql_exec_path => '/opt/rh/rh-myql57/root/bin',
@@ -502,6 +506,30 @@ class { 'mysql::server::backup':
   backuprotate        => 5,
   execpath            => '/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin:/bin:/sbin',
   time                => ['23', '15'],
+}
+```
+
+The next example shows how to use mariabackup (a fork of xtrabackup) as a backup provider.
+Note that on most Linux/BSD distributions, this will require setting `backupmethod_package => 'mariadb-backup'` in the `mysql::server::backup` declaration in order to override the default xtrabackup package (`percona-xtrabackup`).
+
+```puppet
+class { 'mysql::server':
+  package_name            => 'mariadb-server',
+  package_ensure          => '1:10.3.21+maria~xenial',
+  service_name            => 'mysqld',
+  root_password           => 'AVeryStrongPasswordUShouldEncrypt!',
+}
+
+class { 'mysql::server::backup':
+  backupuser              => 'mariabackup',
+  backuppassword          => 'AVeryStrongPasswordUShouldEncrypt!',
+  provider                => 'xtrabackup',
+  backupmethod            => 'mariabackup',
+  backupmethod_package    => 'mariadb-backup',
+  backupdir               => '/tmp/backups',
+  backuprotate            => 15,
+  execpath                => '/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin:/bin:/sbin',
+  time                    => ['23', '15'],
 }
 ```
 

@@ -74,6 +74,23 @@ class { 'rabbitmq':
 }
 ```
 
+##### Offline installation from local mirror:
+
+```puppet
+class { 'rabbitmq':
+  key_content     => template('openstack/rabbit.pub.key'),
+  repo_gpg_key => '/tmp/rabbit.pub.key',
+}
+```
+
+##### Use external package key source for any (apt/rpm) package provider:
+
+```puppet
+class { 'rabbitmq':
+  repo_gpg_key => 'http://www.some_site.some_domain/some_key.pub.key',
+}
+```
+
 ##### To use RabbitMQ Environment Variables, use the parameters `environment_variables` e.g.:
 
 ```puppet
@@ -94,7 +111,26 @@ class { 'rabbitmq':
   config_variables => {
     'hipe_compile' => true,
     'frame_max'    => 131072,
-    'log_levels'   => "[{connection, info}]"
+  }
+}
+```
+
+##### Change RabbitMQ log level in rabbitmq.config for RabbitMQ version < 3.7.x :
+
+```puppet
+class { 'rabbitmq':
+  config_variables => {
+    'log_levels'   => "[{queue, info}]"
+  }
+}
+```
+
+##### Change RabbitMQ log level in rabbitmq.config for RabbitMQ version since 3.7.x :
+
+```puppet
+class { 'rabbitmq':
+  config_variables => {
+    'log'          => "[{file, [{level,debug}]},{categories, [{queue, [{level,info},{file,'queue.log'}]}]}]"
   }
 }
 ```
@@ -162,7 +198,7 @@ The following parameters are available in the `rabbitmq` class.
 Data type: `Boolean`
 
 If enabled sets up the management interface/plugin for RabbitMQ.
-This also install the rabbitmqadmin command line tool.
+This will also install the rabbitmqadmin command line tool.
 
 Default value: `true`
 
@@ -183,6 +219,14 @@ If enabled the /etc/rabbitmq/enabled_plugins config file is created,
 replacing the use of the rabbitmqplugins provider to enable plugins.
 
 Default value: `false`
+
+##### `plugins`
+
+Data type: `Array`
+
+Additional list of plugins to start, or to add to /etc/rabbitmq/enabled_plugins, if use_config_file_for_plugins is enabled.
+
+Default value: []
 
 ##### `auth_backends`
 
@@ -582,9 +626,18 @@ Default value: 'installed'
 Data type: `Optional[String]`
 
 RPM package GPG key to import. Uses source method. Should be a URL for Debian/RedHat OS family, or a file name for
-RedHat OS family. Set to https://www.rabbitmq.com/rabbitmq-release-signing-key.asc for RedHat OS Family and
-https://packagecloud.io/rabbitmq/rabbitmq-server/gpgkey for Debian OS Family by default. Note, that `key_content`, if specified, would
-override this parameter for Debian OS family.
+RedHat OS family. Set to https://github.com/rabbitmq/signing-keys/releases/download/2.0/rabbitmq-release-signing-key.asc
+for Debian/RedHat OS Family by default.
+
+Default value: `undef`
+
+##### `repo_gpg_key`
+
+Data type: `Optional[String]`
+
+RPM package GPG key to import. Uses source method. Should be a URL for Debian/RedHat OS family, or a file name for
+RedHat OS family. Set to https://packagecloud.io/rabbitmq/rabbitmq-server/gpgkey for Debian/RedHat OS Family by
+default. Note, that `key_content`, if specified, would override this parameter for Debian OS family.
 
 Default value: `undef`
 
@@ -1127,6 +1180,8 @@ Default value: queue
 
 binding arguments
 
+Default value: {}
+
 #### Parameters
 
 The following parameters are available in the `rabbitmq_binding` type.
@@ -1353,6 +1408,8 @@ Default value: `false`
 ##### `arguments`
 
 Exchange arguments example: {"hash-header": "message-distribution-hash"}
+
+Default value: {}
 
 ##### `user`
 
@@ -1649,6 +1706,8 @@ Default value: `false`
 ##### `arguments`
 
 Queue arguments example: {x-message-ttl => 60, x-expires => 10}
+
+Default value: {}
 
 ##### `user`
 

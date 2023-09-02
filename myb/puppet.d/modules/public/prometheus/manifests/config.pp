@@ -6,6 +6,27 @@ class prometheus::config {
 
   $prometheus_v2 = versioncmp($prometheus::server::version, '2.0.0') >= 0
 
+  if $prometheus::server::include_default_scrape_configs {
+    $default_scrape_configs = [
+      {
+        'job_name'        => 'prometheus',
+        'scrape_interval' => '10s',
+        'scrape_timeout'  => '10s',
+        'static_configs'  => [
+          {
+            'targets' => ['localhost:9090'],
+            'labels'  => {
+              'alias' => 'Prometheus',
+            },
+          },
+        ],
+      }
+    ]
+    $scrape_configs = $default_scrape_configs + $prometheus::server::scrape_configs
+  } else {
+    $scrape_configs = $prometheus::server::scrape_configs
+  }
+
   # Validation
   $invalid_args = if $prometheus_v2 {
     {
@@ -158,6 +179,16 @@ class prometheus::config {
     default => undef,
   }
 
+  if $prometheus::env_file_path {
+    file { "${prometheus::env_file_path}/prometheus":
+      mode    => '0644',
+      owner   => 'root',
+      group   => '0', # Darwin uses wheel
+      content => "ARGS='${join(sort($daemon_flags), ' ')}'\n",
+      notify  => $notify,
+    }
+  }
+
   case $prometheus::server::init_style { # lint:ignore:case_without_default
     'upstart': {
       file { '/etc/init/prometheus.conf':
@@ -194,17 +225,13 @@ class prometheus::config {
         Class['systemd::systemctl::daemon_reload'] -> Class['prometheus::run_service']
       }
     }
-    'sysv', 'redhat', 'debian', 'sles': {
-      $content = $prometheus::server::init_style ? {
-        'redhat' => template('prometheus/prometheus.sysv.erb'), # redhat and sysv share the same template file
-        default  => template("prometheus/prometheus.${prometheus::server::init_style}.erb"),
-      }
+    'sysv', 'sles': {
       file { "/etc/init.d/${prometheus::server::service_name}":
         ensure  => file,
         mode    => '0555',
         owner   => 'root',
         group   => 'root',
-        content => $content,
+        content => template("prometheus/prometheus.${prometheus::server::init_style}.erb"),
         notify  => $notify,
       }
     }
@@ -226,7 +253,7 @@ class prometheus::config {
   file { "${prometheus::config_dir}/file_sd_config.d":
     ensure  => directory,
     group   => $prometheus::server::group,
-    purge   => true,
+    purge   => $prometheus::purge_config_dir,
     recurse => true,
     notify  => Class['prometheus::service_reload'], # After purging, a reload is needed
   }
@@ -238,9 +265,14 @@ class prometheus::config {
 
     $job_name = $job_definition['job_name']
 
-    Prometheus::Scrape_job <<| job_name == $job_name |>> {
+    $node_tag = $prometheus::server::collect_tag ? {
+      Undef   => 'prometheus::scrape_job',
+      default => $prometheus::server::collect_tag,
+    }
+
+    Prometheus::Scrape_job <<| job_name == $job_name and tag == $node_tag |>> {
       collect_dir => "${prometheus::config_dir}/file_sd_config.d",
-      notify      => Class['::prometheus::service_reload'],
+      notify      => Class['prometheus::service_reload'],
     }
   }
   # assemble the scrape jobs in a single list that gets appended to

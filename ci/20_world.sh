@@ -1,7 +1,7 @@
 #!/bin/sh
 set +e
 
-mybbasever="13.2"
+mybbasever="14.0"
 
 pgm="${0##*/}"				# Program basename
 progdir="${0%/*}"			# Program directory

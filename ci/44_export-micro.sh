@@ -1,6 +1,6 @@
 #!/bin/sh
 exit 0
-mybbasever="13.2"
+mybbasever="14.0"
 jname="micro1"
 
 pgm="${0##*/}"				# Program basename

@@ -167,6 +167,7 @@ class postgresql::globals (
   $default_version = $facts['os']['family'] ? {
     /^(RedHat|Linux)/ => $facts['os']['name'] ? {
       'Fedora' => $facts['os']['release']['major'] ? {
+        /^(36)$/       => '14',
         /^(34|35)$/    => '13',
         /^(32|33)$/    => '12',
         /^(31)$/       => '11.6',
@@ -183,6 +184,7 @@ class postgresql::globals (
       },
       'Amazon' => '9.2',
       default => $facts['os']['release']['major'] ? {
+        '9'     => '13',
         '8'     => '10',
         '7'     => '9.2',
         '6'     => '8.4',
@@ -206,6 +208,7 @@ class postgresql::globals (
         /^(18.04)$/ => '10',
         /^(20.04)$/ => '12',
         /^(21.04|21.10)$/ => '13',
+        /^(22.04)$/ => '14',
         default => undef,
       },
       default => undef,
@@ -224,8 +227,8 @@ class postgresql::globals (
         /11\.4/     => '94',
         /12\.0/     => '93',
         /12\.[1-3]/ => '94',
-        /12\.[4-5]/ => '10',
-        /15\.[0-9]/     => '10',
+        /12\.[4-5]/ => '12',
+        /15\.[0-9]/ => '14',
         default     => '96',
       },
       'OpenSuSE' => $facts['os']['release']['full'] ? {

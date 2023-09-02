@@ -1,5 +1,5 @@
 #!/bin/sh
-mybbasever="13.2"
+mybbasever="14.0"
 
 pgm="${0##*/}"				# Program basename
 progdir="${0%/*}"			# Program directory
@@ -41,6 +41,9 @@ hw-probe \
 jq \
 cmake \
 ninja"
+
+# OPENSSL
+PREFETCHED_PACKAGES=
 
 cbsd cpr makeconf=/root/myb-build/myb_make.conf pkglist=/root/myb-build/myb.list dstdir=${dstdir} package_fetch="${PREFETCHED_PACKAGES}" autoremove=1
 

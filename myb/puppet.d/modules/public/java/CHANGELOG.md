@@ -2,9 +2,134 @@
 
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
-## [v6.3.0](https://github.com/puppetlabs/puppetlabs-java/tree/v6.2.0) (2020-05-27)
+## [v8.2.0](https://github.com/puppetlabs/puppetlabs-java/tree/v8.2.0) (2022-08-09)
 
-[Full Changelog](https://github.com/puppetlabs/puppetlabs-java/compare/v6.2.0...v6.2.0)
+[Full Changelog](https://github.com/puppetlabs/puppetlabs-java/compare/v8.1.0...v8.2.0)
+
+### Added
+
+- pdksync - \(GH-cat-11\) Certify Support for Ubuntu 22.04 [\#522](https://github.com/puppetlabs/puppetlabs-java/pull/522) ([david22swan](https://github.com/david22swan))
+- Make ubuntu 22.04 also default to openjdk-11 [\#519](https://github.com/puppetlabs/puppetlabs-java/pull/519) ([rswarts](https://github.com/rswarts))
+- pdksync - \(GH-cat-12\) Add Support for Redhat 9 [\#518](https://github.com/puppetlabs/puppetlabs-java/pull/518) ([david22swan](https://github.com/david22swan))
+
+## [v8.1.0](https://github.com/puppetlabs/puppetlabs-java/tree/v8.1.0) (2022-05-30)
+
+[Full Changelog](https://github.com/puppetlabs/puppetlabs-java/compare/v8.0.0...v8.1.0)
+
+### Added
+
+- feat: added support for aarch64 architecture download [\#516](https://github.com/puppetlabs/puppetlabs-java/pull/516) ([0Rick0](https://github.com/0Rick0))
+
+## [v8.0.0](https://github.com/puppetlabs/puppetlabs-java/tree/v8.0.0) (2022-04-05)
+
+[Full Changelog](https://github.com/puppetlabs/puppetlabs-java/compare/v7.3.0...v8.0.0)
+
+### Changed
+
+- \(GH-C&T-7\) Remove code specific to unsupported OSs [\#507](https://github.com/puppetlabs/puppetlabs-java/pull/507) ([david22swan](https://github.com/david22swan))
+
+### Added
+
+- \(MODULES-11234\) Support Adoptium Temurin [\#502](https://github.com/puppetlabs/puppetlabs-java/pull/502) ([dploeger](https://github.com/dploeger))
+
+### Fixed
+
+- pdksync - \(GH-iac-334\) Remove Support for Ubuntu 14.04/16.04 [\#505](https://github.com/puppetlabs/puppetlabs-java/pull/505) ([david22swan](https://github.com/david22swan))
+- pdksync - \(IAC-1787\) Remove Support for CentOS 6 [\#503](https://github.com/puppetlabs/puppetlabs-java/pull/503) ([david22swan](https://github.com/david22swan))
+
+## [v7.3.0](https://github.com/puppetlabs/puppetlabs-java/tree/v7.3.0) (2021-10-11)
+
+[Full Changelog](https://github.com/puppetlabs/puppetlabs-java/compare/v7.2.0...v7.3.0)
+
+### Added
+
+- pdksync - \(IAC-1753\) - Add Support for AlmaLinux 8 [\#500](https://github.com/puppetlabs/puppetlabs-java/pull/500) ([david22swan](https://github.com/david22swan))
+- pdksync - \(IAC-1751\) - Add Support for Rocky 8 [\#499](https://github.com/puppetlabs/puppetlabs-java/pull/499) ([david22swan](https://github.com/david22swan))
+
+### Fixed
+
+- pdksync - \(IAC-1598\) - Remove Support for Debian 8 [\#498](https://github.com/puppetlabs/puppetlabs-java/pull/498) ([david22swan](https://github.com/david22swan))
+
+## [v7.2.0](https://github.com/puppetlabs/puppetlabs-java/tree/v7.2.0) (2021-09-20)
+
+[Full Changelog](https://github.com/puppetlabs/puppetlabs-java/compare/v7.1.1...v7.2.0)
+
+### Added
+
+- Enabling Rocky Linux for Install [\#488](https://github.com/puppetlabs/puppetlabs-java/pull/488) ([pmjensen](https://github.com/pmjensen))
+
+### Fixed
+
+- Allow archive 6.x [\#493](https://github.com/puppetlabs/puppetlabs-java/pull/493) ([smortex](https://github.com/smortex))
+
+## [v7.1.1](https://github.com/puppetlabs/puppetlabs-java/tree/v7.1.1) (2021-08-26)
+
+[Full Changelog](https://github.com/puppetlabs/puppetlabs-java/compare/v7.1.0...v7.1.1)
+
+### Fixed
+
+- \(IAC-1741\) Allow stdlib v8.0.0 [\#491](https://github.com/puppetlabs/puppetlabs-java/pull/491) ([david22swan](https://github.com/david22swan))
+
+## [v7.1.0](https://github.com/puppetlabs/puppetlabs-java/tree/v7.1.0) (2021-08-12)
+
+[Full Changelog](https://github.com/puppetlabs/puppetlabs-java/compare/v7.0.2...v7.1.0)
+
+### Added
+
+- pdksync - \(IAC-1709\) - Add Support for Debian 11 [\#489](https://github.com/puppetlabs/puppetlabs-java/pull/489) ([david22swan](https://github.com/david22swan))
+
+## [v7.0.2](https://github.com/puppetlabs/puppetlabs-java/tree/v7.0.2) (2021-04-26)
+
+[Full Changelog](https://github.com/puppetlabs/puppetlabs-java/compare/v7.0.1...v7.0.2)
+
+### Fixed
+
+- add url parameter for adoptopenjdk [\#473](https://github.com/puppetlabs/puppetlabs-java/pull/473) ([cbobinec](https://github.com/cbobinec))
+
+## [v7.0.1](https://github.com/puppetlabs/puppetlabs-java/tree/v7.0.1) (2021-04-19)
+
+[Full Changelog](https://github.com/puppetlabs/puppetlabs-java/compare/v7.0.0...v7.0.1)
+
+### Fixed
+
+- allow v5.x of puppet/archive [\#476](https://github.com/puppetlabs/puppetlabs-java/pull/476) ([bastelfreak](https://github.com/bastelfreak))
+
+## [v7.0.0](https://github.com/puppetlabs/puppetlabs-java/tree/v7.0.0) (2021-03-01)
+
+[Full Changelog](https://github.com/puppetlabs/puppetlabs-java/compare/v6.5.0...v7.0.0)
+
+### Changed
+
+- pdksync - Remove Puppet 5 from testing and bump minimal version to 6.0.0 [\#463](https://github.com/puppetlabs/puppetlabs-java/pull/463) ([carabasdaniel](https://github.com/carabasdaniel))
+
+### Fixed
+
+- \(MODULES-10935\) - Switch legacy operatingsystem fact to modern kernel one [\#461](https://github.com/puppetlabs/puppetlabs-java/pull/461) ([rjd1](https://github.com/rjd1))
+
+## [v6.5.0](https://github.com/puppetlabs/puppetlabs-java/tree/v6.5.0) (2020-12-16)
+
+[Full Changelog](https://github.com/puppetlabs/puppetlabs-java/compare/v6.4.0...v6.5.0)
+
+### Added
+
+- pdksync - \(feat\) Add support for Puppet 7 [\#454](https://github.com/puppetlabs/puppetlabs-java/pull/454) ([daianamezdrea](https://github.com/daianamezdrea))
+
+## [v6.4.0](https://github.com/puppetlabs/puppetlabs-java/tree/v6.4.0) (2020-11-09)
+
+[Full Changelog](https://github.com/puppetlabs/puppetlabs-java/compare/v6.3.0...v6.4.0)
+
+### Added
+
+- Add support for SAP Java \(sapjvm / sapmachine\) [\#433](https://github.com/puppetlabs/puppetlabs-java/pull/433) ([timdeluxe](https://github.com/timdeluxe))
+
+### Fixed
+
+- \[IAC-1208\] - Add the good links for solving the 404 error and exclude sles [\#443](https://github.com/puppetlabs/puppetlabs-java/pull/443) ([daianamezdrea](https://github.com/daianamezdrea))
+- \(IAC-993\) - Removal of inappropriate terminology [\#439](https://github.com/puppetlabs/puppetlabs-java/pull/439) ([david22swan](https://github.com/david22swan))
+
+## [v6.3.0](https://github.com/puppetlabs/puppetlabs-java/tree/v6.3.0) (2020-05-27)
+
+[Full Changelog](https://github.com/puppetlabs/puppetlabs-java/compare/v6.2.0...v6.3.0)
 
 ### Added
 
@@ -442,4 +567,4 @@ Jeff McCune <jeff@puppetlabs.com>
 [2.2.0]:https://github.com/puppetlabs/puppetlabs-java/compare/2.1.1...2.2.0
 
 
-\* *This Changelog was automatically generated by [github_changelog_generator](https://github.com/skywinder/Github-Changelog-Generator)*
+\* *This Changelog was automatically generated by [github_changelog_generator](https://github.com/github-changelog-generator/github-changelog-generator)*

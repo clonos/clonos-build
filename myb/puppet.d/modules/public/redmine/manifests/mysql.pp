@@ -6,6 +6,7 @@ class redmine::mysql inherits redmine {
     package_name            => "mysql${redmine::mysql_version}-client",
   }
 
+
   class { '::mysql::server':
     remove_default_accounts => $redmine::remove_default_accounts,
     package_name            => "mysql${redmine::mysql_version}-server",

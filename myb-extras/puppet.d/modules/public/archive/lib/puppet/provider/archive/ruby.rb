@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 begin
   require 'puppet_x/bodeco/archive'
   require 'puppet_x/bodeco/util'
@@ -5,6 +7,7 @@ rescue LoadError
   require 'pathname' # WORK_AROUND #14073 and #7788
   archive = Puppet::Module.find('archive', Puppet[:environment].to_s)
   raise(LoadError, "Unable to find archive module in modulepath #{Puppet[:basemodulepath] || Puppet[:modulepath]}") unless archive
+
   require File.join archive.path, 'lib/puppet_x/bodeco/archive'
   require File.join archive.path, 'lib/puppet_x/bodeco/util'
 end
@@ -73,6 +76,7 @@ Puppet::Type.type(:archive).provide(:ruby) do
   def exists?
     return checksum? unless extracted?
     return checksum? if File.exist? archive_filepath
+
     cleanup
     true
   end
@@ -80,6 +84,7 @@ Puppet::Type.type(:archive).provide(:ruby) do
   def create
     transfer_download(archive_filepath) unless checksum?
     extract
+  ensure
     cleanup
   end
 
@@ -140,7 +145,8 @@ Puppet::Type.type(:archive).provide(:ruby) do
   end
 
   def cleanup
-    return unless extracted? && resource[:cleanup] == :true
+    return unless resource[:cleanup] == :true && resource[:extract] == :true
+
     Puppet.debug("Cleanup archive #{archive_filepath}")
     destroy
   end
@@ -148,6 +154,7 @@ Puppet::Type.type(:archive).provide(:ruby) do
   def extract
     return unless resource[:extract] == :true
     raise(ArgumentError, 'missing archive extract_path') unless resource[:extract_path]
+
     PuppetX::Bodeco::Archive.new(archive_filepath).extract(
       resource[:extract_path],
       custom_command: resource[:extract_command],
@@ -162,9 +169,8 @@ Puppet::Type.type(:archive).provide(:ruby) do
   end
 
   def transfer_download(archive_filepath)
-    if resource[:temp_dir] && !File.directory?(resource[:temp_dir])
-      raise Puppet::Error, "Temporary directory #{resource[:temp_dir]} doesn't exist"
-    end
+    raise Puppet::Error, "Temporary directory #{resource[:temp_dir]} doesn't exist" if resource[:temp_dir] && !File.directory?(resource[:temp_dir])
+
     tempfile = Tempfile.new(tempfile_name, resource[:temp_dir])
 
     temppath = tempfile.path
@@ -186,6 +192,7 @@ Puppet::Type.type(:archive).provide(:ruby) do
       raise(Puppet::Error, 'Unable to fetch archive, the source parameter is nil.')
     else
       raise(Puppet::Error, "Source file: #{resource[:source]} does not exists.") unless File.exist?(resource[:source])
+
       FileUtils.copy(resource[:source], temppath)
     end
 
@@ -194,12 +201,14 @@ Puppet::Type.type(:archive).provide(:ruby) do
       archive = PuppetX::Bodeco::Archive.new(temppath)
       actual_checksum = archive.checksum(resource[:checksum_type])
       if actual_checksum != checksum
-        destroy(temppath)
+        destroy
         raise(Puppet::Error, "Download file checksum mismatch (expected: #{checksum} actual: #{actual_checksum})")
       end
     end
 
     move_file_in_place(temppath, archive_filepath)
+  ensure
+    FileUtils.rm_f(temppath) if File.exist?(temppath)
   end
 
   def move_file_in_place(from, to)
@@ -253,7 +262,7 @@ Puppet::Type.type(:archive).provide(:ruby) do
 
   def optional_switch(value, option)
     if value
-      option.map { |flags| flags % value }
+      Array(value).map { |item| option.map { |flags| flags % item } }.flatten
     else
       []
     end

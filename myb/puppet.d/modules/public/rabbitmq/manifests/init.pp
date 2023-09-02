@@ -22,6 +22,17 @@
 #     package_gpg_key => 'http://www.some_site.some_domain/some_key.pub.key',
 #   }
 #
+# @example Offline installation from local mirror:
+#   class { 'rabbitmq':
+#     key_content     => template('openstack/rabbit.pub.key'),
+#     repo_gpg_key => '/tmp/rabbit.pub.key',
+#   }
+#
+# @example Use external package key source for any (apt/rpm) package provider:
+#   class { 'rabbitmq':
+#     repo_gpg_key => 'http://www.some_site.some_domain/some_key.pub.key',
+#   }
+#
 # @example To use RabbitMQ Environment Variables, use the parameters `environment_variables` e.g.:
 #   class { 'rabbitmq':
 #     port                  => '5672',
@@ -37,7 +48,20 @@
 #     config_variables => {
 #       'hipe_compile' => true,
 #       'frame_max'    => 131072,
-#       'log_levels'   => "[{connection, info}]"
+#     }
+#   }
+#
+# @example Change RabbitMQ log level in rabbitmq.config for RabbitMQ version < 3.7.x :
+#   class { 'rabbitmq':
+#     config_variables => {
+#       'log_levels'   => "[{queue, info}]"
+#     }
+#   }
+#
+# @example Change RabbitMQ log level in rabbitmq.config for RabbitMQ version since 3.7.x :
+#   class { 'rabbitmq':
+#     config_variables => {
+#       'log'          => "[{file, [{level,debug}]},{categories, [{queue, [{level,info},{file,'queue.log'}]}]}]"
 #     }
 #   }
 #
@@ -85,13 +109,15 @@
 #
 # @param admin_enable
 #   If enabled sets up the management interface/plugin for RabbitMQ.
-#   This also install the rabbitmqadmin command line tool.
+#   This will also install the rabbitmqadmin command line tool.
 # @param management_enable
 #   If enabled sets up the management interface/plugin for RabbitMQ.
 #   NOTE: This does not install the rabbitmqadmin command line tool.
 # @param use_config_file_for_plugins
 #   If enabled the /etc/rabbitmq/enabled_plugins config file is created,
 #   replacing the use of the rabbitmqplugins provider to enable plugins.
+# @param plugins
+#   Additional list of plugins to start, or to add to /etc/rabbitmq/enabled_plugins, if use_config_file_for_plugins is enabled.
 # @param auth_backends
 #   An array specifying authorization/authentication backend to use. Single quotes should be placed around array entries,
 #   ex. `['{foo, baz}', 'baz']` Defaults to [rabbit_auth_backend_internal], and if using LDAP defaults to [rabbit_auth_backend_internal,
@@ -198,9 +224,12 @@
 #   Determines the ensure state of the package.  Set to installed by default, but could be changed to latest.
 # @param package_gpg_key
 #   RPM package GPG key to import. Uses source method. Should be a URL for Debian/RedHat OS family, or a file name for
-#   RedHat OS family. Set to https://www.rabbitmq.com/rabbitmq-release-signing-key.asc for RedHat OS Family and
-#   https://packagecloud.io/rabbitmq/rabbitmq-server/gpgkey for Debian OS Family by default. Note, that `key_content`, if specified, would
-#   override this parameter for Debian OS family.
+#   RedHat OS family. Set to https://github.com/rabbitmq/signing-keys/releases/download/2.0/rabbitmq-release-signing-key.asc
+#   for Debian/RedHat OS Family by default.
+# @param repo_gpg_key
+#   RPM package GPG key to import. Uses source method. Should be a URL for Debian/RedHat OS family, or a file name for
+#   RedHat OS family. Set to https://packagecloud.io/rabbitmq/rabbitmq-server/gpgkey for Debian/RedHat OS Family by
+#   default. Note, that `key_content`, if specified, would override this parameter for Debian OS family.
 # @param package_name
 #   Name(s) of the package(s) to install
 # @param port
@@ -318,6 +347,7 @@ class rabbitmq (
   Boolean $admin_enable                                                                            = true,
   Boolean $management_enable                                                                       = false,
   Boolean $use_config_file_for_plugins                                                             = false,
+  Array $plugins                                                                                   = [],
   Hash $cluster                                                                                    = $rabbitmq::cluster,
   Enum['ram', 'disc'] $cluster_node_type                                                           = 'disc',
   Array $cluster_nodes                                                                             = [],
@@ -343,6 +373,7 @@ class rabbitmq (
   Optional[Variant[Numeric, String]] $package_apt_pin                                              = undef,
   String $package_ensure                                                                           = 'installed',
   Optional[String] $package_gpg_key                                                                = undef,
+  Optional[String] $repo_gpg_key                                                                   = undef,
   Variant[String, Array] $package_name                                                             = 'rabbitmq',
   Optional[String] $package_source                                                                 = undef,
   Optional[String] $package_provider                                                               = undef,
@@ -480,7 +511,7 @@ class rabbitmq (
 
   unless $use_config_file_for_plugins {
     # NOTE(hjensas): condition on $service_manage to keep current behaviour.
-    # The condition is likely not required because installiton of rabbitmqadmin
+    # The condition is likely not required because installation of rabbitmqadmin
     # is no longer handled here.
     # TODO: Remove the condition on $service_manage
     if ($management_enable or $admin_enable) and $service_manage {
@@ -522,10 +553,21 @@ class rabbitmq (
         }
       }
     }
+    # Start anything else listed on the plugins array, if it was not started already by the other booleans
+    $plugins.each | $plugin | {
+      rabbitmq_plugin { $plugin:
+        ensure   => present,
+        notify   => Class['rabbitmq::service'],
+        provider => 'rabbitmqplugins',
+      }
+    }
   }
 
   if $admin_enable and $service_manage {
     include 'rabbitmq::install::rabbitmqadmin'
+
+    # Trigger upgrade of rabbitmqadmin on package upgrade (Issue #804)
+    Class['rabbitmq::install'] ~> Class['rabbitmq::install::rabbitmqadmin']
 
     Class['rabbitmq::service'] -> Class['rabbitmq::install::rabbitmqadmin']
     Class['rabbitmq::install::rabbitmqadmin'] -> Rabbitmq_exchange<| |>

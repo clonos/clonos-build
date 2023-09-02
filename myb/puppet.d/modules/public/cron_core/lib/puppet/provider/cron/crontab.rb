@@ -32,7 +32,6 @@ Puppet::Type.type(:cron).provide(:crontab, parent: Puppet::Provider::ParsedFile,
               match: %r{^\s*(@\w+|\S+\s+\S+\s+\S+\s+\S+\s+\S+)\s+(.+)$},
               absent: '*',
               block_eval: :instance do
-
     def post_parse(record)
       time = record.delete(:time)
       match = %r{@(\S+)}.match(time)
@@ -207,7 +206,7 @@ Puppet::Type.type(:cron).provide(:crontab, parent: Puppet::Provider::ParsedFile,
           envs << record[:line]
           record[:skip] = true
         end
-      when :blank # rubocop: disable Lint/EmptyWhen
+      when :blank
         # nothing
       else
         if name

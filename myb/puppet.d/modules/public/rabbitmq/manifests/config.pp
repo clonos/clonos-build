@@ -6,6 +6,7 @@ class rabbitmq::config {
   $admin_enable                        = $rabbitmq::admin_enable
   $management_enable                   = $rabbitmq::management_enable
   $use_config_file_for_plugins         = $rabbitmq::use_config_file_for_plugins
+  $plugins                             = $rabbitmq::plugins
   $cluster_node_type                   = $rabbitmq::cluster_node_type
   $cluster_nodes                       = $rabbitmq::cluster_nodes
   $config                              = $rabbitmq::config
@@ -120,15 +121,15 @@ class rabbitmq::config {
     # is "inet_tls".
     if $ipv6 and $ssl_erl_dist {
       $proto_dist = 'inet6_tls'
-      $ssl_path = " -pa ${::erl_ssl_path} "
+      $ssl_path = " -pa ${facts['erl_ssl_path']} "
     } elsif $ssl_erl_dist {
       $proto_dist = 'inet_tls'
-      $ssl_path = " -pa ${::erl_ssl_path} "
+      $ssl_path = " -pa ${facts['erl_ssl_path']} "
     } else {
       $proto_dist = 'inet6_tcp'
       $ssl_path = ''
     }
-    $ipv6_or_tls_env = ['SERVER_ADDITIONAL', 'CTL'].reduce( {}) |$memo, $item| {
+    $ipv6_or_tls_env = ['SERVER_ADDITIONAL', 'CTL'].reduce({}) |$memo, $item| {
       $orig = $_environment_variables["RABBITMQ_${item}_ERL_ARGS"]
       $munged = $orig ? {
         # already quoted, keep quoting

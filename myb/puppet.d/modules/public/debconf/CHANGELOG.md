@@ -1,3 +1,56 @@
+## 2022-07-27 - Release 5.0.0
+
+### Features
+
+- Add Ubuntu 22.04 (Jammy) to the list of supported operating systems.
+
+### Breaking changes
+
+- Drop Ubuntu 16.04 support
+- Drop Debian 9 support
+
+## 2021-09-15 - Release 4.1.0
+
+### Bugfixes
+
+- Allow multiple resources for the same item in different packages without raising a duplicate resource error.
+
+## 2021-08-30 - Release 4.0.0
+
+### Breaking changes
+
+- Drop Ubuntu 14.04 support
+- Drop Debian 8 support
+
+### Features
+
+- Add Debian 11 (Bullseye) to the list of supported operating systems.
+
+## 2021-03-04 - Release 3.3.1
+
+### Bugfixes
+
+- Fix `wrong number of arguments` error introduced by Rubocop triggered change.
+
+## 2021-03-04 - Release 3.3.0
+
+### Features
+
+- Add support for Puppet 7.
+
+## 2020-06-22 - Release 3.2.0
+
+### Features
+
+- Add Ubuntu 20.04 (Focal Fossa) to the list of supported operating systems.
+- Add Debian 10 (Buster) to the list of supported operating systems.
+
+## 2019-09-27 - Release 3.0.0
+
+### Breaking changes
+
+- Remove support for Puppet 4.
+
 ## 2018-10-14 - Release 2.3.0
 
 ### Features

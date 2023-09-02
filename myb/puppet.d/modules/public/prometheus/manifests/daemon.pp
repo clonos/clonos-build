@@ -45,40 +45,46 @@
 #  Service startup scripts style (e.g. rc, upstart or systemd).
 #  Can also be set to `none` when you don't want the class to create a startup script/unit_file for you.
 #  Typically this can be used when a package is already providing the file.
+# @param proxy_server
+#  Optional proxy server, with port number if needed. ie: https://example.com:8080
+# @param proxy_type
+#  Optional proxy server type (none|http|https|ftp)
 define prometheus::daemon (
   String[1] $version,
   Prometheus::Uri $real_download_url,
   $notify_service,
   String[1] $user,
   String[1] $group,
-  String[1] $install_method               = $prometheus::install_method,
-  String $download_extension              = $prometheus::download_extension,
-  String[1] $os                           = $prometheus::os,
-  String[1] $arch                         = $prometheus::real_arch,
-  Stdlib::Absolutepath $bin_dir           = $prometheus::bin_dir,
-  String[1] $bin_name                     = $name,
-  Optional[String] $package_name          = undef,
-  String[1] $package_ensure               = 'installed',
-  Boolean $manage_user                    = true,
-  Array $extra_groups                     = [],
-  Boolean $manage_group                   = true,
-  Boolean $purge                          = true,
-  String $options                         = '',
-  Prometheus::Initstyle $init_style       = $facts['service_provider'],
-  Stdlib::Ensure::Service $service_ensure = 'running',
-  Boolean $service_enable                 = true,
-  Boolean $manage_service                 = true,
-  Hash[String, Scalar] $env_vars          = {},
-  Optional[String] $env_file_path         = $prometheus::env_file_path,
-  Optional[String[1]] $extract_command    = $prometheus::extract_command,
-  Stdlib::Absolutepath $extract_path      = '/opt',
-  Stdlib::Absolutepath $archive_bin_path   = "/opt/${name}-${version}.${os}-${arch}/${name}",
-  Boolean $export_scrape_job              = false,
-  Stdlib::Host $scrape_host               = $facts['networking']['fqdn'],
-  Optional[Stdlib::Port] $scrape_port     = undef,
-  String[1] $scrape_job_name              = $name,
-  Hash $scrape_job_labels                 = { 'alias' => $scrape_host },
-  Stdlib::Absolutepath $usershell         = $prometheus::usershell,
+  Prometheus::Install $install_method                        = $prometheus::install_method,
+  String $download_extension                                 = $prometheus::download_extension,
+  String[1] $os                                              = $prometheus::os,
+  String[1] $arch                                            = $prometheus::real_arch,
+  Stdlib::Absolutepath $bin_dir                              = $prometheus::bin_dir,
+  String[1] $bin_name                                        = $name,
+  Optional[String] $package_name                             = undef,
+  String[1] $package_ensure                                  = 'installed',
+  Boolean $manage_user                                       = true,
+  Array $extra_groups                                        = [],
+  Boolean $manage_group                                      = true,
+  Boolean $purge                                             = true,
+  String $options                                            = '', # lint:ignore:params_empty_string_assignment
+  Prometheus::Initstyle $init_style                          = $facts['service_provider'],
+  Stdlib::Ensure::Service $service_ensure                    = 'running',
+  Boolean $service_enable                                    = true,
+  Boolean $manage_service                                    = true,
+  Hash[String[1], Scalar] $env_vars                          = {},
+  Stdlib::Absolutepath $env_file_path                        = $prometheus::env_file_path,
+  Optional[String[1]] $extract_command                       = $prometheus::extract_command,
+  Stdlib::Absolutepath $extract_path                         = '/opt',
+  Stdlib::Absolutepath $archive_bin_path                     = "/opt/${name}-${version}.${os}-${arch}/${name}",
+  Boolean $export_scrape_job                                 = false,
+  Stdlib::Host $scrape_host                                  = $facts['networking']['fqdn'],
+  Optional[Stdlib::Port] $scrape_port                        = undef,
+  String[1] $scrape_job_name                                 = $name,
+  Hash $scrape_job_labels                                    = { 'alias' => $scrape_host },
+  Stdlib::Absolutepath $usershell                            = $prometheus::usershell,
+  Optional[String[1]] $proxy_server                          = undef,
+  Optional[Enum['none', 'http', 'https', 'ftp']] $proxy_type = undef,
 ) {
   case $install_method {
     'url': {
@@ -94,6 +100,8 @@ define prometheus::daemon (
           source          => $real_download_url,
           checksum_verify => false,
           before          => File["/opt/${name}-${version}.${os}-${arch}/${name}"],
+          proxy_server    => $proxy_server,
+          proxy_type      => $proxy_type,
         }
       } else {
         archive { "/tmp/${name}-${version}.${download_extension}":
@@ -106,6 +114,8 @@ define prometheus::daemon (
           cleanup         => true,
           before          => File[$archive_bin_path],
           extract_command => $extract_command,
+          proxy_server    => $proxy_server,
+          proxy_type      => $proxy_type,
         }
       }
       file { $archive_bin_path:
@@ -129,9 +139,7 @@ define prometheus::daemon (
       }
     }
     'none': {}
-    default: {
-      fail("The provided install method ${install_method} is invalid")
-    }
+    default: {}
   }
   if $manage_user {
     # if we manage the service, we need to reload it if our user changes
@@ -186,22 +194,12 @@ define prometheus::daemon (
         Class['systemd::systemctl::daemon_reload'] -> Service[$name]
       }
     }
-    # service_provider returns redhat on CentOS using sysv, https://tickets.puppetlabs.com/browse/PUP-5296
-    'sysv','redhat': {
+    'sysv': {
       file { "/etc/init.d/${name}":
         mode    => '0555',
         owner   => 'root',
         group   => 'root',
         content => template('prometheus/daemon.sysv.erb'),
-        notify  => $notify_service,
-      }
-    }
-    'debian': {
-      file { "/etc/init.d/${name}":
-        mode    => '0555',
-        owner   => 'root',
-        group   => 'root',
-        content => template('prometheus/daemon.debian.erb'),
         notify  => $notify_service,
       }
     }
@@ -226,12 +224,39 @@ define prometheus::daemon (
     'none': {}
   }
 
-  if $env_file_path != undef {
+  if $init_style == 'none' and $install_method == 'package' {
+    $env_vars_merged = $env_vars + {
+      'ARGS' => $options,
+    }
+  } else {
+    $env_vars_merged = $env_vars
+  }
+
+  if $install_method == 'package' and $package_ensure in ['absent', 'purged'] {
+    # purge the environment file if the package is removed
+    #
+    # this is to make sure we can garbage-collect the files created by
+    # this module, when purging it.
+    file { "${env_file_path}/${name}":
+      ensure => absent,
+    }
+  } elsif $install_method == 'package' or !$env_vars_merged.empty {
+    # manage the environment file if the package is installed *or*, in
+    # any other case, if there's something to add to it
+    #
+    # the logic here is that the package-managed .service files *need*
+    # those files to be present, even if empty, so it's critical that
+    # the file not get removed
     file { "${env_file_path}/${name}":
       mode    => '0644',
       owner   => 'root',
       group   => '0', # Darwin uses wheel
-      content => template('prometheus/daemon.env.erb'),
+      content => epp(
+        'prometheus/daemon.env.epp',
+        {
+          'env_vars' => $env_vars_merged,
+        }
+      ),
       notify  => $notify_service,
     }
   }

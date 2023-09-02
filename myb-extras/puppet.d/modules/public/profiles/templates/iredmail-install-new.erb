@@ -1,0 +1,8 @@
+#!/bin/sh
+
+[ ! -d /root/iRedMail-<%= @ver %> ] && exit 0
+cd /root/iRedMail-<%= @ver %>/
+
+env AUTO_USE_EXISTING_CONFIG_FILE=y AUTO_INSTALL_WITHOUT_CONFIRM=y AUTO_CLEANUP_REMOVE_SENDMAIL=y \
+    AUTO_CLEANUP_REPLACE_FIREWALL_RULES=y \ AUTO_CLEANUP_RESTART_FIREWALL=y AUTO_CLEANUP_REPLACE_MYSQL_CONFIG=y \
+    bash /root/iRedMail-<%= @ver %>/iRedMail.sh

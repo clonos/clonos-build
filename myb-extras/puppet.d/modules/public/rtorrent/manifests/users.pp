@@ -10,6 +10,6 @@ class rtorrent::users {
     forcelocal => true,
     groups     => [ "$::rtorrent::group" ],
     shell      => '/bin/sh',
-    home       => "/usr/home/web",
+    home       => "/home/web",
   }
 }

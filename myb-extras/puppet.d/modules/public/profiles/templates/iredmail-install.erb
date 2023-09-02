@@ -1,0 +1,7 @@
+#!/bin/sh
+[ -d /root/iRedMail-<%= @ver %> ] && exit 0
+fetch -o /root/<%= @ver %>.tar.gz https://codeload.github.com/iredmail/iRedMail/tar.gz/refs/tags/<%= @ver %>
+cd /root
+tar xfz <%= @ver %>.tar.gz
+cd iRedMail-<%= @ver %>/
+#bash iRedMail.sh

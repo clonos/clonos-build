@@ -52,10 +52,14 @@
 #  User which runs the service
 # @param version
 #  The binary release version
+# @param proxy_server
+#  Optional proxy server, with port number if needed. ie: https://example.com:8080
+# @param proxy_type
+#  Optional proxy server type (none|http|https|ftp)
 class prometheus::grok_exporter (
   Hash $config,
   String[1] $config_file,
-  String[1] $download_extension,
+  String $download_extension,
   Prometheus::Uri $download_url_base,
   Array[String[1]] $extra_groups,
   String[1] $group,
@@ -63,26 +67,29 @@ class prometheus::grok_exporter (
   String[1] $package_name,
   String[1] $user,
   String[1] $version,
-  Boolean $purge_config_dir               = true,
-  Boolean $restart_on_change              = true,
-  Boolean $service_enable                 = true,
-  Stdlib::Ensure::Service $service_ensure = 'running',
-  String[1] $service_name                 = 'grok_exporter',
-  Prometheus::Initstyle $init_style       = $facts['service_provider'],
-  String[1] $install_method               = $prometheus::install_method,
-  Boolean $manage_group                   = true,
-  Boolean $manage_service                 = true,
-  Boolean $manage_user                    = true,
-  String[1] $os                           = downcase($facts['kernel']),
-  String $extra_options                   = '',
-  Optional[Prometheus::Uri] $download_url = undef,
-  String[1] $config_mode                  = $prometheus::config_mode,
-  String[1] $arch                         = $prometheus::real_arch,
-  Stdlib::Absolutepath $bin_dir           = $prometheus::bin_dir,
-  Boolean $export_scrape_job              = false,
-  Stdlib::Port $scrape_port               = 9144,
-  String[1] $scrape_job_name              = 'grok',
-  Optional[Hash] $scrape_job_labels       = undef,
+  Boolean $purge_config_dir                                  = true,
+  Boolean $restart_on_change                                 = true,
+  Boolean $service_enable                                    = true,
+  Stdlib::Ensure::Service $service_ensure                    = 'running',
+  String[1] $service_name                                    = 'grok_exporter',
+  Prometheus::Initstyle $init_style                          = $facts['service_provider'],
+  Prometheus::Install $install_method                        = $prometheus::install_method,
+  Boolean $manage_group                                      = true,
+  Boolean $manage_service                                    = true,
+  Boolean $manage_user                                       = true,
+  String[1] $os                                              = downcase($facts['kernel']),
+  Optional[String[1]] $extra_options                         = undef,
+  Optional[Prometheus::Uri] $download_url                    = undef,
+  String[1] $config_mode                                     = $prometheus::config_mode,
+  String[1] $arch                                            = $prometheus::real_arch,
+  Stdlib::Absolutepath $bin_dir                              = $prometheus::bin_dir,
+  Boolean $export_scrape_job                                 = false,
+  Optional[Stdlib::Host] $scrape_host                        = undef,
+  Stdlib::Port $scrape_port                                  = 9144,
+  String[1] $scrape_job_name                                 = 'grok',
+  Optional[Hash] $scrape_job_labels                          = undef,
+  Optional[String[1]] $proxy_server                          = undef,
+  Optional[Enum['none', 'http', 'https', 'ftp']] $proxy_type = undef,
 ) inherits prometheus {
   #Please provide the download_url for versions < 0.9.0
   $real_download_url    = pick($download_url,"${download_url_base}/download/v${version}/${package_name}-${version}.${os}-${arch}.${download_extension}")
@@ -125,8 +132,11 @@ class prometheus::grok_exporter (
     service_enable     => $service_enable,
     manage_service     => $manage_service,
     export_scrape_job  => $export_scrape_job,
+    scrape_host        => $scrape_host,
     scrape_port        => $scrape_port,
     scrape_job_name    => $scrape_job_name,
     scrape_job_labels  => $scrape_job_labels,
+    proxy_server       => $proxy_server,
+    proxy_type         => $proxy_type,
   }
 }

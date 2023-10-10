@@ -1,6 +1,5 @@
 #!/bin/sh
-mybbasever="14.0"
-
+. /etc/rc.conf          # mybbasever
 pgm="${0##*/}"				# Program basename
 progdir="${0%/*}"			# Program directory
 progdir=$( realpath ${progdir} )
@@ -8,58 +7,120 @@ progdir=$( dirname ${progdir} )
 
 dstdir=$( mktemp -d )
 
-# cleanup old pkg ?
-#/var/cache/packages/pkgdir-cpr9ca75 (host) -> /tmp/packages (jail)
+cd /usr/ports
+git reset --hard || true
+cbsd portsup
 
-echo "cbsd cpr pkglist=/root/myb-build/myb.list dstdir=${dstdir}"
+## "OVERLAY"
+if [ -d ${progdir}/ports/cbsd ]; then
+	[ -d /usr/ports/sysutils/cbsd ] && rm -rf /usr/ports/sysutils/cbsd
+	cp -a ${progdir}/ports/cbsd /usr/ports/sysutils/
+fi
+
+if [ -d ${progdir}/ports/cbsd-mq-api ]; then
+	[ -d /usr/ports/sysutils/cbsd-mq-api ] && rm -rf /usr/ports/sysutils/cbsd-mq-api
+	cp -a ${progdir}/ports/cbsd-mq-api /usr/ports/sysutils/
+fi
+
+if [ -d ${progdir}/ports/garm ]; then
+	[ -d /usr/ports/sysutils/garm ] && rm -rf /usr/ports/sysutils/garm
+	cp -a ${progdir}/ports/garm /usr/ports/sysutils/
+fi
+
+if [ -d ${progdir}/ports/myb ]; then
+	[ -d /usr/ports/sysutils/myb ] && rm -rf /usr/ports/sysutils/myb
+	cp -a ${progdir}/ports/myb /usr/ports/sysutils/
+fi
+
+[ -d /tmp/send-fio ] && rm -rf /tmp/send-fio
+git clone https://github.com/mergar/send-fio.git /tmp/send-fio
+cp -a /tmp/send-fio/ports/spacevm-sendfio /usr/ports/sysutils/
+rm -rf /tmp/send-fio
+
+cpr_jname="cpr9ca75"
+
+# cleanup old pkg ?
+#/var/cache/packages/pkgdir-${cpr_jname} (host) -> /tmp/packages (jail)
+
+ver=${mybbasever%%.*}
+
+if [ ! -h ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest ]; then
+	echo "no such ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest symlink to repo"
+	exit 1
+fi
+
+cbsd jstatus jname=${cpr_jname} || cbsd jremove jname=${cpr_jname}
+
+echo "cbsd cpr batch=0 ver=${mybbasever} pkglist=/root/myb-build/myb.list dstdir=${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/"
 
 PREFETCHED_PACKAGES="\
-gcc12 \
-nginx \
-cdrkit \
-python39 \
-py39-certbot \
-mutt \
-kubectl \
-php82 \
-libvncserver \
-gnutls \
-sqlite3 \
 bash \
-npm-node18 \
-node \
-sudo \
-git \
-pkgconf \
-py39-numpy \
-php82-session \
-go120 \
-rsync \
 beanstalkd \
-tmux \
+ca_root_nss \
+cdrkit \
+cmake \
+gmake \
+gnutls \
+go120 \
 hw-probe \
 jq \
-cmake \
-ninja"
+kubectl \
+mc \
+mutt \
+nginx \
+ninja \
+pkgconf \
+py39-certbot \
+python39 \
+rsync \
+sqlite3 \
+sudo \
+tmux \
+"
 
-# OPENSSL
-PREFETCHED_PACKAGES=
+# ClonOS brand:
+PREFETCHED_PACKAGES="${PREFETCHED_PACKAGES} \
+gcc12 \
+git \
+libvncserver \
+node \
+npm-node18 \
+php82
+php82-session \
+py39-numpy \
+"
 
-cbsd cpr makeconf=/root/myb-build/myb_make.conf pkglist=/root/myb-build/myb.list dstdir=${dstdir} package_fetch="${PREFETCHED_PACKAGES}" autoremove=1
+# MC needs for 'mcedit' !!
+#/usr/ports/net/realtek-re-kmod
 
-cbsd jstart jname=cpr9ca75 || true
 
-cp -a ${progdir}/scripts/cix_upgrade /usr/jails/jails-data/cpr9ca75-data/root/
-cbsd jexec jname=cpr9ca75 /root/cix_upgrade
-cp -a /usr/jails/jails-data/cpr9ca75-data/tmp/clonos_ver.conf ${progdir}/cbsd/
-cp -a /usr/jails/jails-data/cpr9ca75-data/tmp/clonos_ver.json ${progdir}/cbsd/
+cbsd cpr batch=0 makeconf=/root/myb-build/myb_make.conf ver=${mybbasever} pkglist=/root/myb-build/myb.list dstdir=${dstdir} package_fetch="${PREFETCHED_PACKAGES}" autoremove=1
+ret=$?
 
-cbsd jstop jname=cpr9ca75 || true
+if [ ${ret} -ne 0 ]; then
+	echo "CPR failed: ${ret}"
+	exit ${ret}
+fi
 
-mv ${dstdir}/* ${progdir}/cbsd/
+cbsd jstart jname=${cpr_jname} || true
+
+cp -a ${progdir}/scripts/cix_upgrade /usr/jails/jails-data/${cpr_jname}-data/root/
+cbsd jexec jname=${cpr_jname} /root/cix_upgrade
+
+# original?
+#cp -a /usr/jails/jails-data/${cpr_jname}-data/tmp/myb_ver.conf ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/
+#cp -a /usr/jails/jails-data/${cpr_jname}-data/tmp/myb_ver.json ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/
+
+cbsd jstop jname=${cpr_jname} || true
+
+mv ${dstdir}/* ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/
 
 rm -rf ${dstdir}
+if [ ! -h ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/pkg.pkg ]; then
+	echo "no such ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/pkg.pkg"
+	exit 1
+fi
 
-[ ! -h ${progdir}/cbsd/pkg.pkg ] && exit 1
+cbsd jremove jname=${cpr_jname} > /dev/null 2>&1
 
 exit 0

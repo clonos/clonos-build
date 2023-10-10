@@ -1,5 +1,5 @@
 #!/bin/sh
-mybbasever="14.0"
+. /etc/rc.conf          # mybbasever
 jname="mybee1"
 
 pgm="${0##*/}"				# Program basename
@@ -8,9 +8,9 @@ progdir=$( realpath ${progdir} )
 progdir=$( dirname ${progdir} )
 
 cbsd destroy cbsdfile=${progdir}/mybee-CBSDfile || true
-#cbsd destroy cbsdfile=${progdir}/micro-CBSDfile || true
+cbsd destroy cbsdfile=${progdir}/micro-CBSDfile || true
 
 cbsd up cbsdfile=${progdir}/mybee-CBSDfile ver="${mybbasever}"
 cbsd jstop jname=mybee1
 
-#cbsd up cbsdfile=${progdir}/micro-CBSDfile ver="${mybbasever}"
+cbsd up cbsdfile=${progdir}/micro-CBSDfile ver="${mybbasever}"

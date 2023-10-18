@@ -8,6 +8,8 @@ progdir=$( dirname ${progdir} )
 . /etc/rc.conf          # mybbasever
 set +e
 
+. ${progdir}/brand.conf
+
 if [ -z "${mybbasever}" ]; then
 	echo "Please specify mybbasever= via /etc/rc.conf, e.g: sysrc -q mybbasever=\"14.0\""
 	exit 1

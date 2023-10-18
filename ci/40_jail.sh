@@ -7,6 +7,8 @@ progdir="${0%/*}"			# Program directory
 progdir=$( realpath ${progdir} )
 progdir=$( dirname ${progdir} )
 
+. ${progdir}/brand.conf
+
 cbsd destroy cbsdfile=${progdir}/mybee-CBSDfile || true
 cbsd destroy cbsdfile=${progdir}/micro-CBSDfile || true
 

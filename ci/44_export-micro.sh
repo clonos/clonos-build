@@ -7,6 +7,8 @@ progdir="${0%/*}"			# Program directory
 progdir=$( realpath ${progdir} )
 progdir=$( dirname ${progdir} )
 
+. ${progdir}/brand.conf
+
 [ -r /usr/jails/export/micro1.img ] && rm -f /usr/jails/export/micro1.img
 rm -rf /usr/jails/jails-data/micro1-data/rescue
 rm -rf /usr/jails/jails-data/micro1-data/usr/tests

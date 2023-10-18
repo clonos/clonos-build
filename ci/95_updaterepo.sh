@@ -11,11 +11,35 @@ progdir=$( dirname ${progdir} )
 [ ! -r "${distdir}/subr/cbsdbootstrap.subr" ] && exit 1
 . ${distdir}/subr/cbsdbootstrap.subr || exit 1
 
+. ${progdir}/brand.conf
+
 # lookup for RSYNC
 . /etc/rc.conf
 
-if [ -z "${MYB_UPLOAD_140}" ]; then
-	echo "no such MYB_UPLOAD_140 string in rc.conf"
+# re-check before upload
+case "${OSNAME}" in
+	MyBee)
+		if [ -z "${MYB_UPLOAD_140}" ]; then
+			echo "no such MYB_UPLOAD_140 string in rc.conf"
+			exit 1
+		fi
+		RSYNC_DST="${MYB_UPLOAD_140}"
+		;;
+	ClonOS)
+		if [ -z "${CLONOS_UPLOAD_140}" ]; then
+			echo "no such CLONOS_UPLOAD_140 string in rc.conf"
+			exit 1
+		fi
+		RSYNC_DST="${CLONOS_UPLOAD_140}"
+		;;
+	*)
+		echo "invalid brand, who are you?"
+		exit 1
+		;;
+esac
+
+if [ -z "${RSYNC_DST}" ]; then
+	echo "no such RSYNC_DST string in rc.conf"
 	exit 1
 fi
 
@@ -47,6 +71,6 @@ sysrc -qf ${progdir}/cbsd/myb_ver.conf myb_ver_new="${myb_version}.${DT}"
 cp -a ${progdir}/cbsd/myb_ver.conf /usr/ports/packages/All/
 cp -a ${progdir}/cbsd/myb_ver.json /usr/ports/packages/All/
 
-${RSYNC_CMD} --delete -avz ./ ${MYB_UPLOAD_140}
+${RSYNC_CMD} --delete -avz ./ ${RSYNC_DST}
 
 # retcode

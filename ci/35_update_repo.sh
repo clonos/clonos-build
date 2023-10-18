@@ -14,10 +14,29 @@ progdir=$( dirname ${progdir} )
 # lookup for RSYNC
 . /etc/rc.conf
 
-if [ -z "${MYB_UPLOAD_140}" ]; then
-	echo "no such MYB_UPLOAD_140 string in rc.conf"
-	exit 1
-fi
+. ${progdir}/brand.conf
+
+# re-check before upload
+case "${OSNAME}" in
+	MyBee)
+		if [ -z "${MYB_UPLOAD_140}" ]; then
+			echo "no such MYB_UPLOAD_140 string in rc.conf"
+			exit 1
+		fi
+		RSYNC_DST="${MYB_UPLOAD_140}"
+		;;
+	ClonOS)
+		if [ -z "${CLONOS_UPLOAD_140}" ]; then
+			echo "no such CLONOS_UPLOAD_140 string in rc.conf"
+			exit 1
+		fi
+		RSYNC_DST="${CLONOS_UPLOAD_140}"
+		;;
+	*)
+		echo "invalid brand, who are you?"
+		exit 1
+		;;
+esac
 
 ver=${mybbasever%%.*}
 
@@ -66,7 +85,7 @@ sysrc -qf ${progdir}/myb/myb_ver.conf myb_ver_new="${myb_version}.${DT}"
 cp -a ${progdir}/cbsd/myb_ver.conf ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/
 cp -a ${progdir}/cbsd/myb_ver.json ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/
 
-#echo "${RSYNC_CMD} -avz ./ ${MYB_UPLOAD_140}latest/"
-${RSYNC_CMD} -avz --delete ./ ${MYB_UPLOAD_140}latest/
+#echo "${RSYNC_CMD} -avz ./ ${RSYNC_DST}latest/"
+${RSYNC_CMD} -avz --delete ./ ${RSYNC_DST}latest/
 
 # retcode

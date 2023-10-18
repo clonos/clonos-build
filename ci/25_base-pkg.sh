@@ -6,8 +6,9 @@ progdir="${0%/*}"			# Program directory
 progdir=$( realpath ${progdir} )
 progdir=$( dirname ${progdir} )
 
-export OSNAME="MyBee"
+. ${progdir}/brand.conf
+
+export OSNAME="${OSNAME}"
 cbsd packages ver=${mybbasever} destdir="${progdir}/cbsd"
 ret=$?
 exit ${ret}
-

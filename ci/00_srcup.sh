@@ -1,9 +1,16 @@
 #!/bin/sh
+pgm="${0##*/}"                          # Program basename
+progdir="${0%/*}"                       # Program directory
+progdir=$( realpath ${progdir} )
+progdir=$( dirname ${progdir} )
+
 . /etc/rc.conf		# mybbasever
 set +e
 
+. ${progdir}/brand.conf
+
 echo "Build MyBee base version: ${mybbasever}"
-cbsd srcup ver=${mybbasever} rev=243550d32f4
+cbsd srcup ver=${mybbasever} rev=a0c5d373435
 
 src_dir_makefile="/usr/jails/src/src_${mybbasever}/src/Makefile"
 

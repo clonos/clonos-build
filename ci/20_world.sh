@@ -6,7 +6,9 @@ progdir="${0%/*}"			# Program directory
 progdir=$( realpath ${progdir} )
 progdir=$( dirname ${progdir} )
 
-export OSNAME="MyBee"
+. ${progdir}/brand.conf
+
+export OSNAME="${OSNAME}"
 cbsd world ver=${mybbasever}
 
 world_test_file="/usr/jails/basejail/base_amd64_amd64_${mybbasever}/bin/sh"

@@ -6,6 +6,8 @@ progdir="${0%/*}"			# Program directory
 progdir=$( realpath ${progdir} )
 progdir=$( dirname ${progdir} )
 
+. ${progdir}/brand.conf
+
 dstdir=$( mktemp -d )
 
 # cleanup old pkg ?
@@ -20,8 +22,8 @@ helm \
 perl5 \
 "
 
-echo "cbsd cpr batch=0 ver=${mybbasever} pkglist=/root/myb-build/micro.list dstdir=${dstdir} package_fetch=\"${PREFETCHED_PACKAGES}\""
-cbsd cpr batch=0 ver=${mybbasever} pkglist=/root/myb-build/micro.list dstdir=${dstdir} package_fetch="${PREFETCHED_PACKAGES}" autoremove=1
+echo "cbsd cpr batch=1 ver=${mybbasever} pkglist=/root/myb-build/micro.list dstdir=${dstdir} package_fetch=\"${PREFETCHED_PACKAGES}\""
+cbsd cpr batch=1 ver=${mybbasever} pkglist=/root/myb-build/micro.list dstdir=${dstdir} package_fetch="${PREFETCHED_PACKAGES}" autoremove=1
 
 [ -d ${progdir}/micro1 ] && rm -rf ${progdir}/micro1
 mkdir -p ${progdir}/micro1

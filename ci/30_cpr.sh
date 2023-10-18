@@ -5,6 +5,8 @@ progdir="${0%/*}"			# Program directory
 progdir=$( realpath ${progdir} )
 progdir=$( dirname ${progdir} )
 
+. ${progdir}/brand.conf
+
 dstdir=$( mktemp -d )
 
 cd /usr/ports
@@ -37,7 +39,7 @@ git clone https://github.com/mergar/send-fio.git /tmp/send-fio
 cp -a /tmp/send-fio/ports/spacevm-sendfio /usr/ports/sysutils/
 rm -rf /tmp/send-fio
 
-cpr_jname="cpr9ca75"
+cpr_jname="cprc8c78"
 
 # cleanup old pkg ?
 #/var/cache/packages/pkgdir-${cpr_jname} (host) -> /tmp/packages (jail)
@@ -51,7 +53,14 @@ fi
 
 cbsd jstatus jname=${cpr_jname} || cbsd jremove jname=${cpr_jname}
 
-echo "cbsd cpr batch=0 ver=${mybbasever} pkglist=/root/myb-build/myb.list dstdir=${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/"
+if [ ! -r ${progdir}/${OSNAME}.list ]; then
+	echo "No such ${progdir}/${OSNAME}.list"
+	exit 1
+fi
+
+cp -a ${progdir}/${OSNAME}.list ${progdir}/myb.list
+
+echo "cbsd cpr batch=1 ver=${mybbasever} pkglist=${progdir}/myb.list dstdir=${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/"
 
 PREFETCHED_PACKAGES="\
 bash \
@@ -94,7 +103,7 @@ py39-numpy \
 #/usr/ports/net/realtek-re-kmod
 
 
-cbsd cpr batch=0 makeconf=/root/myb-build/myb_make.conf ver=${mybbasever} pkglist=/root/myb-build/myb.list dstdir=${dstdir} package_fetch="${PREFETCHED_PACKAGES}" autoremove=1
+cbsd cpr batch=1 makeconf=/root/myb-build/myb_make.conf ver=${mybbasever} pkglist=${progdir}/myb.list dstdir=${dstdir} package_fetch="${PREFETCHED_PACKAGES}" autoremove=1
 ret=$?
 
 if [ ${ret} -ne 0 ]; then
@@ -104,12 +113,25 @@ fi
 
 cbsd jstart jname=${cpr_jname} || true
 
+echo "Update/run cix_upgrade: clonos_ver.conf"
 cp -a ${progdir}/scripts/cix_upgrade /usr/jails/jails-data/${cpr_jname}-data/root/
 cbsd jexec jname=${cpr_jname} /root/cix_upgrade
 
+echo "/root/cix_upgrade"
+
 # original?
-#cp -a /usr/jails/jails-data/${cpr_jname}-data/tmp/myb_ver.conf ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/
-#cp -a /usr/jails/jails-data/${cpr_jname}-data/tmp/myb_ver.json ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/
+case "${OSNAME}" in
+	ClonOS)
+		echo "copy /usr/jails/jails-data/${cpr_jname}-data/tmp/clonos_ver.{conf,json} -> ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/"
+		cp -a /usr/jails/jails-data/${cpr_jname}-data/tmp/clonos_ver.conf ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/
+		cp -a /usr/jails/jails-data/${cpr_jname}-data/tmp/clonos_ver.json ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/
+		;;
+	MyBee)
+		echo "copy /usr/jails/jails-data/${cpr_jname}-data/tmp/myb_ver.{conf,json} -> ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/"
+		cp -a /usr/jails/jails-data/${cpr_jname}-data/tmp/myb_ver.conf ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/
+		cp -a /usr/jails/jails-data/${cpr_jname}-data/tmp/myb_ver.json ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/
+		;;
+esac
 
 cbsd jstop jname=${cpr_jname} || true
 

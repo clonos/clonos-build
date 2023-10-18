@@ -8,6 +8,8 @@ progdir="${0%/*}"			# Program directory
 progdir=$( realpath ${progdir} )
 progdir=$( dirname ${progdir} )
 
+. ${progdir}/brand.conf
+
 : ${distdir="/usr/local/cbsd"}
 [ ! -r "${distdir}/subr/cbsdbootstrap.subr" ] && exit 1
 . ${distdir}/subr/cbsdbootstrap.subr || exit 1
@@ -15,12 +17,22 @@ progdir=$( dirname ${progdir} )
 mount -t devfs devfs /tmp/mybase/dev
 
 [ ! -d /tmp/mybase/usr/local/etc/pkg/repos ] && mkdir -p /tmp/mybase/usr/local/etc/pkg/repos
-cp -a ${progdir}/myb-extras/pkg/Mybee-latest.conf /tmp/mybase/usr/local/etc/pkg/repos/
+cp -a ${progdir}/myb-extras/pkg/${OSNAME}-latest.conf /tmp/mybase/usr/local/etc/pkg/repos/
 
+# for ClonOS + MyBee
 chroot /tmp/mybase /bin/sh <<EOF
 pkg update -f
 pkg install -y myb nginx cbsd cbsd-mq-router cbsd-mq-api curl jq cdrkit-genisoimage ca_root_nss beanstalkd bash dmidecode hw-probe rsync smartmontools sudo tmux mc
 EOF
+
+# ClonOS only
+case "${OSNAME}" in
+	ClonOS)
+		chroot /tmp/mybase /bin/sh <<EOF
+pkg install -y clonos
+EOF
+	;;
+esac
 
 # extra check
 umount -f /tmp/mybase/dev
@@ -33,6 +45,9 @@ CHECK_FILES="/tmp/mybase/usr/local/bin/tmux \
 /tmp/mybase/usr/local/bin/cbsd \
 /tmp/mybase/usr/local/bin/cbsd-mq-api \
 /tmp/mybase/usr/local/bin/cbsd-mq-router"
+
+# todo:
+# ClonOS CHECK_FILES+=
 
 
 failed=0

@@ -7,10 +7,31 @@ progdir=$( dirname ${progdir} )
 . /etc/rc.conf          # mybbasever
 set +e
 
+. ${progdir}/brand.conf
+
 if [ -z "${mybbasever}" ]; then
 	echo "Please specify mybbasever= via /etc/rc.conf, e.g: sysrc -q mybbasever=\"14.0\""
 	exit 1
 fi
+
+# re-check before upload
+case "${OSNAME}" in
+	MyBee)
+		if [ -z "${MYB_UPLOAD_140}" ]; then
+			echo "no such MYB_UPLOAD_140 string in rc.conf"
+			exit 1
+		fi
+		;;
+	ClonOS)
+		if [ -z "${CLONOS_UPLOAD_140}" ]; then
+			echo "no such CLONOS_UPLOAD_140 string in rc.conf"
+			exit 1
+		fi
+		;;
+	*)
+		echo "invalid brand, who are you?"
+		exit 1
+esac
 
 service ntpd stop > /dev/null 2>&1 || true
 ntpdate 0.freebsd.pool.ntp.org

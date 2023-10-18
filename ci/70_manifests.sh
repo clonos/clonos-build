@@ -11,6 +11,8 @@ progdir=$( dirname ${progdir} )
 [ ! -r "${distdir}/subr/cbsdbootstrap.subr" ] && exit 1
 . ${distdir}/subr/cbsdbootstrap.subr || exit 1
 
+. ${progdir}/brand.conf
+
 SRC_ROOT="${srcdir}/src_${mybbasever}/src"
 
 if [ ! -r ${SRC_ROOT}/Makefile ]; then
@@ -77,4 +79,13 @@ cp -a ${progdir}/myb-extras/rc.local ${workdir}/jails-data/${jname}-data/etc/
 # bhyve uefi fixes:
 #cp -a ${progdir}/bootconfig ${workdir}/jails-data/${jname}-data/usr/libexec/bsdinstall/bootconfig
 
-sysrc -qf ${workdir}/jails-data/${jname}-data/etc/rc.conf hostname="mybee.my.domain"
+case "${OSNAME}" in
+	ClonOS)
+		hostname="clonos.my.domain"
+		;;
+	MyBee)
+		hostname="mybee.my.domain"
+		;;
+esac
+
+sysrc -qf ${workdir}/jails-data/${jname}-data/etc/rc.conf hostname="${hostname}"

@@ -68,8 +68,11 @@ ${PKG_CMD} repo .
 
 sysrc -qf ${progdir}/cbsd/myb_ver.conf myb_ver_new="${myb_version}.${DT}"
 
-cp -a ${progdir}/cbsd/myb_ver.conf /usr/ports/packages/All/
-cp -a ${progdir}/cbsd/myb_ver.json /usr/ports/packages/All/
+#cp -a ${progdir}/cbsd/myb_ver.conf /usr/ports/packages/All/
+#cp -a ${progdir}/cbsd/myb_ver.json /usr/ports/packages/All/
+
+cd ${progdir}/cbsd/FreeBSD:14:amd64/
+pwd
 
 ${RSYNC_CMD} --delete -avz ./ ${RSYNC_DST}
 

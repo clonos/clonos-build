@@ -8,7 +8,7 @@ export PATH="/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin"
 export OSNAME="ClonOS"
 
 cd /
-if [ 1 -gt 2 ]; then
+#if [ 1 -gt 2 ]; then
 
 set -o errexit
 
@@ -55,11 +55,17 @@ case "${OSNAME}" in
 	ClonOS)
 		[ -d /usr/ports/www/clonos ] && rm -rf /usr/ports/www/clonos
 		cp -a /root/clonos-ports/www/clonos /usr/ports/www/
+		# deps for vncterm
+		pkg install -y security/gnutls net/libvncserver
 
 		[ -d /usr/ports/sysutils/clonos-ws ] && rm -rf /usr/ports/sysutils/clonos-ws
 		[ -d /usr/ports/sysutils/cbsd-plugin-wsqueue ] && rm -rf /usr/ports/sysutils/cbsd-plugin-wsqueue
 		cp -a /root/clonos-ports/sysutils/clonos-ws /usr/ports/sysutils/
 		cp -a /root/clonos-ports/sysutils/cbsd-plugin-wsqueue /usr/ports/sysutils/
+		make -C /usr/local/cbsd/modules/vncterm.d
+		[ -d /root/myb-build/myb-extras/vncterm.d ] && rm -rf /root/myb-build/myb-extras/vncterm.d
+		cp -a /usr/local/cbsd/modules/vncterm.d /root/myb-build/myb-extras/
+		rm -rf /root/myb-build/myb-extras/.git
 		;;
 esac
 
@@ -83,8 +89,7 @@ cp -a /root/myb-build/myb-extras/k8s-system-default /root/myb-build/myb-extras/k
 cp -a /usr/local/cbsd/modules/api.d /root/myb-build/myb-extras/
 rm -rf /root/myb-build/myb-extras/api.d/.git || true
 
-
-fi
+#fi
 
 # !!!
 # not for half:

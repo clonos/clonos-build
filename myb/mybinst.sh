@@ -29,16 +29,8 @@ if [ ${myb_firstboot} -eq 1 ]; then
 	echo " *** [ClonOS post-install script] *** "
 	echo
 
-	# depending on the presence of an unprivileged extra user,
-	# we allow or deny remote login for root
-	# For FreeBSD 13.1-RELEASE we have 27 users after install + 'cbsd' = 28
-	#nobody:*:65534:65534::0:0:Unprivileged user:/nonexistent:/usr/sbin/nologin
-	#cbsd:*:150:150::0:0:Cbsd user:/usr/jails:/bin/sh
-	#cyrus:*:60:60::0:0:the cyrus mail server:/nonexistent:/usr/sbin/nologin
-	#messagebus:*:556:556::0:0:D-BUS Daemon User:/nonexistent:/usr/sbin/nologin
-	# 30
 	users_num=$( grep -v '^#' /etc/master.passwd | wc -l | awk '{printf $1}' )
-	if [ "${users_num}" != "30" ]; then
+	if [ "${users_num}" != "29" ]; then
 		SSH_ROOT_ENABLED=0
 		echo "[${users_num}] Default SSH ROOT access: disabled" | tee -a /var/log/mybinst.log
 	else
@@ -223,6 +215,9 @@ ip4_addr=$( ifconfig ${auto_iface} 2>/dev/null | /usr/bin/awk '/inet [0-9]+/ { p
 [ -z "${ip4_addr}" ] && ip4_addr="${myb_default_network}.1"
 
 echo "CBSD setup"
+
+# always set root user to /bin/csh
+pw usermod root -s /bin/csh
 
 #pw useradd cbsd -s /bin/sh -d /usr/jails -c "cbsd user"
 pw groupmod cbsd -M www

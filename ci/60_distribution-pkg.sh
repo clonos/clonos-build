@@ -22,7 +22,7 @@ cp -a ${progdir}/myb-extras/pkg/${OSNAME}-latest.conf /tmp/mybase/usr/local/etc/
 # for ClonOS + MyBee
 chroot /tmp/mybase /bin/sh <<EOF
 pkg update -f
-pkg install -y myb nginx cbsd cbsd-mq-router cbsd-mq-api curl jq cdrkit-genisoimage ca_root_nss beanstalkd bash dmidecode hw-probe rsync smartmontools sudo tmux mc
+pkg install -y myb nginx cbsd cbsd-mq-router cbsd-mq-api curl jq cdrkit-genisoimage ca_root_nss beanstalkd bash dmidecode hw-probe rsync smartmontools sudo tmux mc ttyd
 EOF
 
 # ClonOS only
@@ -44,7 +44,8 @@ CHECK_FILES="/tmp/mybase/usr/local/bin/tmux \
 /tmp/mybase/usr/local/sbin/nginx \
 /tmp/mybase/usr/local/bin/cbsd \
 /tmp/mybase/usr/local/bin/cbsd-mq-api \
-/tmp/mybase/usr/local/bin/cbsd-mq-router"
+/tmp/mybase/usr/local/bin/cbsd-mq-router \
+/tmp/mybase/usr/local/bin/ttyd"
 
 # todo:
 # ClonOS CHECK_FILES+=

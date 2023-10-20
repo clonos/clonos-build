@@ -255,8 +255,13 @@ export workdir=/usr/jails
 [ ! -r ~cbsd/etc/cbsd-pf.conf ] && /usr/bin/touch ~cbsd/etc/cbsd-pf.conf
 /usr/sbin/sysrc -qf ~cbsd/etc/cbsd-pf.conf cbsd_nat_skip_natip_network=1
 
+# Command 'hyperv_fattach' not found: FreeBSD-hyperv-tools
+[ -r /etc/devd/hyperv.conf ] && rm -f /etc/devd/hyperv.conf
+
+
 #  sshd_flags="-oUseDNS=no -oPermitRootLogin=without-password -oPort=22" \
 sysrc \
+ utx_enable="NO" \
  netwait_enable="YES" \
  nginx_enable="YES" \
  cbsdd_enable="YES" \
@@ -280,7 +285,21 @@ sysrc \
  ifconfig_bridge100="inet ${myb_default_network}.1/24 up" \
  osrelease_enable="NO" \
  mybosrelease_enable="YES" \
- cbsd_workdir="/usr/jails"
+ cbsd_workdir="/usr/jails" \
+ ttyd_enable="YES" \
+ ttyd_flags="-i /var/run/ttyd.sock -d 3 -T xterm-256color -m 8 -P 300 -t fontSize=15 -t titleFixed=clonos --socket-owner www:www" \
+ ttyd_command="/usr/bin/login" \
+ ttyd_user="root"
+
+
+# ttyd
+cp -a /usr/local/myb/etc/pam.d/login /etc/pam.d/login
+[ ! -d /etc/rc.d/rc.conf.d ] && mkdir -p /etc/rc.d/rc.conf.d
+cp -a /usr/local/myb/usr/local/etc/rc.d/ttyd /usr/local/etc/rc.d/ttyd
+
+# re-run ttyd if necessary
+/usr/sbin/service ttyd status >/dev/null 2>&1 || /usr/sbin/service ttyd restart
+
 
 if [ "${myb_manage_nginx}" != "NO" ]; then
 	/usr/sbin/sysrc nginx_enable="YES"
@@ -673,5 +692,7 @@ fi
 /usr/local/bin/cbsd get_bhyve_profiles src=cloud
 /usr/local/bin/cbsd get_bhyve_profiles src=vm clonos=1
 echo "mybinst.sh done"
+
+/usr/sbin/service nginx reload
 
 exit 0

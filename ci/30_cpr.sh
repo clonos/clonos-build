@@ -85,6 +85,7 @@ rsync \
 sqlite3 \
 sudo \
 tmux \
+ttyd \
 "
 
 # ClonOS brand:

@@ -10,7 +10,7 @@ set +e
 . ${progdir}/brand.conf
 
 echo "Build MyBee base version: ${mybbasever}"
-cbsd srcup ver=${mybbasever} rev=a0c5d373435
+cbsd srcup ver=${mybbasever} rev=1d2ff563992
 
 src_dir_makefile="/usr/jails/src/src_${mybbasever}/src/Makefile"
 

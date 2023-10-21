@@ -287,7 +287,7 @@ sysrc \
  mybosrelease_enable="YES" \
  cbsd_workdir="/usr/jails" \
  ttyd_enable="YES" \
- ttyd_flags="-i /var/run/ttyd.sock -d 3 -T xterm-256color -m 1 -P 300 -t fontSize=15 -t titleFixed=clonos --socket-owner www:www" \
+ ttyd_flags="-i /var/run/ttyd.sock -d 3 -T xterm-256color -m 8 -P 300 -t fontSize=15 -t titleFixed=clonos --socket-owner www:www" \
  ttyd_command="/usr/bin/login" \
  ttyd_user="root"
 

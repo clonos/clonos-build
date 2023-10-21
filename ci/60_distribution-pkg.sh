@@ -34,6 +34,36 @@ EOF
 	;;
 esac
 
+
+echo "Update/run cix_upgrade: clonos_ver.conf"
+cp -a ${progdir}/scripts/cix_upgrade /tmp/mybase/root/
+chroot /tmp/mybase /root/cix_upgrade
+rm -f /tmp/mybase/root/cix_upgrade
+
+echo "/root/cix_upgrade"
+
+ver=${mybbasever%%.*}
+
+if [ ! -h ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest ]; then
+	echo "no such ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest symlink to repo"
+	exit 1
+fi
+
+# original?
+case "${OSNAME}" in
+	ClonOS)
+		echo "copy /tmp/mybase/tmp/clonos_ver.{conf,json} -> ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/"
+		cp -a /tmp/mybase/tmp/clonos_ver.conf ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/
+		cp -a /tmp/mybase/tmp/clonos_ver.json ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/
+		;;
+	MyBee)
+		echo "copy /tmp/mybase/tmp/myb_ver.{conf,json} -> ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/"
+		cp -a /tmp/mybase/tmp/myb_ver.conf ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/
+		cp -a /tmp/mybase/tmp/myb_ver.json ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/
+		;;
+esac
+
+
 # extra check
 umount -f /tmp/mybase/dev
 

@@ -74,6 +74,9 @@ esac
 [ -d /root/myb-build/myb-extras/garm.d ] && rm -rf /root/myb-build/myb-extras/garm.d
 [ -d /root/myb-build/myb-extras/api.d ] && rm -rf /root/myb-build/myb-extras/api.d
 [ -d /root/myb-build/myb-extras/k8s.d ] && rm -rf /root/myb-build/myb-extras/k8s.d
+[ -d /root/myb-build/myb-extras/convectix.d ] && rm -rf /root/myb-build/myb-extras/convectix.d
+[ -d /root/myb-build/myb-extras/puppet.d ] && rm -rf /root/myb-build/myb-extras/puppet.d
+
 # garm.d
 cp -a /usr/local/cbsd/modules/garm.d /root/myb-build/myb-extras/
 rm -rf /root/myb-build/myb-extras/garm.d/.git || true
@@ -88,6 +91,14 @@ cp -a /root/myb-build/myb-extras/k8s-system-default /root/myb-build/myb-extras/k
 # api.d
 cp -a /usr/local/cbsd/modules/api.d /root/myb-build/myb-extras/
 rm -rf /root/myb-build/myb-extras/api.d/.git || true
+
+# convectix.d
+cp -a /usr/local/cbsd/modules/convectix.d /root/myb-build/myb-extras/
+rm -rf /root/myb-build/myb-extras/convectix.d/.git || true
+
+# puppet.d
+cp -a /usr/local/cbsd/modules/puppet.d /root/myb-build/myb-extras/
+rm -rf /root/myb-build/myb-extras/puppet.d/.git || true
 
 #fi
 

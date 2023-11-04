@@ -20,14 +20,13 @@ while getopts "c:w:" opt; do
 	shift $(($OPTIND - 1))
 done
 
+export PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin
 clear
 
 cur_time=$( ${DATE_CMD} +%s )
 last_check_update=
 [ -r /var/spool/myb/state.conf ] && . /var/spool/myb/state.conf
 
-# reset CBSD path
-export PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin
 PKG_CMD=$( which pkg )
 echo
 

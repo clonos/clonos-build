@@ -41,8 +41,8 @@ CHECK_FILES="/tmp/mybase/boot/kernel/kernel \
 failed=0
 for i in ${CHECK_FILES}; do
 	if [ ! -x ${i} ]; then
-	echo "pkg install failed: no such ${i}"
-	exit 1
+		echo "pkg install failed: no such ${i}"
+		exit 1
 	fi
 done
 

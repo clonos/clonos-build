@@ -4,8 +4,8 @@ export PATH="/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin"
 ### + /root/myb-build/jail-skel/usr/local/etc/mybee/version
 
 # Brand, used in sysinstall/bsdconfig...
-#export OSNAME="MyBee"
-export OSNAME="ClonOS"
+export OSNAME="MyBee"
+#export OSNAME="ClonOS"
 
 cd /
 #if [ 1 -gt 2 ]; then
@@ -92,7 +92,7 @@ cp -a /root/myb-build/myb-extras/k8s-system-default /root/myb-build/myb-extras/k
 cp -a /usr/local/cbsd/modules/api.d /root/myb-build/myb-extras/
 rm -rf /root/myb-build/myb-extras/api.d/.git || true
 
-# convectix.d
+## convectix.d
 cp -a /usr/local/cbsd/modules/convectix.d /root/myb-build/myb-extras/
 rm -rf /root/myb-build/myb-extras/convectix.d/.git || true
 
@@ -123,13 +123,11 @@ set -o errexit
 /root/myb-build/ci/44_export-micro.sh
 /root/myb-build/ci/50_purgejail.sh
 /root/myb-build/ci/55_purge_distribution.sh
-
 /root/myb-build/ci/60_distribution-base.sh
 /root/myb-build/ci/60_distribution-pkg.sh
 /root/myb-build/ci/70_manifests.sh
 /root/myb-build/ci/90_conv.sh
 /root/myb-build/ci/95_updaterepo.sh
-
 set +o errexit
 
 chmod 0644 /tmp/mybee1-14.0_amd64.img

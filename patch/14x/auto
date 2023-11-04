@@ -33,6 +33,7 @@ export BSDINSTALL_DISTSITE
 #export BSDINSTALL_SKIP_TIME="true"
 export BSDINSTALL_SKIP_SERVICES="true"
 export BSDINSTALL_SKIP_HARDENING="true"
+export OSNAME="${OSNAME}"
 
 ############################################################ INCLUDES
 
@@ -435,8 +436,20 @@ finalconfig() {
 
 #CBSD
 # pkg chroot install ?
+case "${OSNAME}" in
+	ClonOS)
+		producturl="https://clonos.convectix.com"
+	        bugreporturl="https://github.com/clonos/clonos-build"
+	;;
+	MyBee)
+		producturl="https://mybee.convectix.com"
+		bugreporturl="https://github.com/myb-project/myb-build"
+	;;
+esac
+
+
 [ -z "${BSDINSTALL_CHROOT}" ] && BSDINSTALL_CHROOT=/mnt
-echo "=== MyBee post-install ==="
+echo "=== ${OSNAME} post-install ==="
 echo
 
 # devfs already mounted here
@@ -464,7 +477,10 @@ sysrc -qf /etc/rc.conf \
  sendmail_enable="NO" \
  sendmail_submit_enable="NO" \
  sendmail_outbound_enable="NO" \
- sendmail_msp_queue_enable="NO" > /dev/null 2>&1
+ sendmail_msp_queue_enable="NO" 
+ OSNAME="${OSNAME}" \
+ producturl="${producturl}" \
+ bugreporturl="${bugreporturl}" > /dev/null 2>&1
 # MyBee
 
 #clear
@@ -498,6 +514,9 @@ chmod +x /usr/local/etc/rc.d/mybinst.sh
 ls -la /usr/local/etc/rc.d/
 cat /etc/rc.initial
 
+echo "sleep 10"
+sleep 10
+
 XEOF
 ###CBSD
 
@@ -527,7 +546,7 @@ fi
 
 ## CBSD
 cat > ${BSDINSTALL_CHROOT}/boot/loader.conf <<EOF
-loader_menu_title="Welcome to MyBee Project"
+loader_menu_title="Welcome to ${OSNAME} Project"
 module_path="/boot/kernel;/boot/modules;/boot/dtb;/boot/dtb/overlays"
 cryptodev_load="YES"
 opensolaris_load="YES"

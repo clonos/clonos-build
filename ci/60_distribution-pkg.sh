@@ -50,18 +50,14 @@ if [ ! -h ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest ]; then
 fi
 
 # original?
-case "${OSNAME}" in
-	ClonOS)
-		echo "copy /tmp/mybase/tmp/clonos_ver.{conf,json} -> ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/"
-		cp -a /tmp/mybase/tmp/clonos_ver.conf ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/
-		cp -a /tmp/mybase/tmp/clonos_ver.json ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/
-		;;
-	MyBee)
-		echo "copy /tmp/mybase/tmp/myb_ver.{conf,json} -> ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/"
-		cp -a /tmp/mybase/tmp/myb_ver.conf ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/
-		cp -a /tmp/mybase/tmp/myb_ver.json ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/
-		;;
-esac
+echo "copy /tmp/mybase/tmp/cbsd_ver.{conf,json} -> ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/"
+cp -a /tmp/mybase/tmp/cbsd_ver.conf ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/
+cp -a /tmp/mybase/tmp/cbsd_ver.json ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/
+# back compat, tech depth: get rid of !'cbsd_ver.{conf,json}':
+cp -a /tmp/mybase/tmp/cbsd_ver.conf ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/clonos_ver.conf
+cp -a /tmp/mybase/tmp/cbsd_ver.json ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/clonos_ver.json
+cp -a /tmp/mybase/tmp/cbsd_ver.conf ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/myb_ver.conf
+cp -a /tmp/mybase/tmp/cbsd_ver.json ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/myb_ver.json
 
 
 # extra check

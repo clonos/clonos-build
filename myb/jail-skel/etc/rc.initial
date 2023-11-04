@@ -10,6 +10,7 @@ unset SOCKS5_PROXY
 . /etc/rc.subr
 export workdir="${cbsd_workdir}"
 
+[ -z "${OSNAME}" ] && OSNAME="MyBee"
 [ -n "${SOCKS5_PROXY}" ] && export SOCKS5_PROXY="${SOCKS5_PROXY}"
 
 . /usr/local/cbsd/cbsd.conf
@@ -112,19 +113,16 @@ check_tty
 
 hwprobe
 
-# Set our operating platform
-PLATFORM="ClonOS"
 # ${myb_version}
 if [ -r /usr/local/myb/version ]; then
 	. /usr/local/myb/version
 fi
 
 [ -z "${myb_version}" ] && myb_version="unknown"
-
-producturl="https://clonos.convectix.com"
+[ -z "${producturl}" ] && producturl="https://mybee.convectix.com"
 
 HOSTNAME=$( hostname -s )
-/usr/sbin/pw usermod root -c "${PLATFORM} ${HOSTNAME}"
+/usr/sbin/pw usermod root -c "${OSNAME} ${HOSTNAME}"
 
 MYB_SMTP_CONFIG_FILE="/usr/local/etc/smtp.conf"
 
@@ -225,13 +223,13 @@ while : ; do
 
 	echo
 	if [ -n "${myb_build}" ]; then
-		echo "Welcome to ${PLATFORM} ${myb_version} (build: ${myb_build}) console."
+		echo "Welcome to ${OSNAME} ${myb_version} (build: ${myb_build}) console."
 	else
-		echo "Welcome to ${PLATFORM} ${myb_version} console."
+		echo "Welcome to ${OSNAME} ${myb_version} console."
 	fi
 	echo
 	echo -e "    Copyright (c) 2013-2023 CBSD Team"
-	echo -e "    Copyright (c) 2019-2023 ClonOS Team"
+	echo -e "    Copyright (c) 2019-2023 ${OSNAME} Team"
 	echo -e "    ${LCYAN}Visit: $producturl for system updates! ${H3_COLOR}(or type 'u'+Enter)${N0_COLOR}"
 	echo
 	case "${API_FQDN}" in
@@ -376,22 +374,31 @@ while : ; do
 			/usr/sbin/kbdmap
 			;;
 		16)
-			_editfile=1		# always edit file
-			case ${API_FQDN} in
-				disabled)
-					if getyesno "Turn API FQDN/certbot ON? ('n' or '0' - leave as disabled) "; then
-						cbsd myb_api_fqdn
-					fi
-					;;
-				*)
-					if getyesno "Turn API FQDN/certbot OFF? ('n' or '0' - leave as enabled) "; then
-						API_FQDN="disabled"
-						${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock ${SYSRC_CMD} -qf /etc/rc.conf API_FQDN="${API_FQDN}" > /dev/null 2>&1
-						_editfile=0
-						cbsd myb_api_fqdn mode=off
-					fi
-					;;
-			esac
+			if [ ! -x /usr/local/bin/certbot ]; then
+				if getyesno "The system does not have the 'certbot' package. It seems you are running it for the first time. Can I install the necessary software to continue?"; then
+					env ASSUME_ALWAYS_YES=yes SIGNATURE_TYPE=none IGNORE_OSVERSION=yes /usr/sbin/pkg install -r MyBee-latest -y py39-certbot
+				fi
+			fi
+			if [ ! -x /usr/local/bin/certbot ]; then
+				${ECHO} "${N1_COLOR}error: no such /usr/local/bin/certbot, please install first: py39-certbot"
+			else
+				_editfile=1		# always edit file
+				case ${API_FQDN} in
+					disabled)
+						if getyesno "Turn API FQDN/certbot ON? ('n' or '0' - leave as disabled) "; then
+							cbsd myb_api_fqdn
+						fi
+						;;
+					*)
+						if getyesno "Turn API FQDN/certbot OFF? ('n' or '0' - leave as enabled) "; then
+							API_FQDN="disabled"
+							${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock ${SYSRC_CMD} -qf /etc/rc.conf API_FQDN="${API_FQDN}" > /dev/null 2>&1
+							_editfile=0
+							cbsd myb_api_fqdn mode=off
+						fi
+						;;
+				esac
+			fi
 			;;
 		17)
 			/usr/local/bin/cbsd myb_k8s_settings

@@ -100,11 +100,9 @@ list_packages()
 	cbsd_api_ver=$( ${PKG_CMD} info cbsd-mq-api 2>/dev/null | ${GREP_CMD} ^Version | ${CUT_CMD} -d : -f 2 | ${AWK_CMD} '{printf $1}' )
 	cbsd_router_ver=$( ${PKG_CMD} info cbsd-mq-router 2>/dev/null | ${GREP_CMD} ^Version | ${CUT_CMD} -d : -f 2 | ${AWK_CMD} '{printf $1}' )
 
-	freebsd_runtime_ver=$( ${PKG_CMD} info FreeBSD-runtime 2>/dev/null | ${GREP_CMD} ^Version | ${CUT_CMD} -d : -f 2 | ${AWK_CMD} '{printf $1}' )
-
 	installed_component=
 
-	for i in cbsd_api_ver cbsd_router_ver cbsd_ver clonos_ver myb_ver php_ver freebsd_runtime_ver; do
+	for i in cbsd_api_ver cbsd_router_ver cbsd_ver clonos_ver myb_ver php_ver; do
 		_val=
 		eval _val="\$$i"
 		[ -z "${_val}" ] && continue

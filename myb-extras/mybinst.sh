@@ -16,6 +16,7 @@ done
 
 myb_firstboot="1"				# already initialized ?
 [ -r /etc/rc.conf ] && . /etc/rc.conf
+[ -z "${OSNAME}" ] && OSNAME="CBSD"
 if [ -z "${myb_default_network}" ]; then
 	myb_default_network="10.0.101"
 	sysrc -qf /etc/rc.conf myb_default_network="${myb_default_network}" > /dev/null 2>&1
@@ -26,30 +27,42 @@ if [ ${myb_firstboot} -eq 1 ]; then
 	service netif restart > /dev/null 2>&1
 	service routing restart > /dev/null 2>&1
 	echo
-	echo " *** [ClonOS post-install script] *** "
+	echo " *** [${OSNAME} post-install script] *** "
 	echo
+
+	# change password root shell
+	pw usermod -s /bin/csh -n root
 
 	users_num=$( grep -v '^#' /etc/master.passwd | wc -l | awk '{printf $1}' )
 	if [ "${users_num}" != "29" ]; then
 		SSH_ROOT_ENABLED=0
-		echo "[${users_num}] Default SSH ROOT access: disabled" | tee -a /var/log/mybinst.log
+		echo "[${users_num}] ${OSNAME} default SSH ROOT access: disabled" | tee -a /var/log/mybinst.log
 	else
 		SSH_ROOT_ENABLED=1
-		echo "[${users_num}] Default SSH ROOT access: enabled" | tee -a /var/log/mybinst.log
+		echo "[${users_num}] ${OSNAME} default SSH ROOT access: enabled" | tee -a /var/log/mybinst.log
 	fi
 	echo
 
 	if [ "${myb_manage_loaderconf}" != "NO" ]; then
 		# tune loader.conf
 		cat >> /boot/loader.conf <<EOF
-loader_menu_title="Welcome to ClonOS Project"
+loader_menu_title="Welcome to ${OSNAME} Project"
 
 module_path="/boot/kernel;/boot/modules;/boot/dtb;/boot/dtb/overlays"
 vmm_load="YES"
 #vfs.zfs.arc_max = "512M"
+aesni_load="YES"
+ipfw_load="YES"
 net.inet.ip.fw.default_to_accept=1
 cpuctl_load="YES"
+pf_load="YES"
 kern.racct.enable=1
+ipfw_nat_load="YES"
+libalias_load="YES"
+sem_load="YES"
+coretemp_load="YES"
+cc_htcp_load="YES"
+#aio_load="YES"
 
 kern.ipc.semmnu=120
 kern.ipc.semume=40
@@ -69,8 +82,18 @@ net.inet.tcp.tcbhashsize=524288
 net.inet.tcp.hostcache.bucketlimit=120
 net.inet.tcp.tcbhashsize=131072
 
+impi_load="YES"
+accf_data_load="YES"
+accf_dns_load="YES"
+accf_http_load="YES"
+
 vm.pmap.pti="0"
 hw.ibrs_disable="1"
+crypto_load="YES"
+
+#
+if_bnxt_load="YES"
+if_qlnxe_load="YES"
 
 ### Use next-gen MRSAS drivers in place of MFI for device supporting it
 # This solves lot of [mfi] COMMAND 0x... TIMEOUT AFTER ## SECONDS
@@ -78,6 +101,13 @@ hw.mfi.mrsas_enable="1"
 
 ### Tune some global values ###
 hw.usb.no_pf="1"        # Disable USB packet filtering
+
+# Load The DPDK Longest Prefix Match (LPM) modules
+dpdk_lpm4_load="YES"
+dpdk_lpm6_load="YES"
+
+# Load DXR: IPv4 lookup algo
+fib_dxr_load="YES"
 
 # Loading newest Intel microcode
 cpu_microcode_load="YES"
@@ -128,7 +158,7 @@ fi
 # Upgrade area
 
 [ ! -d /usr/local/etc/pkg/repos ] && mkdir -p /usr/local/etc/pkg/repos
-cp -a /usr/local/myb/pkg/ClonOS-latest.conf /usr/local/etc/pkg/repos/
+cp -a /usr/local/myb/pkg/${OSNAME}-latest.conf /usr/local/etc/pkg/repos/
 # when no network?
 pkg info cbsd > /dev/null 2>&1
 remote_install=$?
@@ -139,24 +169,23 @@ if [ ${remote_install} -eq 1 ]; then
 fi
 
 ## Remote install by list
-if [ -r /usr/local/myb/myb.list ]; then
+if [ -r /usr/local/myb/${OSNAME}.list ]; then
 
-	install_list=$( grep -v '^#' /usr/local/myb/myb.list | sed 's:/usr/ports/::g' | while read _pkg; do
+	install_list=$( grep -v '^#' /usr/local/myb/${OSNAME}.list | sed 's:/usr/ports/::g' | while read _pkg; do
 		pkg info ${_pkg} > /dev/null 2>&1 || printf "${_pkg} "
 	done )
 
 	if [ -n "${install_list}" ]; then
 		echo "Remote upgrade: install dependencies: ${install_list} ..."
-		#pkg install -r ClonOS-latest -y -f cbsd ${install_list}
 		env SIGNATURE_TYPE=none ASSUME_ALWAYS_YES=yes IGNORE_OSVERSION=yes pkg install -y -f cbsd ${install_list}
-		env SIGNATURE_TYPE=none ASSUME_ALWAYS_YES=yes IGNORE_OSVERSION=yes pkg upgrade -r ClonOS-latest -y
+		env SIGNATURE_TYPE=none ASSUME_ALWAYS_YES=yes IGNORE_OSVERSION=yes pkg upgrade -r ${OSNAME}-latest -y
 
 	fi
 fi
 
 if [ ${myb_firstboot} -eq 0 ]; then
 	# upgrade from repo
-	env SIGNATURE_TYPE=none ASSUME_ALWAYS_YES=yes IGNORE_OSVERSION=yes pkg upgrade -r ClonOS-latest -y
+	env SIGNATURE_TYPE=none ASSUME_ALWAYS_YES=yes IGNORE_OSVERSION=yes pkg upgrade -r ${OSNAME}-latest -y
 fi
 
 [ -d /usr/local/cbsd/modules/api.d ] && rm -rf /usr/local/cbsd/modules/api.d
@@ -165,15 +194,21 @@ cp -a /usr/local/myb/api.d /usr/local/cbsd/modules/
 [ -d /usr/local/cbsd/modules/myb.d ] && rm -rf /usr/local/cbsd/modules/myb.d
 cp -a /usr/local/myb/myb.d /usr/local/cbsd/modules/
 
-# MYB
-#[ -d /usr/local/cbsd/modules/garm.d ] && rm -rf /usr/local/cbsd/modules/garm.d
-#cp -a /usr/local/myb/garm.d /usr/local/cbsd/modules/
+case "${OSNAME}" in
+		MyBee)
+				[ -d /usr/local/cbsd/modules/garm.d ] && rm -rf /usr/local/cbsd/modules/garm.d
+				cp -a /usr/local/myb/garm.d /usr/local/cbsd/modules/
+				;;
+		ClonOS)
+				[ -d /usr/local/cbsd/modules/vncterm.d ] && rm -rf /usr/local/cbsd/modules/vncterm.d
+				cp -a /usr/local/myb/vncterm.d /usr/local/cbsd/modules/
+				[ -d /usr/local/cbsd/modules/clonosdb.d ] && rm -rf /usr/local/cbsd/modules/clonosdb.d
+				cp -a /usr/local/myb/clonosdb.d /usr/local/cbsd/modules/
+				;;
+esac
 
 [ -d /usr/local/cbsd/modules/k8s.d ] && rm -rf /usr/local/cbsd/modules/k8s.d
 cp -a /usr/local/myb/k8s.d /usr/local/cbsd/modules/
-
-[ -d /usr/local/cbsd/modules/vncterm.d ] && rm -rf /usr/local/cbsd/modules/vncterm.d
-cp -a /usr/local/myb/vncterm.d /usr/local/cbsd/modules/
 
 [ -d /usr/local/cbsd/modules/convectix.d ] && rm -rf /usr/local/cbsd/modules/convectix.d
 cp -a /usr/local/myb/convectix.d /usr/local/cbsd/modules/
@@ -181,14 +216,11 @@ cp -a /usr/local/myb/convectix.d /usr/local/cbsd/modules/
 [ -d /usr/local/cbsd/modules/puppet.d ] && rm -rf /usr/local/cbsd/modules/puppet.d
 cp -a /usr/local/myb/puppet.d /usr/local/cbsd/modules/
 
-[ -d /usr/local/cbsd/modules/clonosdb.d ] && rm -rf /usr/local/cbsd/modules/clonosdb.d
-cp -a /usr/local/myb/clonosdb.d /usr/local/cbsd/modules/
-
 [ ! -d /var/log/cbsdmq ] && mkdir -p /var/log/cbsdmq
 
 ## Upgrade area
 
-echo "=== Initial ClonOS setup ==="
+echo "=== Initial ${OSNAME} setup ==="
 
 hostname=$( /usr/sbin/sysrc -n hostname 2>/dev/null | awk '{printf $1}' )
 
@@ -239,10 +271,13 @@ workdir="/usr/jails"
 jail_interface="${auto_iface}"
 parallel="5"
 stable="0"
-statsd_bhyve_enable="1"
-statsd_jail_enable="1"
-statsd_hoster_enable="1"
 EOF
+
+# todo:on-demand
+# todo: hoster core dump
+#statsd_bhyve_enable="1"
+#statsd_jail_enable="1"
+#statsd_hoster_enable="1"
 
 cp -a /tmp/initenv.conf /root
 
@@ -258,16 +293,14 @@ export workdir=/usr/jails
 # Command 'hyperv_fattach' not found: FreeBSD-hyperv-tools
 [ -r /etc/devd/hyperv.conf ] && rm -f /etc/devd/hyperv.conf
 
-
-#  sshd_flags="-oUseDNS=no -oPermitRootLogin=without-password -oPort=22" \
-sysrc \
+/usr/sbin/sysrc \
  utx_enable="NO" \
  netwait_enable="YES" \
  nginx_enable="YES" \
  cbsdd_enable="YES" \
  clear_tmp_enable="YES" \
  beanstalkd_enable="YES" \
- beanstalkd_flags="-l 127.0.0.1 -p 11300" \
+ beanstalkd_flags="-l 127.0.0.1 -p 11300 -z 104856" \
  kld_list="if_bridge vmm nmdm if_vether ipfw pf aesni cryptodev cpuctl ipfw_nat libalias coretemp crypto if_bnxt if_qlnxe" \
  ntpdate_enable="YES" \
  ntpd_enable="YES" \
@@ -285,11 +318,17 @@ sysrc \
  ifconfig_bridge100="inet ${myb_default_network}.1/24 up" \
  osrelease_enable="NO" \
  mybosrelease_enable="YES" \
+ moused_nondefault_enable="NO" \
+ mixer_enable="NO" \
+ rc_startmsgs="NO" \
+ linux_mounts_enable="NO" \
+ rctl_enable="YES" \
  cbsd_workdir="/usr/jails" \
  ttyd_enable="YES" \
  ttyd_flags="-i /var/run/ttyd.sock -d 3 -T xterm-256color -m 8 -P 300 -t fontSize=15 -t titleFixed=clonos --socket-owner www:www" \
  ttyd_command="/usr/bin/login" \
- ttyd_user="root"
+ ttyd_user="root" \
+ OSNAME="${OSNAME}"
 
 
 # ttyd
@@ -305,7 +344,6 @@ if [ "${myb_manage_nginx}" != "NO" ]; then
 	/usr/sbin/sysrc nginx_enable="YES"
 fi
 
-
 if [ ${myb_firstboot} -eq 1 ]; then
 	if [ ${SSH_ROOT_ENABLED} -eq 0 ]; then
 		echo "extra users exist, disable SSH root login by default"
@@ -315,6 +353,7 @@ if [ ${myb_firstboot} -eq 1 ]; then
 		/usr/sbin/sysrc -qf /etc/rc.conf sshd_flags="-oUseDNS=no -oPermitRootLogin=yes -oPort=22" > /dev/null 2>&1
 	fi
 fi
+
 
 cat > /etc/sysctl.conf <<EOF
 security.bsd.see_other_uids = 0
@@ -368,11 +407,17 @@ net.inet.icmp.reply_from_interface = 1
 kern.ipc.maxsockbuf = 16777216
 EOF
 
-if [ "$myb_manage_nginx}" != "NO" ]; then
+if [ "${myb_manage_nginx}" != "NO" ]; then
 	if [ ${myb_firstboot} -eq 1 ]; then
-		#rm -rf /usr/local/etc/nginx
-		#mv /usr/local/myb/nginx /usr/local/etc/
-		cp /usr/local/etc/nginx/nginx.conf.clonos.sample /usr/local/etc/nginx/nginx.conf
+		case "${OSNAME}" in
+			ClonOS)
+					cp /usr/local/etc/nginx/nginx.conf.clonos.sample /usr/local/etc/nginx/nginx.conf
+					;;
+			*)
+					rm -rf /usr/local/etc/nginx
+					mv /usr/local/myb/nginx /usr/local/etc/
+					;;
+		esac
 	fi
 fi
 
@@ -380,22 +425,23 @@ fi
 
 [ ! -d /usr/jails/etc ] && mkdir /usr/jails/etc
 cat > /usr/jails/etc/modules.conf <<EOF
-pkg.d				# ClonOS auto-setup
-bsdconf.d			# ClonOS auto-setup
-zfsinstall.d			# ClonOS auto-setup
-api.d				# ClonOS auto-setup
-myb.d				# ClonOS auto-setup
-k8s.d				# ClonOS auto-setup
-puppet.d			# ClonOS auto-setup
-convectix.d			# ClonOS auto-setup
-cbsd_queue.d			# ClonOS auto-setup
-vncterm.d			# ClonOS auto-setup
-clonosdb.d			# ClonOS auto-setup
+pkg.d				# ${OSNAME} auto-setup
+bsdconf.d			# ${OSNAME} auto-setup
+zfsinstall.d			# ${OSNAME} auto-setup
+api.d				# ${OSNAME} auto-setup
+myb.d				# ${OSNAME} auto-setup
+k8s.d				# ${OSNAME} auto-setup
+puppet.d			# ${OSNAME} auto-setup
+convectix.d			# ${OSNAME} auto-setup
+cbsd_queue.d			# ${OSNAME} auto-setup
+vncterm.d			# ${OSNAME} auto-setup
+garm.d				# ${OSNAME} auto-setup
+# clonosdb.d			# ${OSNAME} auto-setup
 EOF
 
 # for DFLY
 cat > /usr/jails/etc/cloud-init-extras.conf <<EOF
-cbsd_cloud_init=1		# ClonOS auto-setup
+cbsd_cloud_init=1		# ${OSNAME} auto-setup
 EOF
 
 env NOINTER=1 /usr/local/bin/cbsd initenv
@@ -411,57 +457,7 @@ truncate -s0 /etc/motd /var/run/motd /etc/motd.template
 EOF
 fi
 
-# ClonOS
-cp -a /usr/local/etc/php-fpm.d/www-php-fpm.conf.clonos.sample /usr/local/etc/php-fpm.d/www.conf
-cp -a /usr/local/etc/php.ini.clonos.sample /usr/local/etc/php.ini
-cp /usr/local/etc/php-fpm.conf.clonos.sample /usr/local/etc/php-fpm.conf
-
-grep -q kern.racct.enable /boot/loader.conf > /dev/null 2>&1
-if [ $? -ne 0 ]; then
-	echo "kern.racct.enable=\"1\"" >> /boot/loader.conf
-fi
-
-install -o root -g wheel -m 0440 /usr/local/etc/sudoers_10_www.clonos.sample /usr/local/etc/sudoers.d/10_www
-
-touch /var/log/nginx/php.err
-chown www:www /var/log/nginx/php.err
-
-chown www:www /usr/local/www/clonos/media_import
-chmod 0700 /usr/local/www/clonos/media_import
-
-sysrc php_fpm_enable="YES"
-if [ ${web} -eq 0 ]; then
-	echo "Restart php-fpm service"
-	service php-fpm restart
-fi
-
-service clonos-ws enable
-if [ ${web} -eq 0 ]; then
-	echo "Restart clonos-ws service"
-	service clonos-ws restart
-fi
-
-service clonos-node-ws enable
-if [ ${web} -eq 0 ]; then
-	echo "Restart clonos-node-ws service"
-	service clonos-node-ws restart
-fi
-
-sysrc clonos_vnc2wss_enable="YES"
-
-cp -a /usr/local/cbsd/modules/cbsd_queue.d/etc-sample/cbsd_queue.conf ~cbsd/etc/
-
-sysrc cbsd_statsd_hoster_enable=YES
-sysrc cbsd_statsd_jail_enable=YES
-sysrc cbsd_statsd_bhyve_enable=YES
-service cbsd-statsd-hoster restart
-service cbsd-statsd-jail restart
-service cbsd-statsd-bhyve restart
-
-ln -sf /usr/local/bin/python3.9 /usr/local/bin/python3
-
 cp -a /usr/local/myb/myb-os-release /usr/local/etc/rc.d/myb-os-release
-
 cp -a /usr/local/myb/api.d/etc/api.conf ~cbsd/etc/
 cp -a /usr/local/myb/bhyve-api.conf ~cbsd/etc/
 cp -a /usr/local/myb/api.d/etc/jail-api.conf ~cbsd/etc/
@@ -469,8 +465,12 @@ cp -a /usr/local/myb/api.d/etc/jail-api.conf ~cbsd/etc/
 cp -a /usr/local/myb/cbsd_api_cloud_images.json /usr/local/etc/cbsd_api_cloud_images.json
 cp -a /usr/local/myb/syslog.conf /etc/syslog.conf
 
-sysrc -qf ~cbsd/etc/api.conf server_list="${hostname}"
-sysrc -qf ~cbsd/etc/bhyve-api.conf ip4_gw="${myb_default_network}.1"
+# dup ?
+[ ! -r ~cbsd/etc/cbsd-pf.conf ] && /usr/bin/touch -s0 ~cbsd/etc/cbsd-pf.conf
+/usr/sbin/sysrc -qf ~cbsd/etc/cbsd-pf.conf cbsd_nat_skip_natip_network=1
+
+/usr/sbin/sysrc -qf ~cbsd/etc/api.conf server_list="${hostname}"
+/usr/sbin/sysrc -qf ~cbsd/etc/bhyve-api.conf ip4_gw="${myb_default_network}.1"
 
 tube_name=$( echo ${hostname} | tr '.' '_' )
 
@@ -513,7 +513,7 @@ K8S_MK_JAIL="1"
 EOF
 
 chown cbsd:cbsd ~cbsd/etc/api.conf ~cbsd/etc/k8s.conf /usr/jails/etc/k8world.conf
-[ ! -d /var/db/cbsd-api ] && mkdir -p /var/db/cbsd-api 
+[ ! -d /var/db/cbsd-api ] && mkdir -p /var/db/cbsd-api
 [ ! -d /usr/jails/var/db/api/map ] && mkdir -p /usr/jails/var/db/api/map
 chown -R cbsd:cbsd /var/db/cbsd-api /usr/jails/var/db/api/map
 
@@ -541,21 +541,19 @@ if [ "${myb_manage_nginx}" != "NO" ]; then
 fi
 [ ! -d /usr/local/www/status ] && mkdir /usr/local/www/status
 
-[ ! -d /usr/local/etc/sudoers.d ] && mkdir -m 0755 -p /usr/local/etc/sudoers.d
-cat > /usr/local/etc/sudoers.d/10_wheelgroup <<EOF
-%wheel ALL=(ALL) NOPASSWD: ALL
-EOF
-
 if [ "${myb_manage_sudo}" != "NO" ]; then
-        [ ! -d /usr/local/etc/sudoers.d ] && mkdir -m 0755 -p /usr/local/etc/sudoers.d
-        cat > /usr/local/etc/sudoers.d/10_wheelgroup <<EOF
+	[ ! -d /usr/local/etc/sudoers.d ] && mkdir -m 0755 -p /usr/local/etc/sudoers.d
+	case "${OSNAME}" in
+			MyBee)
+					cat > /usr/local/etc/sudoers.d/10_wheelgroup <<EOF
 %wheel ALL=(ALL) NOPASSWD: ALL
 EOF
+					;;
+	esac
 
 	chmod 0440 /usr/local/etc/sudoers.d/10_wheelgroup
 	/usr/local/bin/rsync -avz /usr/local/myb/jail-skel/ /
 fi
-
 
 # k8s
 mkdir -p /var/db/cbsd-k8s /usr/jails/var/db/k8s/map
@@ -573,8 +571,6 @@ ln -sf /root/bin/route_add.sh /usr/jails/share/bhyve-system-default/master_posts
 
 /usr/local/cbsd/sudoexec/initenv > /var/log/cbsd_init2.log 2>&1
 
-/usr/local/bin/cbsd clonosdb
-
 /usr/local/cbsd/modules/k8s.d/scripts/install.sh up > /dev/null 2>&1
 
 if [ "${myb_manage_resolv}" != "NO" ]; then
@@ -590,70 +586,164 @@ EOF
 	fi
 fi
 
-sysrc -qf /etc/rc.conf myb_firstboot="0" > /dev/null 2>&1
+/usr/sbin/sysrc -qf /etc/rc.conf myb_firstboot="0" > /dev/null 2>&1
 
+sysrc cbsd_statsd_hoster_enable=YES
+sysrc cbsd_statsd_jail_enable=YES
+sysrc cbsd_statsd_bhyve_enable=YES
+service cbsd-statsd-hoster restart
+service cbsd-statsd-jail restart
+service cbsd-statsd-bhyve restart
+
+# ClonOS
+if [ "${OSNAME}" = "ClonOS" ]; then
+
+	cp -a /usr/local/etc/php-fpm.d/www-php-fpm.conf.clonos.sample /usr/local/etc/php-fpm.d/www.conf
+	cp -a /usr/local/etc/php.ini.clonos.sample /usr/local/etc/php.ini
+	cp /usr/local/etc/php-fpm.conf.clonos.sample /usr/local/etc/php-fpm.conf
+
+	grep -q kern.racct.enable /boot/loader.conf > /dev/null 2>&1
+	if [ $? -ne 0 ]; then
+		echo "kern.racct.enable=\"1\"" >> /boot/loader.conf
+	fi
+
+	install -o root -g wheel -m 0440 /usr/local/etc/sudoers_10_www.clonos.sample /usr/local/etc/sudoers.d/10_www
+
+	touch /var/log/nginx/php.err
+	chown www:www /var/log/nginx/php.err
+
+	chown www:www /usr/local/www/clonos/media_import
+	chmod 0700 /usr/local/www/clonos/media_import
+
+	sysrc php_fpm_enable="YES"
+	if [ ${web} -eq 0 ]; then
+		echo "Restart php-fpm service"
+		service php-fpm restart
+	fi
+
+	service clonos-ws enable
+	if [ ${web} -eq 0 ]; then
+		echo "Restart clonos-ws service"
+		service clonos-ws restart
+	fi
+
+	service clonos-node-ws enable
+	if [ ${web} -eq 0 ]; then
+		echo "Restart clonos-node-ws service"
+		service clonos-node-ws restart
+	fi
+
+	sysrc clonos_vnc2wss_enable="YES"
+
+	cp -a /usr/local/cbsd/modules/cbsd_queue.d/etc-sample/cbsd_queue.conf ~cbsd/etc/
+	ln -sf /usr/local/bin/python3.9 /usr/local/bin/python3
+fi
 
 if [ "${myb_manage_loaderconf}" != "NO" ]; then
         ### LOADER.CONF - todo: external helper + dynamic drv finder
-	sysrc -qf /boot/loader.conf module_path="/boot/kernel;/boot/modules;/boot/dtb;/boot/dtb/overlays"
-        sysrc -qf /boot/loader.conf loader_menu_title="Welcome to ClonOS Project"
+		sysrc -qf /boot/loader.conf module_path="/boot/kernel;/boot/modules;/boot/dtb;/boot/dtb/overlays"
+        sysrc -qf /boot/loader.conf loader_menu_title="Welcome to ${OSNAME} Project"
 
-        #vfs.zfs.arc_max = "512M"
-        sysrc -qf /boot/loader.conf net.inet.ip.fw.default_to_accept=1
-        sysrc -qf /boot/loader.conf vmm_load="YES"
-        sysrc -qf /boot/loader.conf kern.racct.enable=1
+	#vfs.zfs.arc_max = "512M"
+	sysrc -qf /boot/loader.conf aesni_load="YES"
+	sysrc -qf /boot/loader.conf ipfw_load="YES"
+	sysrc -qf /boot/loader.conf net.inet.ip.fw.default_to_accept=1
+	sysrc -qf /boot/loader.conf cpuctl_load="YES"
+	sysrc -qf /boot/loader.conf pf_load="YES"
+	sysrc -qf /boot/loader.conf vmm_load="YES"
+	sysrc -qf /boot/loader.conf kern.racct.enable=1
+	sysrc -qf /boot/loader.conf ipfw_nat_load="YES"
+	sysrc -qf /boot/loader.conf libalias_load="YES"
+	sysrc -qf /boot/loader.conf sem_load="YES"
+	sysrc -qf /boot/loader.conf coretemp_load="YES"
+	sysrc -qf /boot/loader.conf cc_htcp_load="YES"
+	#aio_load="YES"
 
-        ### Use next-gen MRSAS drivers in place of MFI for device supporting it
-        # This solves lot of [mfi] COMMAND 0x... TIMEOUT AFTER ## SECONDS
-        #sysrc -qf /boot/loader.conf hw.mfi.mrsas_enable="1"
+	# sysrc: hw.cxgbe.fcoecaps_allowed: name contains characters not allowed in shell (dot)
+	#sysrc -qf /boot/loader.conf kern.ipc.semmnu=120
+	#sysrc -qf /boot/loader.conf kern.ipc.semume=40
+	#sysrc -qf /boot/loader.conf kern.ipc.semmns=240
+	#sysrc -qf /boot/loader.conf kern.ipc.semmni=40
+	#sysrc -qf /boot/loader.conf kern.ipc.shmmaxpgs=65536
 
-        ### Tune some global values ###
-        #sysrc -qf /boot/loader.conf hw.usb.no_pf="1"        # Disable USB packet filtering
+	#sysrc -qf /boot/loader.conf net.inet.tcp.syncache.hashsize=1024
+	#sysrc -qf /boot/loader.conf net.inet.tcp.syncache.bucketlimit=512
+	#sysrc -qf /boot/loader.conf net.inet.tcp.syncache.cachelimit=65536
+	#sysrc -qf /boot/loader.conf net.inet.tcp.hostcache.hashsize=16384
+	#sysrc -qf /boot/loader.conf net.inet.tcp.hostcache.bucketlimit=100
+	#sysrc -qf /boot/loader.conf net.inet.tcp.hostcache.cachelimit=65536
 
-        # Load The DPDK Longest Prefix Match (LPM) modules
-        #sysrc -qf /boot/loader.conf dpdk_lpm4_load="YES"
-        #sysrc -qf /boot/loader.conf dpdk_lpm6_load="YES"
+	#sysrc -qf /boot/loader.conf kern.nbuf=128000
+	#sysrc -qf /boot/loader.conf net.inet.tcp.tcbhashsize=524288
+	#sysrc -qf /boot/loader.conf net.inet.tcp.hostcache.bucketlimit=120
+	#sysrc -qf /boot/loader.conf net.inet.tcp.tcbhashsize=131072
+	sysrc -qf /boot/loader.conf impi_load="YES"
+	sysrc -qf /boot/loader.conf accf_data_load="YES"
+	sysrc -qf /boot/loader.conf accf_dns_load="YES"
+	sysrc -qf /boot/loader.conf accf_http_load="YES"
 
-        # Loading newest Intel microcode
-        sysrc -qf /boot/loader.conf cpu_microcode_load="YES"
-        sysrc -qf /boot/loader.conf cpu_microcode_name="/boot/firmware/intel-ucode.bin"
-        ### Intel NIC tuning ###
-        # https://bsdrp.net/documentation/technical_docs/performance#nic_drivers_tuning
-        # Don't limit the maximum of number of received packets to process at a time
-        #sysrc -qf /boot/loader.conf hw.igb.rx_process_limit="-1"
-        #sysrc -qf /boot/loader.conf hw.em.rx_process_limit="-1"
-        #sysrc -qf /boot/loader.conf hw.ix.rx_process_limit="-1"
-        # Allow unsupported SFP
-        #sysrc -qf /boot/loader.conf hw.ix.unsupported_sfp="1"
-        #sysrc -qf /boot/loader.conf hw.ix.allow_unsupported_sfp="1"
+	#sysrc -qf /boot/loader.conf vm.pmap.pti="0"
+	#sysrc -qf /boot/loader.conf hw.ibrs_disable="1"
+	sysrc -qf /boot/loader.conf crypto_load="YES"
 
-        ### Chelsio NIC tuning ###
-        # Prevent to reserve ASIC ressources unused on a router/firewall,
-        # improve performance when we will reach 10Mpps or more
-        #sysrc -qf /boot/loader.conf hw.cxgbe.toecaps_allowed="0"
-        #sysrc -qf /boot/loader.conf hw.cxgbe.rdmacaps_allowed="0"
-        #sysrc -qf /boot/loader.conf hw.cxgbe.iscsicaps_allowed="0"
-        #sysrc -qf /boot/loader.conf hw.cxgbe.fcoecaps_allowed="0"
+	sysrc -qf /boot/loader.conf if_bnxt_load="YES"
+	sysrc -qf /boot/loader.conf if_qlnxe_load="YES"
 
-        # Under network heavy usage, network critical traffic (mainly
-        # non-RSS traffic like ARP, LACP) could be droped and flaping LACP links.
-        # To mitigate this situation, Chelsio could reserves one TX queue for
-        # non-RSS traffic with this tuneable:
-        # hw.cxgbe.rsrv_noflowq="1"
-        # But compensate the number of TX queue by increasing it by one.
-        # As example, if you had 8 queues, uses now 9:
-        # hw.cxgbe.ntxq="9"
+	### Use next-gen MRSAS drivers in place of MFI for device supporting it
+	# This solves lot of [mfi] COMMAND 0x... TIMEOUT AFTER ## SECONDS
+	#sysrc -qf /boot/loader.conf hw.mfi.mrsas_enable="1"
 
-        ### link tunning ###
-        # Increase interface send queue length
-        # lagg user: This value should be at minimum the sum of txd buffer of each NIC in the lagg
-        # hw.ix.txd: 2048 by default, then use x4 here (lagg with 4 members)
-        #sysrc -qf /boot/loader.conf net.link.ifqmaxlen="16384"
+	### Tune some global values ###
+	#sysrc -qf /boot/loader.conf hw.usb.no_pf="1"        # Disable USB packet filtering
 
-        # Avoid message netisr_register: epair requested queue limit 688128 capped to net.isr.maxqlimit 1024
-        #sysrc -qf /boot/loader.conf net.isr.maxqlimit="1000000"
-        #sysrc -qf /boot/loader.conf net.isr.maxthreads="-1"
-        ####
+	# Load The DPDK Longest Prefix Match (LPM) modules
+	#sysrc -qf /boot/loader.conf dpdk_lpm4_load="YES"
+	#sysrc -qf /boot/loader.conf dpdk_lpm6_load="YES"
+
+	# Load DXR: IPv4 lookup algo
+	sysrc -qf /boot/loader.conf fib_dxr_load="YES"
+
+	# Loading newest Intel microcode
+	sysrc -qf /boot/loader.conf cpu_microcode_load="YES"
+	sysrc -qf /boot/loader.conf cpu_microcode_name="/boot/firmware/intel-ucode.bin"
+
+	### Intel NIC tuning ###
+	# https://bsdrp.net/documentation/technical_docs/performance#nic_drivers_tuning
+	# Don't limit the maximum of number of received packets to process at a time
+	#sysrc -qf /boot/loader.conf hw.igb.rx_process_limit="-1"
+	#sysrc -qf /boot/loader.conf hw.em.rx_process_limit="-1"
+	#sysrc -qf /boot/loader.conf hw.ix.rx_process_limit="-1"
+	# Allow unsupported SFP
+	#sysrc -qf /boot/loader.conf hw.ix.unsupported_sfp="1"
+	#sysrc -qf /boot/loader.conf hw.ix.allow_unsupported_sfp="1"
+
+	### Chelsio NIC tuning ###
+	# Prevent to reserve ASIC ressources unused on a router/firewall,
+	# improve performance when we will reach 10Mpps or more
+	#sysrc -qf /boot/loader.conf hw.cxgbe.toecaps_allowed="0"
+	#sysrc -qf /boot/loader.conf hw.cxgbe.rdmacaps_allowed="0"
+	#sysrc -qf /boot/loader.conf hw.cxgbe.iscsicaps_allowed="0"
+	#sysrc -qf /boot/loader.conf hw.cxgbe.fcoecaps_allowed="0"
+
+	# Under network heavy usage, network critical traffic (mainly
+	# non-RSS traffic like ARP, LACP) could be droped and flaping LACP links.
+	# To mitigate this situation, Chelsio could reserves one TX queue for
+	# non-RSS traffic with this tuneable:
+	# hw.cxgbe.rsrv_noflowq="1"
+	# But compensate the number of TX queue by increasing it by one.
+	# As example, if you had 8 queues, uses now 9:
+	# hw.cxgbe.ntxq="9"
+
+	### link tunning ###
+	# Increase interface send queue length
+	# lagg user: This value should be at minimum the sum of txd buffer of each NIC in the lagg
+	# hw.ix.txd: 2048 by default, then use x4 here (lagg with 4 members)
+	#sysrc -qf /boot/loader.conf net.link.ifqmaxlen="16384"
+
+	# Avoid message netisr_register: epair requested queue limit 688128 capped to net.isr.maxqlimit 1024
+	#sysrc -qf /boot/loader.conf net.isr.maxqlimit="1000000"
+	#sysrc -qf /boot/loader.conf net.isr.maxthreads="-1"
+	####
 fi
 
 # legacy firstboot instasll
@@ -661,7 +751,7 @@ fi
 
 if [ ${myb_firstboot} -eq 1 ]; then
 /usr/bin/wall <<EOF
-  ClonOS setup complete, reboot host!
+  ${OSNAME} setup complete, reboot host!
 EOF
 sync
 /sbin/reboot
@@ -686,6 +776,7 @@ else
 fi
 
 # drop cache
+if [ "${OSNAME}" = "ClonOS" ]; then
 [ -r /usr/jails/tmp/bhyve-vm.json ] && /bin/rm -f /usr/jails/tmp/bhyve-vm.json
 [ -r /usr/jails/tmp/bhyve-cloud.json ] && rm -f /usr/jails/tmp/bhyve-cloud.json
 
@@ -694,5 +785,6 @@ fi
 echo "mybinst.sh done"
 
 /usr/sbin/service nginx reload
+fi
 
 exit 0

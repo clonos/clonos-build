@@ -89,3 +89,4 @@ case "${OSNAME}" in
 esac
 
 sysrc -qf ${workdir}/jails-data/${jname}-data/etc/rc.conf hostname="${hostname}"
+sysrc -qf ${workdir}/jails-data/${jname}-data/etc/rc.conf OSNAME="${OSNAME}"

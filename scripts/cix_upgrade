@@ -23,8 +23,8 @@ list_packages()
 	PATH="${OPATH}"
 
 	if [ ${save_repo} -eq 1 ]; then
-		STD_OUT="/tmp/clonos_ver.conf"
-		STD_OUT_JSON="/tmp/clonos_ver.json"
+		STD_OUT="/tmp/cbsd_ver.conf"
+		STD_OUT_JSON="/tmp/cbsd_ver.json"
 		${TRUNCATE_CMD} -s0 ${STD_OUT} ${STD_OUT_JSON}
 	fi
 
@@ -34,7 +34,7 @@ list_packages()
 	fi
 	php_ver=$( ${PKG_CMD} info php[0-9][0-9]-[0-9]* 2>/dev/null )
 	myb_ver=$( ${PKG_CMD} info myb 2>/dev/null | ${GREP_CMD} ^Version | ${CUT_CMD} -d : -f 2 | ${AWK_CMD} '{printf $1}' )
-	clonos_ver=$( ${PKG_CMD} info clonos 2>/dev/null | ${GREP_CMD} ^Version | ${CUT_CMD} -d : -f 2 | ${AWK_CMD} '{printf $1}' )
+	cbsd_ver=$( ${PKG_CMD} info clonos 2>/dev/null | ${GREP_CMD} ^Version | ${CUT_CMD} -d : -f 2 | ${AWK_CMD} '{printf $1}' )
 
 	cbsd_api_ver=$( ${PKG_CMD} info cbsd-mq-api 2>/dev/null | ${GREP_CMD} ^Version | ${CUT_CMD} -d : -f 2 | ${AWK_CMD} '{printf $1}' )
 	cbsd_router_ver=$( ${PKG_CMD} info cbsd-mq-router 2>/dev/null | ${GREP_CMD} ^Version | ${CUT_CMD} -d : -f 2 | ${AWK_CMD} '{printf $1}' )
@@ -43,7 +43,7 @@ list_packages()
 
 	installed_component=
 
-	for i in cbsd_api_ver cbsd_router_ver cbsd_ver clonos_ver myb_ver php_ver freebsd_runtime_ver; do
+	for i in cbsd_api_ver cbsd_router_ver cbsd_ver cbsd_ver myb_ver php_ver freebsd_runtime_ver; do
 		_val=
 		eval _val="\$$i"
 		[ -z "${_val}" ] && continue
@@ -93,7 +93,7 @@ EOF
 		return 0
 	fi
 
-	[ -r /tmp/clonos_ver.conf ] && . /tmp/clonos_ver.conf
+	[ -r /tmp/cbsd_ver.conf ] && . /tmp/cbsd_ver.conf
 
 	${CAT_CMD} <<EOF
   },

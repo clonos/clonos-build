@@ -10,7 +10,7 @@ LICENSE=	BSD2CLAUSE
 USES=		go
 USE_GITHUB=	yes
 GH_ACCOUNT=	mergar
-GH_TAGNAME=	d6d98b4
+GH_TAGNAME=	a759003
 GH_TUPLE=	beanstalkd:go-beanstalk:3bed00be7a17:beanstalkd/src/github.com/beanstalkd/go-beanstalk \
 		gorilla:mux:d07530f46e1e:gorilla_mux/vendor/github.com/gorilla/mux \
 		golang:crypto:5ff15b29337e:golang_crypto/vendor/golang.org/x/crypto

@@ -71,6 +71,9 @@ for i in ${check}; do
 					vol=
 					vol=$( readlink ${link} )
 					[ -c ${vol} ] && found=1
+				elif [ -r ${link} ]; then
+					${ECHO} "${W1_COLOR}warning: ${N1_COLOR}not symlink: ${N2_COLOR}${link}${N0_COLOR}"
+					found=1
 				fi
 				;;
 		esac

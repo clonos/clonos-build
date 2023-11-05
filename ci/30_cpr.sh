@@ -88,6 +88,7 @@ tmux \
 ttyd \
 "
 
+if [ "${OSNAME}" = "ClonOS" ]; then
 # ClonOS brand:
 PREFETCHED_PACKAGES="${PREFETCHED_PACKAGES} \
 gcc12 \
@@ -100,6 +101,7 @@ php82-session \
 php82-opcache \
 py39-numpy \
 "
+fi
 
 # MC needs for 'mcedit' !!
 #/usr/ports/net/realtek-re-kmod

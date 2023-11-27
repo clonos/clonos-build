@@ -59,7 +59,7 @@ EOF
 		gid=
 		hostname=
 		host_hostname=
-		instanceid=
+		id=
 		profile=
 		vm_os_type=
 		vm_os_profile=
@@ -84,6 +84,18 @@ EOF
 		total_ram_bytes=$(( total_ram_bytes + ram_bytes ))
 		total_imgsize_bytes=$(( total_imgsize_bytes + imgsize_bytes ))
 
+		_st=$( /usr/local/bin/cbsd jstatus jname=${gid} )
+
+		if [ "${_st}" = "0" ]; then
+			echo "offline for /var/db/cbsd-api/${cid}/${gid}-bhyve.ssh" >> /tmp/log
+			sed -i '' -e 's/^  "is_power_on.*$/  "is_power_on": "false",/' /var/db/cbsd-api/${cid}/${gid}-bhyve.ssh
+			# offline
+		else
+			echo "online for /var/db/cbsd-api/${cid}/${gid}-bhyve.ssh" >> /tmp/log
+			sed -i '' -e 's/^  "is_power_on.*$/  "is_power_on": "true",/' /var/db/cbsd-api/${cid}/${gid}-bhyve.ssh
+			# online
+		fi
+
 		case "${type}" in
 			container)
 				profile="${ver}"
@@ -94,16 +106,18 @@ EOF
 		esac
 		hw="${cpus}/${ram_human}/${imgsize_human}"
 		#printf "${num}: %-10s %-10s %-10s %-40s\n" ${jname} ${type} ${hw} "${ssh_string}"
-		cat >> /var/db/cbsd-api/${cid}/vm.list <<EOF
-    {
-      "instanceid": "${host_hostname}",
-      "type": "${type}",
-      "profile": "${profile}",
-      "hw": "${hw}",
-      "ssh_string": "${ssh_string}",
-      "ssh4_string": "${ssh4_string}",
-      "ssh6_string": "${ssh6_string}"
-EOF
+		sed "s/^/  /" /var/db/cbsd-api/${cid}/${gid}-bhyve.ssh |grep -v '}' >> /var/db/cbsd-api/${cid}/vm.list
+#		cat >> /var/db/cbsd-api/${cid}/vm.list <<EOF
+#    {
+#      "id": "${host_hostname}",
+#      "type": "${type}",
+#      "${vm_os_type}": "${vm_os_type}",
+#      "${vm_os_profile}": "${vm_os_profile}",
+#      "hw": "${hw}",
+#      "ssh_string": "${ssh_string}",
+#      "ssh4_string": "${ssh4_string}",
+#      "ssh6_string": "${ssh6_string}"
+#EOF
 if [ ${num} -eq ${all} ]; then
 		cat >> /var/db/cbsd-api/${cid}/vm.list <<EOF
     }

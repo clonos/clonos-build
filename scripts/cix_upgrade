@@ -34,7 +34,8 @@ list_packages()
 	fi
 	php_ver=$( ${PKG_CMD} info php[0-9][0-9]-[0-9]* 2>/dev/null )
 	myb_ver=$( ${PKG_CMD} info myb 2>/dev/null | ${GREP_CMD} ^Version | ${CUT_CMD} -d : -f 2 | ${AWK_CMD} '{printf $1}' )
-	cbsd_ver=$( ${PKG_CMD} info clonos 2>/dev/null | ${GREP_CMD} ^Version | ${CUT_CMD} -d : -f 2 | ${AWK_CMD} '{printf $1}' )
+	cbsd_ver=$( ${PKG_CMD} info cbsd 2>/dev/null | ${GREP_CMD} ^Version | ${CUT_CMD} -d : -f 2 | ${AWK_CMD} '{printf $1}' )
+	clonos_ver=$( ${PKG_CMD} info clonos 2>/dev/null | ${GREP_CMD} ^Version | ${CUT_CMD} -d : -f 2 | ${AWK_CMD} '{printf $1}' )
 
 	cbsd_api_ver=$( ${PKG_CMD} info cbsd-mq-api 2>/dev/null | ${GREP_CMD} ^Version | ${CUT_CMD} -d : -f 2 | ${AWK_CMD} '{printf $1}' )
 	cbsd_router_ver=$( ${PKG_CMD} info cbsd-mq-router 2>/dev/null | ${GREP_CMD} ^Version | ${CUT_CMD} -d : -f 2 | ${AWK_CMD} '{printf $1}' )
@@ -43,7 +44,15 @@ list_packages()
 
 	installed_component=
 
-	for i in cbsd_api_ver cbsd_router_ver cbsd_ver cbsd_ver myb_ver php_ver freebsd_runtime_ver; do
+	available_components_tmp="cbsd_api_ver cbsd_router_ver cbsd_ver myb_ver php_ver freebsd_runtime_ver"
+	[ -n "${clonos_ver}" ] && available_components_tmp="${available_components_tmp} clonos_ver"
+
+	available_components=$( for i in ${available_components_tmp}; do
+		echo "${i}"
+	done | sort )
+
+
+	for i in ${available_components}; do
 		_val=
 		eval _val="\$$i"
 		[ -z "${_val}" ] && continue

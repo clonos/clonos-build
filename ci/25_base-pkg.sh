@@ -9,6 +9,6 @@ progdir=$( dirname ${progdir} )
 . ${progdir}/brand.conf
 
 export OSNAME="${OSNAME}"
-cbsd packages ver=${mybbasever} destdir="${progdir}/cbsd"
+cbsd packages ver=${mybbasever} destdir="${progdir}/cbsd" name=CBSD
 ret=$?
 exit ${ret}

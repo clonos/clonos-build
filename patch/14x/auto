@@ -28,6 +28,8 @@
 # $FreeBSD$
 #
 # CBSD
+. /etc/rc.conf		#	OSNAME
+
 BSDINSTALL_DISTSITE="http://myb.convectix.com"
 export BSDINSTALL_DISTSITE
 #export BSDINSTALL_SKIP_TIME="true"
@@ -435,6 +437,7 @@ finalconfig() {
 }
 
 #CBSD
+[ -r /usr/local/myb/brand.conf ] && . /usr/local/myb/brand.conf
 # pkg chroot install ?
 case "${OSNAME}" in
 	ClonOS)
@@ -514,7 +517,7 @@ chmod +x /usr/local/etc/rc.d/mybinst.sh
 ls -la /usr/local/etc/rc.d/
 cat /etc/rc.initial
 
-echo "sleep 10"
+echo "Brand: ${OSNAME}, sleep 10"
 sleep 10
 
 XEOF

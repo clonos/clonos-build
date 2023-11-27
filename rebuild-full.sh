@@ -100,8 +100,6 @@ rm -rf /root/myb-build/myb-extras/convectix.d/.git || true
 cp -a /usr/local/cbsd/modules/puppet.d /root/myb-build/myb-extras/
 rm -rf /root/myb-build/myb-extras/puppet.d/.git || true
 
-#fi
-
 # !!!
 # not for half:
 set -o errexit
@@ -110,12 +108,11 @@ set -o errexit
 /root/myb-build/ci/00_srcup.sh
 /root/myb-build/ci/10_patch-src.sh
 /root/myb-build/ci/20_world.sh
+
 /root/myb-build/ci/25_base-pkg.sh
 /root/myb-build/ci/30_cpr.sh
 /root/myb-build/ci/35_cpr-micro.sh
 /root/myb-build/ci/35_update_repo.sh
-
-
 #fi
 
 # half build

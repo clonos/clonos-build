@@ -27,6 +27,7 @@ if [ -d /tmp/mybase ]; then
 	rm -rf /tmp/mybase
 fi
 
+#cbsd install-pkg-world destdir=/tmp/mybase ver=14.0 cmd_helper=1 packages="FreeBSD-runtime FreeBSD-utilities FreeBSD-ssh FreeBSD-vi FreeBSD-csh FreeBSD-clibs FreeBSD-fetch FreeBSD-libarchive FreeBSD-libbz2 FreeBSD-liblzma FreeBSD-libucl FreeBSD-openssl FreeBSD-zoneinfo FreeBSD-libexecinfo FreeBSD-kernel-cbsd FreeBSD-bootloader FreeBSD-devd FreeBSD-newsyslog FreeBSD-pf FreeBSD-ipfw FreeBSD-geom FreeBSD-syslogd FreeBSD-bhyve FreeBSD-acpi FreeBSD-devmatch FreeBSD-dhclient FreeBSD-bsdinstall FreeBSD-console-tools FreeBSD-bsdinstall FreeBSD-jail"
 cbsd install-pkg-world destdir=/tmp/mybase ver=14.0 cmd_helper=1 packages="FreeBSD-runtime FreeBSD-utilities FreeBSD-ssh FreeBSD-vi FreeBSD-csh FreeBSD-clibs FreeBSD-fetch FreeBSD-libarchive FreeBSD-libbz2 FreeBSD-liblzma FreeBSD-libucl FreeBSD-openssl FreeBSD-zoneinfo FreeBSD-libexecinfo FreeBSD-kernel-cbsd FreeBSD-bootloader FreeBSD-devd FreeBSD-newsyslog FreeBSD-pf FreeBSD-ipfw FreeBSD-geom FreeBSD-syslogd FreeBSD-bhyve FreeBSD-acpi FreeBSD-devmatch FreeBSD-dhclient FreeBSD-bsdinstall FreeBSD-console-tools FreeBSD-bsdinstall FreeBSD-jail"
 ret=$?
 if [ ${ret} -ne 0 ]; then

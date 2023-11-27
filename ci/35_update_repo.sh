@@ -51,6 +51,9 @@ fi
 [ ! -d ${progdir}/myb ] && mkdir -p ${progdir}/myb
 grep -v '^#' ${progdir}/myb.list | sed 's:/usr/ports/::g' > ${progdir}/myb/myb.list
 
+touch ${progdir}/myb/brand.conf
+sysrc -qf ${progdir}/myb/brand.conf OSNAME="${OSNAME}"
+
 rsync -avz ${progdir}/myb-extras/ ${progdir}/myb/
 rsync -avz ${progdir}/jail-skel/ ${workdir}/jails-data/${jname}/
 

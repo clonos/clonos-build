@@ -16,6 +16,7 @@ done
 
 myb_firstboot="1"				# already initialized ?
 [ -r /etc/rc.conf ] && . /etc/rc.conf
+[ -r /usr/local/myb/brand.conf ] && . /usr/local/myb/brand.conf
 [ -z "${OSNAME}" ] && OSNAME="CBSD"
 if [ -z "${myb_default_network}" ]; then
 	myb_default_network="10.0.101"
@@ -34,12 +35,24 @@ if [ ${myb_firstboot} -eq 1 ]; then
 	pw usermod -s /bin/csh -n root
 
 	users_num=$( grep -v '^#' /etc/master.passwd | wc -l | awk '{printf $1}' )
-	if [ "${users_num}" != "29" ]; then
+
+	users_num_root=0
+
+	case "${OSNAME}" in
+		MyBee)
+			users_num_root=28
+			;;
+		ClonOS)
+			users_num_root=29
+			;;
+	esac
+
+	if [ "${users_num}" != "${users_num_root}" ]; then
 		SSH_ROOT_ENABLED=0
-		echo "[${users_num}] ${OSNAME} default SSH ROOT access: disabled" | tee -a /var/log/mybinst.log
+		echo "[${users_num}/${users_num_root}] ${OSNAME} default SSH ROOT access: disabled" | tee -a /var/log/mybinst.log
 	else
 		SSH_ROOT_ENABLED=1
-		echo "[${users_num}] ${OSNAME} default SSH ROOT access: enabled" | tee -a /var/log/mybinst.log
+		echo "[${users_num}/${users_num_root}] ${OSNAME} default SSH ROOT access: enabled" | tee -a /var/log/mybinst.log
 	fi
 	echo
 
@@ -436,13 +449,12 @@ convectix.d			# ${OSNAME} auto-setup
 cbsd_queue.d			# ${OSNAME} auto-setup
 vncterm.d			# ${OSNAME} auto-setup
 garm.d				# ${OSNAME} auto-setup
-# clonosdb.d			# ${OSNAME} auto-setup
+clonosdb.d			# ${OSNAME} auto-setup
 EOF
 
 # for DFLY
-cat > /usr/jails/etc/cloud-init-extras.conf <<EOF
-cbsd_cloud_init=1		# ${OSNAME} auto-setup
-EOF
+[ ! -r /usr/jails/etc/cloud-init-extras.conf ] && touch /usr/jails/etc/cloud-init-extras.conf
+sysrc -qf /usr/jails/etc/cloud-init-extras.conf cbsd_cloud_init=1
 
 env NOINTER=1 /usr/local/bin/cbsd initenv
 
@@ -637,6 +649,8 @@ if [ "${OSNAME}" = "ClonOS" ]; then
 
 	cp -a /usr/local/cbsd/modules/cbsd_queue.d/etc-sample/cbsd_queue.conf ~cbsd/etc/
 	ln -sf /usr/local/bin/python3.9 /usr/local/bin/python3
+
+	/usr/local/bin/cbsd clonosdb
 fi
 
 if [ "${myb_manage_loaderconf}" != "NO" ]; then
@@ -751,7 +765,7 @@ fi
 
 if [ ${myb_firstboot} -eq 1 ]; then
 /usr/bin/wall <<EOF
-  ${OSNAME} setup complete, reboot host!
+	${OSNAME} setup complete, reboot host!
 EOF
 sync
 /sbin/reboot
@@ -777,14 +791,15 @@ fi
 
 # drop cache
 if [ "${OSNAME}" = "ClonOS" ]; then
-[ -r /usr/jails/tmp/bhyve-vm.json ] && /bin/rm -f /usr/jails/tmp/bhyve-vm.json
-[ -r /usr/jails/tmp/bhyve-cloud.json ] && rm -f /usr/jails/tmp/bhyve-cloud.json
+	[ -r /usr/jails/tmp/bhyve-vm.json ] && /bin/rm -f /usr/jails/tmp/bhyve-vm.json
+	[ -r /usr/jails/tmp/bhyve-cloud.json ] && rm -f /usr/jails/tmp/bhyve-cloud.json
 
-/usr/local/bin/cbsd get_bhyve_profiles src=cloud
-/usr/local/bin/cbsd get_bhyve_profiles src=vm clonos=1
-echo "mybinst.sh done"
+	/usr/local/bin/cbsd get_bhyve_profiles src=cloud
+	/usr/local/bin/cbsd get_bhyve_profiles src=vm clonos=1
 
-/usr/sbin/service nginx reload
+	/usr/sbin/service nginx reload
 fi
+
+echo "mybinst.sh done"
 
 exit 0

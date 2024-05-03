@@ -11,7 +11,7 @@ progdir=$( dirname ${progdir} )
 dstdir=$( mktemp -d )
 
 # cleanup old pkg ?
-#/var/cache/packages/pkgdir-cpr3e421 (host) -> /tmp/packages (jail)
+#/var/cache/packages/pkgdir-${jname} (host) -> /tmp/packages (jail)
 
 PREFETCHED_PACKAGES="\
 go120 \
@@ -22,8 +22,10 @@ helm \
 perl5 \
 "
 
-echo "cbsd cpr batch=1 ver=${mybbasever} pkglist=/root/myb-build/micro.list dstdir=${dstdir} package_fetch=\"${PREFETCHED_PACKAGES}\""
-cbsd cpr batch=1 ver=${mybbasever} pkglist=/root/myb-build/micro.list dstdir=${dstdir} package_fetch="${PREFETCHED_PACKAGES}" autoremove=1
+cpr_jname="cpr3e421"
+
+echo "cbsd cpr jname=${cpr_jname} batch=1 ver=${mybbasever} pkglist=/root/myb-build/micro.list dstdir=${dstdir} package_fetch=\"${PREFETCHED_PACKAGES}\""
+cbsd cpr batch=1 jname=${cpr_jname} ver=${mybbasever} pkglist=/root/myb-build/micro.list dstdir=${dstdir} package_fetch="${PREFETCHED_PACKAGES}" autoremove=1
 
 [ -d ${progdir}/micro1 ] && rm -rf ${progdir}/micro1
 mkdir -p ${progdir}/micro1
@@ -33,24 +35,24 @@ mkdir -p ${progdir}/micro1
 [ ! -d ${progdir}/usr/local/share ] && mkdir -p ${progdir}/micro1/usr/local/share
 
 for i in kubectl helm k9s; do
-	if [ ! -x /usr/jails/jails-data/cpr3e421-data/usr/local/bin/${i} ]; then
-		echo "no such: /usr/jails/jails-data/cpr3e421-data/usr/local/bin/${i}"
+	if [ ! -x /usr/jails/jails-data/${cpr_jname}-data/usr/local/bin/${i} ]; then
+		echo "no such: /usr/jails/jails-data/${cpr_jname}-data/usr/local/bin/${i}"
 		exit 1
 	else
 		echo "copy ${i} -> ${progdir}/micro1/usr/local/bin"
-		cp -a /usr/jails/jails-data/cpr3e421-data/usr/local/bin/${i} ${progdir}/micro1/usr/local/bin
+		cp -a /usr/jails/jails-data/${cpr_jname}-data/usr/local/bin/${i} ${progdir}/micro1/usr/local/bin
 	fi
 done
 
 # CA
-if [ ! -r /usr/jails/jails-data/cpr3e421-data/usr/local/share/certs/ca-root-nss.crt ]; then
-	echo "no such: /usr/jails/jails-data/cpr3e421-data/usr/local/share/certs/ca-root-nss.crt from ca_root_nss"
+if [ ! -r /usr/jails/jails-data/${cpr_jname}-data/usr/local/share/certs/ca-root-nss.crt ]; then
+	echo "no such: /usr/jails/jails-data/${cpr_jname}-data/usr/local/share/certs/ca-root-nss.crt from ca_root_nss"
 	exit 1
 fi
 
 echo "copy /etc/ssl -> ${progdir}/micro1/etc/"
 echo "copy /usr/local/share/certs -> ${progdir}/micro1/usr/local/share/"
-cp -a /usr/jails/jails-data/cpr3e421-data/etc/ssl ${progdir}/micro1/etc/
-cp -a /usr/jails/jails-data/cpr3e421-data/usr/local/share/certs ${progdir}/micro1/usr/local/share/
+cp -a /usr/jails/jails-data/${cpr_jname}-data/etc/ssl ${progdir}/micro1/etc/
+cp -a /usr/jails/jails-data/${cpr_jname}-data/usr/local/share/certs ${progdir}/micro1/usr/local/share/
 
 exit 0

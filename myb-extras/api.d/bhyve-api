@@ -1,8 +1,8 @@
 #!/usr/local/bin/cbsd
-#v12.2.2
+#v14.0.0
 DIST_MODULE_PATH="${distmoduledir}/api.d"
 . ${DIST_MODULE_PATH}/share/bhyve.conf
-MYOPTARG="imgsize jname image ram cpus pubkey host_hostname extras ci_user_pw_user ci_user_pw_root bhyve_vnc_tcp_bind"
+MYOPTARG="imgsize jname image ram cpus pubkey host_hostname extras ci_user_pw_user ci_user_pw_root bhyve_vnc_tcp_bind vm_os_type vm_os_profile"
 MYARG="mode"
 MYDESC="Operate with bhyve via API"
 CBSDMODULE="sys"
@@ -50,6 +50,8 @@ vm_os_type=
 vm_os_profile=
 ip4_addr=
 ip4_gw=
+vm_os_type=
+vm_os_profile=
 
 . ${cbsdinit}
 . ${subrdir}/system.subr
@@ -59,11 +61,27 @@ ip4_gw=
 
 create_env()
 {
+	local _profile_file=
 	ssh_user=
 	ssh_port=
 
-	eval vm_os_type="\$${image}_vm_os_type"
-	eval vm_os_profile="\$${image}_vm_os_profile"
+	if [ "${image}" = "bhyve" -o -z "${image}" ]; then
+		[ -z "${vm_os_type}" ] && err 1 "empty image and/or vm_os_type"
+		[ -z "${vm_os_profile}" ] && err 1 "empty image and/or vm_os_profile"
+		if [ -r "${workdir}/etc/vm-${vm_os_type}-${vm_os_profile}.conf" ]; then
+			_profile_file="${workdir}/etc/vm-${vm_os_type}-${vm_os_profile}.conf"
+		elif [ -r "${workdir}/etc/defaults/vm-${vm_os_type}-${vm_os_profile}.conf" ]; then
+			_profile_file="${workdir}/etc/defaults/vm-${vm_os_type}-${vm_os_profile}.conf"
+		fi
+		[ -z "${_profile_file}" ] && err 1 "no such profile for type/profile: ${vm_os_type}-${vm_os_profile}"
+		eval $( ${GREP_CMD} ^myb_image= ${_profile_file} 2>/dev/null )
+		[ -z "${myb_image}" ] && err 1 "no such myb_image vars for type/profile: ${vm_os_type}-${vm_os_profile}"
+		image="${myb_image}"
+	else
+		eval vm_os_type="\$${image}_vm_os_type"
+		eval vm_os_profile="\$${image}_vm_os_profile"
+	fi
+
 	eval ssh_user="\$${image}_ssh_user"
 
 	[ -z "${ssh_host}" ] && ssh_host="${nodeip}"
@@ -262,8 +280,15 @@ create_env()
 	else
 		vnc_port=$( ${HEAD_CMD} -n1 ${cbsd_workdir}/vm/${jname}/vnc_port | ${AWK_CMD} '{printf $1}' )
 		port=$(( vnc_port + 3000 ))
+		vnc_redir=$(( vnc_port + 4000 ))
+
+		# to config: VDI flags
+		expose mode=add jname=${jname} in=${vnc_redir} out=${vnc_port} outaddr=127.0.0.1 >> ${MY_LOG}
 
 		if [ "${vm_os_type}" = "windows" ]; then
+			log "expose mode=add jname=${jname} in=${port} out=3389"
+			expose mode=add jname=${jname} in=${port} out=3389 >> ${MY_LOG}
+		elif [ "${image}" = "ubuntu22_vdi" ]; then
 			log "expose mode=add jname=${jname} in=${port} out=3389"
 			expose mode=add jname=${jname} in=${port} out=3389 >> ${MY_LOG}
 		else
@@ -272,6 +297,28 @@ create_env()
 		fi
 	fi
 
+	if [ -n "${api_ip4_pool}" ]; then
+		my_extv4=$( /usr/local/bin/cbsd dhcpd ip4pool=${api_ip4_pool} )
+	fi
+
+	# for test only
+	if [ -n "${my_extv4}" ]; then
+		cat > /usr/jails/jails-system/${jname}/master_poststart.d/v4 <<EOF
+#!/bin/sh
+/sbin/ifconfig ix1 add ${my_extv4}/28
+/usr/local/bin/cbsd expose mode=add jname=${jname} inaddr=${my_extv4}
+EOF
+		/sbin/ifconfig ix1 add ${my_extv4}/28
+		/usr/local/bin/cbsd expose mode=add jname=${jname} inaddr=${my_extv4}
+
+		cat > /usr/jails/jails-system/${jname}/master_poststop.d/v4 <<EOF
+#!/bin/sh
+/sbin/ifconfig ix1 delete ${my_extv4}
+/usr/local/bin/cbsd expose mode=delete jname=${jname} inaddr=${my_extv4}
+EOF
+		chmod +x /usr/jails/jails-system/${jname}/master_poststop.d/v4 /usr/jails/jails-system/${jname}/master_poststart.d/v4
+		ssh4_host="${my_extv4}"
+	fi
 
 	if is_number "${imgsize}"; then
 		if conv2bytes ${imgsize}; then
@@ -295,6 +342,13 @@ create_env()
 		ram_bytes="${ram}"
 	fi
 
+	if conv2human "${ram_bytes}"; then
+		ram="${convval}"
+	fi
+	if conv2human "${imgsize_bytes}"; then
+		imgsize="${convval}"
+	fi
+
 	create_time=$( ${DATE_CMD} -u "+%Y-%m-%dT%H:%M:%S" )
 	[ -z "${port4}" ] && port4="${port}"
 	[ -z "${port6}" ] && port6="22"
@@ -313,45 +367,186 @@ create_env()
 		hostname="${mq_tube}"
 	fi
 
+	case "${vm_os_type}" in
+		windows)
+			port4=3389
+			port6=3389
+			rdp_host="${ssh_host}"
+			rdp_port="${port}"
+			rdp4_host="${ssh4_host}"
+			rdp6_host="${ssh6_host}"
+			rdp4_port="${port4}"
+			rdp6_port="${port6}"
+			[ -z "${rdp6_port}" ] && rdp6_port="${rdp4_port}"
+			ssh_user=
+			ssh_host=
+			ssh4_host=
+			ssh6_host=
+			ssh_port=
+			ssh4_port=
+			ssh6_port=
+			rdp_user="Admin"
+			rdp_password="cix2022"
+			;;
+		*)
+			rdp_user=
+			rdp_password=
+			rdp_host=
+			rdp_port=
+			;;
+	esac
+
+	if [ "${image}" = "ubuntu22_vdi" ]; then
+		port4=3389
+		port6=3389
+		rdp_host="${ssh_host}"
+		rdp_port="${port}"
+		rdp4_host="${ssh4_host}"
+		rdp6_host="${ssh6_host}"
+		rdp4_port="${port4}"
+		rdp6_port="${port6}"
+		[ -z "${rdp6_port}" ] && rdp6_port="${rdp4_port}"
+		ssh_user=
+		ssh_host=
+		ssh4_host=
+		ssh6_host=
+		ssh_port=
+		ssh4_port=
+		ssh6_port=
+		rdp_user="user"
+		rdp_password="password"
+	fi
+
 	echo "${hostname}" > ${cbsd_api_dbdir}/${cid}/${jname}.node
 	${CAT_CMD} > ${cbsd_api_dbdir}/${cid}/${jname}-bhyve.ssh <<EOF
 {
-  "instanceid": "${host_hostname}",
+  "id": "${host_hostname}",
   "type": "vm",
   "is_power_on": true,
   "created": "${create_time}",
   "cpus": ${cpus},
+  "ram": "${ram}",
   "ram_bytes": ${ram_bytes},
   "ram_human": "${ram}",
   "imgsize_bytes": ${imgsize_bytes},
-  "imgsize_human": "${imgsize}",
+  "imgsize": "${imgsize}",
   "vm_os_type": "${vm_os_type}",
   "vm_os_profile": "${vm_os_profile}",
+  "image": "${image}",
+EOF
+
+if [ -n "${ssh_user}" ]; then
+${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-bhyve.ssh <<EOF
   "ssh_user": "${ssh_user}",
+EOF
+fi
+if [ -n "${ssh_host}" ]; then
+${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-bhyve.ssh <<EOF
   "ssh_host": "${ssh_host}",
+EOF
+fi
+if [ -n "${ssh4_user}" ]; then
+${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-bhyve.ssh <<EOF
   "ssh4_host": "${ssh4_host}",
+EOF
+fi
+if [ -n "${ssh6_host}" ]; then
+${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-bhyve.ssh <<EOF
   "ssh6_host": "${ssh6_host}",
-  "ssh_port": ${port},
-  "ssh4_port": ${port4},
-  "ssh6_port": ${port6},
+EOF
+fi
+if [ -n "${ssh_port}" ]; then
+${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-bhyve.ssh <<EOF
+  "ssh_port": ${ssh_port},
+EOF
+fi
+if [ -n "${ssh4_port}" ]; then
+${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-bhyve.ssh <<EOF
+  "ssh4_port": ${ssh4_port},
+EOF
+fi
+if [ -n "${ssh6_port}" ]; then
+${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-bhyve.ssh <<EOF
+  "ssh6_port": ${ssh6_port},
+EOF
+fi
+if [ -n "${rdp_user}" ]; then
+${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-bhyve.ssh <<EOF
+  "rdp_user": "${rdp_user}",
+EOF
+fi
+if [ -n "${rdp_password}" ]; then
+${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-bhyve.ssh <<EOF
+  "rdp_password": "${rdp_password}",
+EOF
+fi
+if [ -n "${rdp_host}" ]; then
+${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-bhyve.ssh <<EOF
+  "rdp_host": "${rdp_host}",
+EOF
+fi
+if [ -n "${rdp4_host}" ]; then
+${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-bhyve.ssh <<EOF
+  "rdp4_host": "${rdp4_host}",
+EOF
+fi
+if [ -n "${rdp4_port}" ]; then
+${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-bhyve.ssh <<EOF
+  "rdp4_port": ${rdp4_port},
+EOF
+fi
+if [ -n "${rdp6_host}" ]; then
+${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-bhyve.ssh <<EOF
+  "rdp6_host": "${rdp6_host}",
+EOF
+fi
+if [ -n "${rdp6_port}" ]; then
+${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-bhyve.ssh <<EOF
+  "rdp6_port": ${rdp6_port},
+EOF
+fi
+if [ -n "${rdp_port}" ]; then
+${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-bhyve.ssh <<EOF
+  "rdp_port": ${rdp_port},
+EOF
+fi
+
+## VNC REDIR
+${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-bhyve.ssh <<EOF
+  "vnc_port": ${vnc_redir},
+  "vnc_password": "cbsd",
+  "vnc_host": "209.127.24.102",
 EOF
 
 	case "${vm_os_type}" in
 		windows)
 			${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-bhyve.ssh <<EOF
-  "ssh_string": "xfreerdp +clipboard +fonts /rfx /size:1920x1200 /u:windows /v:${ssh_host}:${port}",
-  "ssh4_string": "xfreerdp +clipboard +fonts /rfx /size:1920x1200 /u:windows /v:${ssh4_host}:${port4}",
-  "ssh6_string": "xfreerdp +clipboard +fonts /rfx /size:1920x1200 /u:windows /v:${ssh6_host}:${port6}"
+  "rdp_string": "xfreerdp +clipboard +fonts /rfx /size:1920x1200 /u:Admin /p:cix2022 /v:${rdp_host}:${rdp_port}",
+  "rdp4_string": "xfreerdp +clipboard +fonts /rfx /size:1920x1200 /u:Admin /p:cix2022 /v:${rdp4_host}:${port4}",
+  "rdp6_string": "xfreerdp +clipboard +fonts /rfx /size:1920x1200 /u:Admin /p:cix2022 /v:[${rdp6_host}]:${port6}"
 }
 EOF
 			;;
 		*)
+
+			if [ "${image}" = "ubuntu22_vdi" ]; then
 			${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-bhyve.ssh <<EOF
+  "rdp_string": "xfreerdp +clipboard +fonts /rfx /size:1920x1200 /u:user /p:password /v:${rdp_host}:${rdp_port}",
+  "rdp4_string": "xfreerdp +clipboard +fonts /rfx /size:1920x1200 /u:user /p:password /v:${rdp4_host}:${port4}",
+  "rdp6_string": "xfreerdp +clipboard +fonts /rfx /size:1920x1200 /u:user /p:password /v:[${rdp6_host}]:${port6}"
+}
+EOF
+			else
+			${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-bhyve.ssh <<EOF
+  "ssh_port": ${port},
   "ssh_string": "ssh ${ssh_user}@${ssh_host} -p${port}",
   "ssh4_string": "ssh ${ssh_user}@${ssh4_host} -p${port4}",
   "ssh6_string": "ssh ${ssh_user}@${ssh6_host} -p${port6}"
 }
 EOF
+
+
+fi
 			;;
 	esac
 
@@ -365,9 +560,9 @@ is_power_on="true"
 created="${create_time}"
 cpus="${cpus}"
 ram_bytes="${ram_bytes}"
-ram_human="${ram}"
+ram="${ram}"
 imgsize_bytes="${imgsize_bytes}"
-imgsize_human="${imgsize}"
+imgsize="${imgsize}"
 vm_os_type="${vm_os_type}"
 vm_os_profile="${vm_os_profile}"
 ssh_user="${ssh_user}"
@@ -382,9 +577,9 @@ EOF
 	case "${vm_os_type}" in
 		windows)
 			${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/vms/${jname} <<EOF
-ssh_string="xfreerdp +clipboard +fonts /rfx /size:1920x1200 /u:windows /v:${ssh_host}:${port}"
-ssh4_string="xfreerdp +clipboard +fonts /rfx /size:1920x1200 /u:windows /v:${ssh4_host}:${port4}"
-ssh6_string="xfreerdp +clipboard +fonts /rfx /size:1920x1200 /u:windows /v:${ssh6_host}:${port6}"
+ssh_string="xfreerdp +clipboard +fonts /rfx /size:1920x1200 /u:Admin /v:${ssh_host}:${port}"
+ssh4_string="xfreerdp +clipboard +fonts /rfx /size:1920x1200 /u:Admin /v:${ssh4_host}:${port4}"
+ssh6_string="xfreerdp +clipboard +fonts /rfx /size:1920x1200 /u:Admin /v:${ssh6_host}:${port6}"
 EOF
 			;;
 		*)

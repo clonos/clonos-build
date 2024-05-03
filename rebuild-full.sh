@@ -108,7 +108,6 @@ set -o errexit
 /root/myb-build/ci/00_srcup.sh
 /root/myb-build/ci/10_patch-src.sh
 /root/myb-build/ci/20_world.sh
-
 /root/myb-build/ci/25_base-pkg.sh
 /root/myb-build/ci/30_cpr.sh
 /root/myb-build/ci/35_cpr-micro.sh

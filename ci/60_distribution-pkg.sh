@@ -9,7 +9,6 @@ progdir=$( realpath ${progdir} )
 progdir=$( dirname ${progdir} )
 
 . ${progdir}/brand.conf
-
 : ${distdir="/usr/local/cbsd"}
 [ ! -r "${distdir}/subr/cbsdbootstrap.subr" ] && exit 1
 . ${distdir}/subr/cbsdbootstrap.subr || exit 1
@@ -21,6 +20,7 @@ cp -a ${progdir}/myb-extras/pkg/${OSNAME}-latest.conf /tmp/mybase/usr/local/etc/
 
 # for ClonOS + MyBee
 chroot /tmp/mybase /bin/sh <<EOF
+export SIGNATURE_TYPE=none ASSUME_ALWAYS_YES=yes IGNORE_OSVERSION=yes
 pkg update -f
 pkg install -y myb nginx cbsd cbsd-mq-router cbsd-mq-api curl jq cdrkit-genisoimage ca_root_nss beanstalkd bash dmidecode hw-probe rsync smartmontools sudo tmux mc ttyd
 EOF
@@ -29,6 +29,7 @@ EOF
 case "${OSNAME}" in
 	ClonOS)
 		chroot /tmp/mybase /bin/sh <<EOF
+export SIGNATURE_TYPE=none ASSUME_ALWAYS_YES=yes IGNORE_OSVERSION=yes
 pkg install -y clonos
 EOF
 	;;

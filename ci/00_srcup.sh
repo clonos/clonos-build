@@ -10,7 +10,7 @@ set +e
 . ${progdir}/brand.conf
 
 echo "Build ${OSNAME} base version: ${mybbasever}"
-cbsd srcup ver=${mybbasever} rev=f9716eee8ab
+cbsd srcup ver=${mybbasever} rev=d338712beb1
 
 src_dir_makefile="/usr/jails/src/src_${mybbasever}/src/Makefile"
 

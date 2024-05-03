@@ -60,7 +60,7 @@ fi
 
 cp -a ${progdir}/${OSNAME}.list ${progdir}/myb.list
 
-echo "cbsd cpr batch=1 ver=${mybbasever} pkglist=${progdir}/myb.list dstdir=${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/"
+echo "cbsd cpr batch=1 ver=${mybbasever} jname="${cpr_jname}" pkglist=${progdir}/myb.list dstdir=${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/"
 
 PREFETCHED_PACKAGES="\
 bash \
@@ -96,9 +96,9 @@ git \
 libvncserver \
 node \
 npm-node18 \
-php82
-php82-session \
-php82-opcache \
+php83
+php83-session \
+php83-opcache \
 py39-numpy \
 "
 fi
@@ -107,7 +107,7 @@ fi
 #/usr/ports/net/realtek-re-kmod
 
 
-cbsd cpr batch=1 makeconf=/root/myb-build/myb_make.conf ver=${mybbasever} pkglist=${progdir}/myb.list dstdir=${dstdir} package_fetch="${PREFETCHED_PACKAGES}" autoremove=1
+cbsd cpr batch=1 makeconf=/root/myb-build/myb_make.conf jname="${cpr_jname}" ver=${mybbasever} pkglist=${progdir}/myb.list dstdir=${dstdir} package_fetch="${PREFETCHED_PACKAGES}" autoremove=1
 ret=$?
 
 if [ ${ret} -ne 0 ]; then

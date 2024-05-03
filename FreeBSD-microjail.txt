@@ -69,8 +69,8 @@ usr/lib/libgssapi_spnego.so
 
 # chech /etc/pam.d/{system,sshd}
 usr/lib/pam_unix.so
-usr/lib/pam_opie.so
-usr/lib/pam_opieaccess.so
+#usr/lib/pam_opie.so
+#usr/lib/pam_opieaccess.so
 usr/lib/pam_nologin.so
 usr/lib/pam_login_access.so
 usr/lib/pam_permit.so

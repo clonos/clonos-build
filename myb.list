@@ -4,6 +4,6 @@
 /usr/ports/sysutils/cbsd-mq-api
 /usr/ports/sysutils/cbsd-mq-router
 /usr/ports/sysutils/genisoimage
-/usr/ports/net/wireguard
+/usr/ports/net/wireguard-go
 /usr/ports/sysutils/garm
 /usr/ports/sysutils/spacevm-sendfio

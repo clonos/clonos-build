@@ -2,6 +2,6 @@ sysutils/cbsd
 sysutils/cbsd-mq-api
 sysutils/cbsd-mq-router
 sysutils/genisoimage
-net/wireguard
+net/wireguard-go
 sysutils/garm
 sysutils/spacevm-sendfio

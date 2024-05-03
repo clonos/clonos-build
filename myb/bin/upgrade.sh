@@ -107,7 +107,7 @@ fi
 env ASSUME_ALWAYS_YES=yes IGNORE_OSVERSION=yes pkg upgrade -U -y
 
 # switch to CBSD kernel
-env ASSUME_ALWAYS_YES=yes IGNORE_OSVERSION=yes pkg install -y FreeBSD-kernel-cbsd.cbsd-14
+env ASSUME_ALWAYS_YES=yes IGNORE_OSVERSION=yes pkg install -y FreeBSD-kernel-cbsd-14.0p6
 
 # todo: check for version changes
 echo

@@ -10,7 +10,7 @@ fi
 
 ECHO="echo -e"
 
-check="jail alma9 arch22 centos7 centos8 centos9 debian10 debian11 debian12 devuan5 dflybsd6 euro9 fedora37 fedora38 fedora39 fedora40 freebsd13_ufs freebsd13_zfs freebsd14_ufs freebsd14_zfs freebsd15_ufs freebsd15_zfs freefire14_ufs freepbx ghostbsd22 homeass kali2022 k8s netbsd9 netbsd10 openbsd7 opnsense22 oracle7 oracle8 oracle9 rocky8 rocky9 ubuntu22 ubuntu22_vdi ubuntu24 xigmanas"
+check="jail alma9 arch22 centos7 centos8 centos9 debian11 debian12 devuan5 dflybsd6 euro9 fedora37 fedora38 fedora39 fedora40 freebsd13_ufs freebsd13_zfs freebsd14_ufs freebsd14_zfs freebsd15_ufs freebsd15_zfs freefire14_ufs freepbx ghostbsd22 homeass kali2022 k8s netbsd9 netbsd10 openbsd7 opnsense22 oracle7 oracle8 oracle9 rocky8 rocky9 ubuntu22 ubuntu22_vdi ubuntu24 xigmanas"
 
 if [ -z "${ver}" -o "${ver}" = "native" ]; then
 	tmpver=$( uname -r )
@@ -30,7 +30,6 @@ arch22_iso="${workdir}/src/iso/cbsd-cloud-arch-2022.09-cloud.raw"
 centos7_iso="${workdir}/src/iso/cbsd-cloud-CentOS-7.9.0-x86_64-cloud.raw"
 centos8_iso="${workdir}/src/iso/cbsd-cloud-CentOS-stream-8-20231106-x86_64-cloud.raw"
 centos9_iso="${workdir}/src/iso/cbsd-cloud-CentOS-stream-9-20231113-x86_64-cloud.raw"
-debian10_iso="${workdir}/src/iso/cbsd-cloud-cloud-Debian-x86-10.9.1.raw"
 debian11_iso="${workdir}/src/iso/cbsd-cloud-Debian-x86-11.8.0.raw"
 debian12_iso="${workdir}/src/iso/cbsd-cloud-Debian-x86-12.5.0.raw"
 devuan5_iso="${workdir}/src/iso/cbsd-cloud-Devuan-x86-5.0.raw"
@@ -44,12 +43,12 @@ freebsd13_ufs_iso="${workdir}/src/iso/cbsd-cloud-FreeBSD-ufs-13.3.0-RELEASE-amd6
 freebsd13_zfs_iso="${workdir}/src/iso/cbsd-cloud-FreeBSD-zfs-13.3.0-RELEASE-amd64.raw"
 freebsd14_ufs_iso="${workdir}/src/iso/cbsd-cloud-FreeBSD-ufs-14.0.10-CURRENT-amd64.raw"
 freebsd14_zfs_iso="${workdir}/src/iso/cbsd-cloud-FreeBSD-zfs-14.0.10-CURRENT-amd64.raw"
-freebsd15_ufs_iso="${workdir}/src/iso/cbsd-cloud-FreeBSD-ufs-15.0.1-CURRENT-amd64.raw"
-freebsd15_zfs_iso="${workdir}/src/iso/cbsd-cloud-FreeBSD-zfs-15.0.1-CURRENT-amd64.raw"
+freebsd15_ufs_iso="${workdir}/src/iso/cbsd-cloud-FreeBSD-ufs-15.0.2-CURRENT-amd64.raw"
+freebsd15_zfs_iso="${workdir}/src/iso/cbsd-cloud-FreeBSD-zfs-15.0.2-CURRENT-amd64.raw"
 freefire14_ufs_iso="${workdir}/src/iso/cbsd-cloud-firestarter-ufs-14.0-RELEASE-amd64.raw"
 freepbx_iso="${workdir}/src/iso/cbsd-cloud-FreePBX-16.0-x86_64-cloud.raw"
 ghostbsd22_iso="${workdir}/src/iso/cbsd-cloud-GhostBSD-ufs-x64-22.11-RELEASE-amd64.raw"
-homeass_iso="${workdir}/src/iso/cbsd-cloud-cloud-HomeAssistant-8.raw"
+homeass_iso="${workdir}/src/iso/cbsd-iso-haos_generic-x86-64-12.1.img"
 kali2022_iso="${workdir}/src/iso/cbsd-cloud-cloud-Kali-2022-amd64.raw"
 k8s_iso="${workdir}/src/iso/cbsd-cloud-cloud-kubernetes-27.1.2.raw"
 netbsd10_iso="${workdir}/src/iso/cbsd-cloud-netbsd-10.0.raw"
@@ -63,7 +62,7 @@ rocky8_iso="${workdir}/src/iso/cbsd-cloud-Rocky-8.8-x86_64-cloud.raw"
 rocky9_iso="${workdir}/src/iso/cbsd-cloud-Rocky-9.3-x86_64-cloud.raw"
 ubuntu22_iso="${workdir}/src/iso/cbsd-cloud-cloud-Ubuntu-x86-22.04.03.raw"
 ubuntu22_vdi_iso="${workdir}/src/iso/cbsd-cloud-cloud-Ubuntu-vdi-x86-22.04.raw"
-ubuntu24_iso="${workdir}/src/iso/cbsd-cloud-cloud-Ubuntu-x86-22.04.raw"
+ubuntu24_iso="${workdir}/src/iso/cbsd-cloud-cloud-Ubuntu-x86-24.04.raw"
 windows10_ru_iso="${workdir}/src/iso/cbsd-cloud-windows10ru-cloud.raw"
 xigmanas_iso="${workdir}/src/iso/cbsd-cloud-XigmaNAS-13.1.0.5.9790-amd64.raw"
 

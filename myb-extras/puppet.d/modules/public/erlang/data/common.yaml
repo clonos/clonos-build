@@ -1,5 +1,0 @@
----
-erlang::package_name: 'erlang'
-erlang::package_ensure: 'installed'
-erlang::manage_repo: true
-erlang::repo_ensure: 'present'

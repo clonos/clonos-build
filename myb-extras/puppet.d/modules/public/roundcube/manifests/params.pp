@@ -8,7 +8,7 @@
 #
 class roundcube::params {
   $version = '1.6.0'
-  $checksum = '2b8923836a0f83f9806fffc6dfa245705968a0005deab66c1056570eae11c7d7'  # complete edition
+  $checksum = '2409ccdfe2e465f086cb9fc18c88dfe0aaf6ccc23924564975061209921694ba'  # complete edition
   $checksum_type = 'sha256'
 
   # deprecated: 'camptocamp' will be replaced with 'puppet' in the next major release
@@ -22,6 +22,7 @@ class roundcube::params {
 
   $exec_paths = ['/usr/local/sbin', '/usr/local/bin', '/usr/sbin', '/usr/bin', '/sbin', '/bin']
   $composer_command_name = 'composer'
+  $composer_user = 'root'
   $composer_disable_git_ssl_verify = false
   $composer_manage = true
 

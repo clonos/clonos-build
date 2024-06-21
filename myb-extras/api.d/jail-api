@@ -158,7 +158,7 @@ create_env()
 	done
 
 	# additional check for profile/type?
-	cid=$( ${MD5_CMD} -qs "${pubkey}" )
+	cid=$( ${miscdir}/cbsd_md5 "${pubkey}" )
 
 	if [ ! -d ${cbsd_api_dbdir}/${cid} ]; then
 		${MKDIR_CMD} -m 0770 -p ${cbsd_api_dbdir}/${cid}

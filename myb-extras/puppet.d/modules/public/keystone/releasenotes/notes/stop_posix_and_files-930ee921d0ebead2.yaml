@@ -1,4 +1,0 @@
----
-features:
-  - The module no longer manages POSIX users/groups, file and directory, that are already managed
-    by packaging.

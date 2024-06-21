@@ -1,136 +1,150 @@
-# Class: sudo
+# @summary
+#   This module manages sudo
 #
-# This module manages sudo
+# @param enable
+#   Ensure if present or absent.
 #
-# Parameters:
-#   [*ensure*]
-#     Ensure if present or absent.
-#     Default: present
+# @param package
+#   Name of the package.
+#   Only set this, if your platform is not supported or you know,
+#   what you're doing.
 #
-#   [*package*]
-#     Name of the package.
-#     Only set this, if your platform is not supported or you know,
-#     what you're doing.
-#     Default: auto-set, platform specific
+# @param package_ldap
+#   Name of the package with ldap support, if ldap_enable is set.
 #
-#   [*package_ensure*]
-#     Allows you to ensure a particular version of a package
-#     Default: present / lastest for RHEL < 5.5
+# @param package_ensure
+#   Allows you to ensure a particular version of a package
 #
-#   [*package_source*]
-#     Where to find the package.  Only set this on AIX (required) and
-#     Solaris (required) or if your platform is not supported or you
-#     know, what you're doing.
+# @param package_source
+#   Where to find the package. Only set this on AIX (required) and
+#   Solaris (required), if your platform is not supported or you
+#   know, what you're doing.
 #
-#     The default for aix is the perzl sudo package. For solaris 10 we
-#     use the official www.sudo.ws binary package.
+# @param package_provider
+#   Allows you to set a package provider.
 #
-#     Default: AIX: perzl.org
-#              Solaris: www.sudo.ws
+# @param package_admin_file
+#   Where to find a Solaris 10 package admin file for
+#   an unattended installation. We do not supply a default file, so
+#   this has to be staged separately and is required on Solaris 10.
 #
-#   [*package_admin_file*]
-#     Where to find a Solaris 10 package admin file for
-#     an unattended installation. We do not supply a default file, so
-#     this has to be staged separately
+# @param purge
+#   Whether or not to purge sudoers.d directory
 #
-#     Only set this on Solaris 10 (required)
-#     Default: /var/sadm/install/admin/puppet
+# @param purge_ignore
+#   Files to exclude from purging in sudoers.d directory
 #
-#   [*purge*]
-#     Whether or not to purge sudoers.d directory
-#     Default: true
+# @param suffix
+#   Adds a custom suffix to all files created in sudoers.d directory.
 #
-#   [*purge_ignore*]
-#     Files to exclude from purging in sudoers.d directory
-#     Default: undef
+# @param prefix
+#   Adds a custom prefix to all files created in sudoers.d directory.
 #
-#   [*config_file*]
-#     Main configuration file.
-#     Only set this, if your platform is not supported or you know,
-#     what you're doing.
-#     Default: auto-set, platform specific
+# @param config_file
+#   Main configuration file.
+#   Only set this, if your platform is not supported or you know,
+#   what you're doing.
 #
-#   [*config_dir*]
-#     Main directory containing sudo snippets, imported via
-#     includedir stanza in sudoers file
-#     Default: auto-set, platform specific
+# @param config_file_replace
+#   Wether or not the config file should be replaced.
 #
-#   [*extra_include_dirs*]
-#     Array of additional directories containing sudo snippets
-#     Default: undef
+# @param config_file_mode
+#   The mode to set on the config file.
 #
-#   [*content*]
-#     Alternate content file location
-#     Only set this, if your platform is not supported or you know,
-#     what you're doing.
-#     Default: auto-set, platform specific
+# @param config_dir
+#   Main directory containing sudo snippets, imported via
+#   includedir stanza in sudoers file
 #
-#   [*ldap_enable*]
-#     Enable ldap support on the package
-#     Default: false
+# @param config_dir_mode
+#   The mode to set for the config directory.
 #
-#   [*delete_on_error*]
-#     True if you want that the configuration is deleted on an error
-#     during a complete visudo -c run. If false it will just return
-#     an error and will add a comment to the sudoers configuration so
-#     that the resource will be checked at the following run.
-#     Default: true
+# @param extra_include_dirs
+#   Array of additional directories containing sudo snippets
 #
-#   [*validate_single*]
-#     Do a validate on the "single" file in the sudoers.d directory.
-#     If the validate fail the file will not be saved or changed
-#     if a file already exist.
-#     Default: false
+# @param content
+#   Alternate content template file location
+#   *Deprecated*, use *content_template* instead.
 #
-#   [*use_sudoreplay*]
-#     Boolean to enable the usage of sudoreplay.
-#     Default: false
+# @param content_template
+#   Alternate content template file location
+#   Only set this, if your platform is not supported or you know,
+#   what you're doing.
+#   Note: some parameters won't work, if default template isn't
+#   used
 #
-#   [*sudoreplay_discard*]
-#     Array of additional command to discard in sudo log.
-#     Default: undef
+# @param content_string
+#   Alternate config file content string
+#   Note: some parameters won't work, if default template isn't
+#   used
 #
-#   [*configs*]
-#     A hash of sudo::conf's
-#     Default: {}
+# @param secure_path
+#   The secure_path variable in sudoers.
 #
-# Actions:
-#   Installs sudo package and checks the state of sudoers file and
-#   sudoers.d directory.
+# @param ldap_enable
+#   Enable ldap support on the package
 #
-# Requires:
-#   Nothing
+# @param delete_on_error
+#   True if you want that the configuration is deleted on an error
+#   during a complete visudo -c run. If false it will just return
+#   an error and will add a comment to the sudoers configuration so
+#   that the resource will be checked at the following run.
 #
-# Sample Usage:
+# @param validate_single
+#   Do a validate on the "single" file in the sudoers.d directory.
+#   If the validate fail the file will not be saved or changed
+#   if a file already exist.
+#
+# @param config_dir_keepme
+#   Add a .keep-me file to the config dir
+#
+# @param use_sudoreplay
+#   Boolean to enable the usage of sudoreplay.
+#
+# @param wheel_config
+#   How to configure the wheel group in /etc/sudoers
+#   Options are either not to configure it it, configure it prompting for password,
+#   or configuring it without password prompt.
+#
+# @param sudoreplay_discard
+#   Array of additional command to discard in sudo log.
+#
+# @param configs
+#   A hash of sudo::conf's
+#
+# @example
 #   class { 'sudo': }
 #
-# [Remember: No empty lines between comments and class definition]
 class sudo (
-  Boolean                                   $enable              = true,
-  Optional[String]                          $package             = $sudo::params::package,
-  Optional[String]                          $package_ldap        = $sudo::params::package_ldap,
-  String                                    $package_ensure      = $sudo::params::package_ensure,
-  Optional[String]                          $package_source      = $sudo::params::package_source,
-  Optional[String]                          $package_admin_file  = $sudo::params::package_admin_file,
-  Boolean                                   $purge               = true,
-  Optional[Variant[String, Array[String]]]  $purge_ignore        = undef,
-  String                                    $config_file         = $sudo::params::config_file,
-  Boolean                                   $config_file_replace = true,
-  String                                    $config_file_mode    = $sudo::params::config_file_mode,
-  String                                    $config_dir          = $sudo::params::config_dir,
-  String                                    $config_dir_mode     = $sudo::params::config_dir_mode,
-  Optional[Array[String]]                   $extra_include_dirs  = undef,
-  String                                    $content             = $sudo::params::content,
-  Boolean                                   $ldap_enable         = false,
-  Boolean                                   $delete_on_error     = true,
-  Boolean                                   $validate_single     = false,
-  Boolean                                   $config_dir_keepme   = $sudo::params::config_dir_keepme,
-  Boolean                                   $use_sudoreplay      = false,
-  Optional[Array[String]]                   $sudoreplay_discard  = undef,
-  Hash                                      $configs             = {},
+  Boolean                                        $enable              = true,
+  Optional[String[1]]                            $package             = $sudo::params::package,
+  Optional[String[1]]                            $package_ldap        = $sudo::params::package_ldap,
+  String[1]                                      $package_ensure      = $sudo::params::package_ensure,
+  Optional[String[1]]                            $package_source      = $sudo::params::package_source,
+  Optional[String[1]]                            $package_provider    = $sudo::params::package_provider,
+  Optional[String[1]]                            $package_admin_file  = $sudo::params::package_admin_file,
+  Boolean                                        $purge               = true,
+  Optional[Variant[String[1], Array[String[1]]]] $purge_ignore        = undef,
+  Optional[String[1]]                            $suffix              = undef,
+  Optional[Pattern[/^[^.]+$/]]                   $prefix              = undef,
+  String[1]                                      $config_file         = $sudo::params::config_file,
+  Boolean                                        $config_file_replace = true,
+  String[1]                                      $config_file_mode    = $sudo::params::config_file_mode,
+  String[1]                                      $config_dir          = $sudo::params::config_dir,
+  String[1]                                      $config_dir_mode     = $sudo::params::config_dir_mode,
+  Optional[Array[String[1]]]                     $extra_include_dirs  = undef,
+  Optional[String[1]]                            $content             = undef,
+  Optional[String[1]]                            $content_template    = undef,
+  Optional[String[1]]                            $content_string      = undef,
+  Optional[String[1]]                            $secure_path         = $sudo::params::secure_path,
+  Boolean                                        $ldap_enable         = false,
+  Boolean                                        $delete_on_error     = true,
+  Boolean                                        $validate_single     = false,
+  Boolean                                        $config_dir_keepme   = $sudo::params::config_dir_keepme,
+  Boolean                                        $use_sudoreplay      = false,
+  Enum['absent','password','nopassword']         $wheel_config        = $sudo::params::wheel_config,
+  Optional[Array[String[1]]]                     $sudoreplay_discard  = undef,
+  Hash                                           $configs             = {},
 ) inherits sudo::params {
-
-
   case $enable {
     true: {
       $dir_ensure  = 'directory'
@@ -160,9 +174,34 @@ class sudo (
       package            => $package_real,
       package_ensure     => $package_ensure,
       package_source     => $package_source,
+      package_provider   => $package_provider,
       package_admin_file => $package_admin_file,
       ldap_enable        => $ldap_enable,
-      before             => [ File[$config_file], File[$config_dir] ],
+      before             => [
+        File[$config_file],
+        File[$config_dir],
+      ],
+    }
+  }
+
+  if $content_template and $content_string {
+    fail("'content_template' and 'content_string' are mutually exclusive")
+  }
+
+  if $content and $content_string {
+    fail("'content' (deprecated) and 'content_string' are mutually exclusive")
+  }
+
+  if $content {
+    warning("Class['sudo'] parameter 'content' is deprecated in favor of 'content_template'")
+    $content_real = template($content)
+  } else {
+    if $content_string {
+      $content_real = $content_string
+    } elsif $content_template {
+      $content_real = template($content_template)
+    } else {
+      $content_real = template($sudo::params::content_template)
     }
   }
 
@@ -172,7 +211,7 @@ class sudo (
     group   => $sudo::params::config_file_group,
     mode    => $config_file_mode,
     replace => $config_file_replace,
-    content => template($content),
+    content => $content_real,
   }
 
   file { $config_dir:
@@ -197,11 +236,5 @@ class sudo (
     sudo::conf { $config_name:
       * => $config,
     }
-  }
-
-  if $package_real {
-    anchor { 'sudo::begin': }
-    -> Class['sudo::package']
-    -> anchor { 'sudo::end': }
   }
 }

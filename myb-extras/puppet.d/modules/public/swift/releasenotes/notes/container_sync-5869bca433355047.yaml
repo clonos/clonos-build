@@ -1,5 +1,0 @@
----
-features:
-  - Add ability to configure container_sync middleware.
-  - Add ability to manage swift container-sync-realms config for
-    specifying the allowable clusters and their information.

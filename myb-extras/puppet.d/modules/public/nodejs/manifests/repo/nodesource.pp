@@ -12,7 +12,7 @@ class nodejs::repo::nodesource {
 
   case $facts['os']['family'] {
     'RedHat': {
-      if $facts['os']['release']['major'] =~ /^[678]$/ {
+      if $facts['os']['release']['major'] =~ /^[789]$/ {
         $dist_version = $facts['os']['release']['major']
         $name_string  = "Enterprise Linux ${dist_version}"
       }
@@ -46,12 +46,9 @@ class nodejs::repo::nodesource {
       $source_descr   = "Node.js for ${name_string} - \$basearch - Source"
       $source_baseurl = "https://rpm.nodesource.com/pub_${url_suffix}/${dist_type}/${dist_version}/SRPMS"
 
-      class { 'nodejs::repo::nodesource::yum': }
       contain 'nodejs::repo::nodesource::yum'
-
     }
     'Debian': {
-      class { 'nodejs::repo::nodesource::apt': }
       contain 'nodejs::repo::nodesource::apt'
     }
     default: {

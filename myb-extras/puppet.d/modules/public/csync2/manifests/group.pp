@@ -1,113 +1,99 @@
-#Resource definition for a csync2 GROUP. This is the core resource realized on
-#each node in the csync2 cluster.
-#Options:
-#[group_key] This defines the name of the group-key to utilize for the defined
-#group. By default it will be based off of the NAME of the defined resource.
-#[key_source] Defines the location (local or from puppet-server) of the key
-#to use for syncing this particular group
-#[includes] The list of folders, or single folders to use with a sync group.
-#Defaults to a test path.
-#[excludes] A default list of files or folders to EXCLUDE from syncing. This
-#defaults to everything so make sure to modify this option!
-#[configfile] The default config-file to use for csync2. You probably
-#shouldn't modify.
-#[configpath] The default config-path to use for csync2.
-#[auto] The logic to use for syncing of conflicts. This defaults to none. You
-#can choose from:
-#none, first, younger, older, bigger, smaller, left, right. Probably younger or
-#none is what you want.
-#[checkfreq] The amount of sleep timing to wait after a file modification has
-#been detected. Default to 5s.
-
-#Base resource definition for a csync2 group.
+# @summary
+#   Manages a Csync2 group.
+#
+# @example A simple example to sync the csync2 config itself.
+#   csync2::group { 'cluster':
+#     hosts  => ['node1.example.org', 'node2.example.org'],
+#     blocks => [
+#       {
+#         'includes' => [ '/etc/csync2.cfg' ],
+#       },
+#     ],
+#     key    => 'supersecret',
+#   }
+#
+# @example A more complex example with two blocks and actions.
+#   csync2::group { 'monitoring':
+#     hosts  => ['node1.example.org', 'node2.example.org'],
+#     blocks => [
+#       {
+#         'includes' => [ '/etc/icinga2/features-available', '/etc/icinga2/features-enabled' ],
+#         'actions'  => [
+#           {
+#             'pattern' => [ '/etc/icinga2/features-enabled/*' ],
+#             'exec'    => [ 'systemctl reload icinga2' ],
+#             'logfile' => '/var/log/csync2_action.log',
+#             'do'      => 'do-local',
+#           },
+#         ],
+#       },
+#       {
+#         'includes' => [ '/etc/icingaweb2' ],
+#         'excludes' => [ '/etc/icingaweb2/modules/director', '/etc/icingaweb2/enabledModules/director' ],
+#       },
+#     ],
+#     key    => 'supersecret-2',
+#   }
+#
+# @param ensure
+#   Wether to use or to remove the group.
+#
+# @param hosts
+#   All involved hosts of the group.
+#
+# @param key
+#   The symmetric key to authenticate hosts to each other.
+#
+# @param group
+#   Name of the group.
+#
+# @param key_path
+#   Path to the file the key will save to.
+#
+# @param blocks
+#   Manages blocks of config snippets. A block has to be of datatype Hash and consists of
+#   'includes', 'excludes' and 'actions' as keys. The 'actions' are also an Array of Hashes
+#   and has to constist of 'pattern', 'exec', 'logfile' and 'do' as keys.
+#
+# @param auto
+#   Set resolution method if files have conflicts and doesn't know which to use.
+#
 define csync2::group (
-  $group_key      = "csync2.${name}.key",
-  $key_source     = $::csync2::params::default_key,
-  $includes       = $::csync2::params::default_includes,
-  $excludes       = $::csync2::params::default_excludes,
-  $configfile     = $::csync2::csync2_config,
-  $configpath     = $::csync2::params::configpath,
-  $auto           = $::csync2::params::default_auto,
-  $checkfreq      = $::csync2::checkfreq,
-  $csync2_exec    = $::csync2::csync2_exec,
-  $csync2_package = $::csync2::csync2_package,
+  Array[Stdlib::Host]             $hosts,
+  String                          $key,
+  Enum['present', 'absent']       $ensure   = 'present',
+  String                          $group    = $title,
+  Optional[Stdlib::Absolutepath]  $key_path = undef,
+  Array[Csync2::GroupBlock]       $blocks   = {},
+  Enum['none', 'younger']         $auto     = 'younger',
 ) {
-  include ::csync2
-  include ::csync2::params
+  include csync2
 
-  #Variable validators
-  validate_string($group_key)
-  validate_string($key_source)
-  validate_array($includes)
-  validate_absolute_path($configfile)
-  validate_absolute_path($configpath)
-  validate_string($auto)
-  validate_string($checkfreq)
-  validate_absolute_path($csync2_exec)
-  validate_string($csync2_package)
+  $config_dir  = $csync2::globals::config_dir
+  $config_path = $csync2::globals::config_path
 
-  #Copy the key to the host
-  file { "${configpath}/${group_key}":
-    ensure  => present,
-    source  => $key_source,
-    replace => true,
-    group   => '0',
-    owner   => '0',
+  unless $key_path {
+    $_key_path = "${config_dir}/csync2.key_${group}"
+  } else {
+    $_key_path = $key_path
+  }
+
+  if $ensure == 'present' {
+    concat::fragment { "csync2-group-${group}":
+      target  => $config_path,
+      content => template('csync2/group.erb'),
+    }
+
+    $key_path_ensure = 'file'
+  } else {
+    $key_path_ensure = 'absent'
+  }
+
+  file { $_key_path:
+    ensure  => $key_path_ensure,
+    owner   => 'root',
+    group   => 'root',
     mode    => '0600',
+    content => "${key}\n",
   }
-
-  #Build a very basic concat csync2 file
-  concat { $configfile:
-    owner   => '0',
-    group   => '0',
-    mode    => '0644',
-    require => Package[$csync2_package],
-    notify  => Exec['csync2_checksync'],
-  }
-  concat::fragment{ 'csync2-header':
-    target  => $configfile,
-    order   => '01',
-    content => "#This file managed by Puppet\nnossl * *;\n",
-  }
-
-  #Define the csync2 group
-  concat::fragment { "${name}_csync2_header":
-    order   => "10-${name}",
-    target  => $configfile,
-    content => "group ${name}\n{\n\n",
-  }
-
-  #Replaced cron-job with inotify script
-  class { 'csync2::inotify':
-    syncfolders => $includes,
-    sleeptimer  => $checkfreq,
-  }
-
-  #Bring in the cluster members
-  Csync2::Groupnode <<| group == $name |>>
-
-  #The main csync2 config body as defined by template and concat.
-  concat::fragment { "${name}_csync2_body":
-    order   => "255-${name}",
-    target  => $configfile,
-    content => template('csync2/csync2_body.erb'),
-  }
-
-  #Once we have created the concatinated csync2 configuration file, do an initial sync
-  exec { 'csync2_checksync':
-    command     => "${csync2_exec} -TUI",
-    path        => ['/sbin','/bin','/usr/bin','/usr/sbin'],
-    timeout     => 300,
-    refreshonly => true,
-    returns     => ['0','2'],
-    require     => Concat[$configfile],
-    notify      => Exec['csync2_sync_nodes'],
-  }
-  exec { 'csync2_sync_nodes':
-    command     => "${csync2_exec} -u",
-    path        => ['/sbin','/bin','/usr/bin','/usr/sbin'],
-    timeout     => 3600,
-    refreshonly => true,
-  }
-
 }

@@ -5,9 +5,6 @@
 # [*location*]
 #   Location of the apt repository
 #
-# [*release*]
-#   Release of the apt repository
-#
 # [*repos*]
 #   Apt repository names
 #
@@ -23,51 +20,37 @@
 # [*sury*]
 #   Enable special sury handling
 #
-class php::repo::debian(
-  $location     = 'https://packages.dotdeb.org',
-  $release      = 'wheezy-php56',
-  $repos        = 'all',
-  $include_src  = false,
-  $key          = {
+class php::repo::debian (
+  String[1] $location     = 'https://packages.dotdeb.org',
+  String[1] $repos        = 'all',
+  Boolean $include_src    = false,
+  Hash $key               = {
     'id'     => '6572BBEF1B5FF28B28B706837E3F070089DF5277',
     'source' => 'http://www.dotdeb.org/dotdeb.gpg',
   },
-  $dotdeb       = true,
-  $sury         = true,
+  Boolean $dotdeb         = true,
+  Boolean $sury           = true,
 ) {
-
   assert_private()
 
+  if $facts['os']['name'] != 'Debian' {
+    fail("class php::repo::debian does not work on OS ${facts['os']['name']}")
+  }
   include 'apt'
 
-  apt::source { "source_php_${release}":
-    location => $location,
-    release  => $release,
-    repos    => $repos,
-    include  => {
-      'src' => $include_src,
-      'deb' => true,
-    },
-    key      => $key,
-  }
-
-  if ($dotdeb) {
-    # both repositories are required to work correctly
-    # See: http://www.dotdeb.org/instructions/
-    if $release == 'wheezy-php56' {
-      apt::source { 'dotdeb-wheezy':
-        location => $location,
-        release  => 'wheezy',
-        repos    => $repos,
-        include  => {
-          'src' => $include_src,
-          'deb' => true,
-        },
-      }
+  if ($dotdeb and $facts['os']['release']['major'] in ['6', '7', '8']) {
+    apt::source { 'source_php_dotdeb':
+      location => $location,
+      repos    => $repos,
+      include  => {
+        'src' => $include_src,
+        'deb' => true,
+      },
+      key      => $key,
     }
   }
 
-  if ($sury and $php::globals::php_version in ['5.6','7.1','7.2'] ) {
+  if ($sury and $facts['os']['release']['major'] in ['9', '10', '11']) {
     apt::source { 'source_php_sury':
       location => 'https://packages.sury.org/php/',
       repos    => 'main',

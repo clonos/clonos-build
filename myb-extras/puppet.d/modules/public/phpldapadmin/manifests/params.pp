@@ -41,7 +41,7 @@ class phpldapadmin::params {
     'FreeBSD': {
       $config_path = '/usr/local/www/phpldapadmin'
       $config_group = 'www'
-      $package_name = 'net/phpldapadmin'
+      $package_name = 'phpldapadmin'
     }
 
     default: {

@@ -1,13 +1,4 @@
 ---
-prometheus::usershell: '/usr/bin/nologin'
-prometheus::extra_options: ~
-prometheus::download_url: ~
-prometheus::bin_dir: '/usr/local/bin'
-prometheus::version: '2.30.3'
-prometheus::install_method: 'url'
-prometheus::manage_prometheus_server: false
-prometheus::extract_command: ~
-prometheus::service_name: 'prometheus'
 prometheus::pushprox_client::download_extension: 'tar.gz'
 prometheus::pushprox_client::download_url_base: 'https://github.com/prometheus-community/PushProx/releases'
 prometheus::pushprox_client::extra_groups: []
@@ -24,8 +15,6 @@ prometheus::pushprox_proxy::package_ensure: 'latest'
 prometheus::pushprox_proxy::package_name: 'pushprox_proxy'
 prometheus::pushprox_proxy::user: 'pushprox_proxy'
 prometheus::pushprox_proxy::version: '0.1.0'
-prometheus::alert_relabel_config: []
-prometheus::alertmanagers_config: []
 prometheus::alertmanager::config_dir: '/etc/alertmanager'
 prometheus::alertmanager::manage_config: true
 prometheus::alertmanager::config_file: "%{hiera('prometheus::alertmanager::config_dir')}/alertmanager.yaml"
@@ -61,15 +50,11 @@ prometheus::alertmanager::route:
   'repeat_interval': '3h'
   'receiver': 'Admin'
 prometheus::alertmanager::mute_time_intervals: []
+prometheus::alertmanager::time_intervals: []
 prometheus::alertmanager::storage_path: '/var/lib/alertmanager'
 prometheus::alertmanager::templates: [ "%{lookup('prometheus::alertmanager::config_dir')}/*.tmpl" ]
 prometheus::alertmanager::user: 'alertmanager'
 prometheus::alertmanager::version: '0.21.0'
-prometheus::alerts: {}
-prometheus::config_dir: '/etc/prometheus'
-prometheus::config_mode: '0640'
-prometheus::config_show_diff: true
-prometheus::config_template: 'prometheus/prometheus.yaml.erb'
 prometheus::consul_exporter::consul_health_summary: true
 prometheus::consul_exporter::consul_server: 'localhost:8500'
 prometheus::consul_exporter::download_extension: 'tar.gz'
@@ -84,8 +69,6 @@ prometheus::consul_exporter::user: 'consul-exporter'
 prometheus::consul_exporter::version: '0.7.1'
 prometheus::consul_exporter::web_listen_address: ':9107'
 prometheus::consul_exporter::web_telemetry_path: '/metrics'
-prometheus::download_extension: 'tar.gz'
-prometheus::download_url_base: 'https://github.com/prometheus/prometheus/releases'
 prometheus::elasticsearch_exporter::cnf_uri: 'http://localhost:9200'
 prometheus::elasticsearch_exporter::cnf_timeout: '5s'
 prometheus::elasticsearch_exporter::download_extension: 'tar.gz'
@@ -98,16 +81,6 @@ prometheus::elasticsearch_exporter::service_name: 'elasticsearch_exporter'
 prometheus::elasticsearch_exporter::user: 'elasticsearch-exporter'
 prometheus::elasticsearch_exporter::version: '1.1.0'
 prometheus::elasticsearch_exporter::use_kingpin: true
-prometheus::extra_groups: []
-prometheus::global_config:
-  'scrape_interval': '15s'
-  'evaluation_interval': '15s'
-  'external_labels':
-    'monitor': 'master'
-prometheus::group: 'prometheus'
-prometheus::include_default_scrape_configs: true
-prometheus::localstorage: '/var/lib/prometheus'
-prometheus::manage_config: true
 prometheus::mesos_exporter::server_type: 'master'
 prometheus::mesos_exporter::cnf_scrape_uri: 'http://localhost:5050'
 prometheus::mesos_exporter::download_extension: 'tar.gz'
@@ -207,13 +180,6 @@ prometheus::beanstalkd_exporter::user: 'beanstalkd-exporter'
 prometheus::beanstalkd_exporter::version: '1.0.5'
 prometheus::beanstalkd_exporter::mapping_config: '/etc/beanstalkd-exporter-mapping.conf'
 prometheus::beanstalkd_exporter::config: '/etc/beanstalkd-exporter.conf'
-prometheus::package_ensure: 'latest'
-prometheus::package_name: 'prometheus'
-prometheus::rule_files: []
-prometheus::scrape_configs: []
-prometheus::remote_read_configs: []
-prometheus::remote_write_configs: []
-prometheus::shared_dir: '/usr/local/share/prometheus'
 prometheus::snmp_exporter::config_file: '/etc/snmp-exporter.yaml'
 prometheus::snmp_exporter::config_template: ''
 prometheus::snmp_exporter::download_extension: 'tar.gz'
@@ -236,87 +202,3 @@ prometheus::statsd_exporter::package_name: 'statsd_exporter'
 prometheus::statsd_exporter::service_name: 'statsd_exporter'
 prometheus::statsd_exporter::user: 'statsd-exporter'
 prometheus::statsd_exporter::version: '0.17.0'
-prometheus::storage_retention: '360h' # 15d; "d" suffix is only supported with prom >= 2.*
-prometheus::blackbox_exporter::user: 'blackbox-exporter'
-prometheus::blackbox_exporter::group: 'blackbox-exporter'
-prometheus::blackbox_exporter::download_extension: 'tar.gz'
-prometheus::blackbox_exporter::download_url_base: 'https://github.com/prometheus/blackbox_exporter/releases'
-prometheus::blackbox_exporter::extra_groups: []
-prometheus::blackbox_exporter::package_ensure: 'latest'
-prometheus::blackbox_exporter::package_name: 'blackbox_exporter'
-prometheus::blackbox_exporter::modules: {}
-prometheus::blackbox_exporter::config_file: '/etc/blackbox-exporter.yaml'
-prometheus::blackbox_exporter::version: '0.17.0'
-prometheus::postgres_exporter::data_source_uri: 'host=/var/run/postgresql/ sslmode=disable'
-prometheus::postgres_exporter::download_extension: 'tar.gz'
-prometheus::postgres_exporter::download_url_base: 'https://github.com/prometheus-community/postgres_exporter/releases'
-prometheus::postgres_exporter::extra_groups: []
-prometheus::postgres_exporter::group: 'postgres-exporter'
-prometheus::postgres_exporter::package_ensure: 'latest'
-prometheus::postgres_exporter::package_name: 'postgres_exporter'
-prometheus::postgres_exporter::postgres_auth_method: 'env'
-prometheus::postgres_exporter::user: 'postgres-exporter'
-prometheus::postgres_exporter::version: '0.5.1'
-prometheus::redis_exporter::addr:
-  - 'redis://localhost:6379'
-prometheus::redis_exporter::download_extension: 'tar.gz'
-prometheus::redis_exporter::download_url_base: 'https://github.com/oliver006/redis_exporter/releases'
-prometheus::redis_exporter::extra_groups: []
-prometheus::redis_exporter::group: 'redis-exporter'
-prometheus::redis_exporter::package_ensure: 'latest'
-prometheus::redis_exporter::package_name: 'redis_exporter'
-prometheus::redis_exporter::user: 'redis-exporter'
-prometheus::redis_exporter::version: '1.9.0'
-prometheus::user: 'prometheus'
-prometheus::varnish_exporter::download_extension: 'tar.gz'
-prometheus::varnish_exporter::download_url_base: 'https://github.com/jonnenauha/prometheus_varnish_exporter/releases'
-prometheus::varnish_exporter::extra_groups: []
-prometheus::varnish_exporter::group: 'varnish'
-prometheus::varnish_exporter::package_ensure: 'latest'
-prometheus::varnish_exporter::package_name: 'prometheus_varnish_exporter'
-prometheus::varnish_exporter::service_name: 'prometheus_varnish_exporter'
-prometheus::varnish_exporter::user: 'varnish_exporter'
-prometheus::varnish_exporter::version: '1.5.2'
-prometheus::graphite_exporter::download_extension: 'tar.gz'
-prometheus::graphite_exporter::download_url_base: 'https://github.com/prometheus/graphite_exporter/releases'
-prometheus::graphite_exporter::group: 'graphite-exporter'
-prometheus::graphite_exporter::package_ensure: 'latest'
-prometheus::graphite_exporter::package_name: 'graphite_exporter'
-prometheus::graphite_exporter::service_name: 'graphite_exporter'
-prometheus::graphite_exporter::user: 'graphite-exporter'
-prometheus::graphite_exporter::purge_config_dir: true
-prometheus::graphite_exporter::restart_on_change: true
-prometheus::graphite_exporter::service_enable: true
-prometheus::graphite_exporter::service_ensure: 'running'
-prometheus::graphite_exporter::manage_group: true
-prometheus::graphite_exporter::manage_service: true
-prometheus::graphite_exporter::manage_user: true
-prometheus::graphite_exporter::version: '0.9.0'
-prometheus::graphite_exporter::options: ''
-prometheus::collectd_exporter::download_extension: 'tar.gz'
-prometheus::collectd_exporter::download_url_base: 'https://github.com/prometheus/collectd_exporter/releases'
-prometheus::collectd_exporter::group: 'collectd-exporter'
-prometheus::collectd_exporter::package_ensure: 'latest'
-prometheus::collectd_exporter::package_name: 'collectd_exporter'
-prometheus::collectd_exporter::service_name: 'collectd_exporter'
-prometheus::collectd_exporter::user: 'collectd-exporter'
-prometheus::collectd_exporter::version: '0.5.0'
-prometheus::collectd_exporter::options: ''
-prometheus::apache_exporter::scrape_uri: 'http://localhost/server-status/?auto'
-prometheus::apache_exporter::download_extension: 'tar.gz'
-prometheus::apache_exporter::download_url_base: 'https://github.com/Lusitaniae/apache_exporter/releases'
-prometheus::apache_exporter::extra_groups: []
-prometheus::apache_exporter::group: 'apache-exporter'
-prometheus::apache_exporter::package_ensure: 'latest'
-prometheus::apache_exporter::package_name: 'apache_exporter'
-prometheus::apache_exporter::user: 'apache-exporter'
-prometheus::apache_exporter::version: '0.8.0'
-prometheus::grok_exporter::config_file: '/etc/grok-exporter.yaml'
-prometheus::grok_exporter::download_extension: 'zip'
-prometheus::grok_exporter::download_url_base: 'https://github.com/fstab/grok_exporter/releases'
-prometheus::grok_exporter::extra_groups: []
-prometheus::grok_exporter::group: 'grok-exporter'
-prometheus::grok_exporter::package_ensure: 'latest'
-prometheus::grok_exporter::package_name: 'grok_exporter'
-prometheus::grok_exporter::user: 'grok-exporter'
-prometheus::grok_exporter::version: '1.0.0.RC4'

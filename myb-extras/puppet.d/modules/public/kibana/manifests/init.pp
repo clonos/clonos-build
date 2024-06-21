@@ -22,40 +22,51 @@
 # @param package_source Local path to package file for file (not repo) based installation
 # @param manage_repo Whether to manage the package manager repository
 # @param status Service status
+# @param service_name Service name
+# @param package_name Package name
+# @param plugindir
+#   Directory containing kibana plugins.
+#   Use this setting if you want to manage the directory
+# @param kibana_user owner of kibana.yml
+# @param kibana_group group of kibana.yml
 #
 # @author Tyler Langlois <tyler.langlois@elastic.co>
 #
 class kibana (
   Variant[Enum['present', 'absent', 'latest'], Pattern[/^\d([.]\d+)*(-[\d\w]+)?$/]] $ensure,
-  Hash[String[1], Variant[String[1], Integer, Boolean, Array, Hash]] $config,
+  Hash[String[1], Variant[String, Integer, Boolean, Array, Hash]] $config,
   Boolean $manage_repo,
   Boolean $oss,
   Optional[String] $package_source,
   Kibana::Status $status,
+  Optional[Stdlib::Absolutepath] $plugindir = undef,
+  String[1] $service_name = 'kibana',
+  String[1] $package_name = 'kibana',
+  String[1] $kibana_user = 'kibana',
+  String[1] $kibana_group = 'kibana',
 ) {
-
-  contain ::kibana::install
-  contain ::kibana::config
-  contain ::kibana::service
+  contain kibana::install
+  contain kibana::config
+  contain kibana::service
 
   if $manage_repo {
-    contain ::elastic_stack::repo
+    contain elastic_stack::repo
 
-    Class['::elastic_stack::repo']
-    -> Class['::kibana::install']
+    Class['elastic_stack::repo']
+    -> Class['kibana::install']
   }
 
   # Catch absent values, otherwise default to present/installed ordering
   case $ensure {
     'absent': {
-      Class['::kibana::service']
-      -> Class['::kibana::config']
-      -> Class['::kibana::install']
+      Class['kibana::service']
+      -> Class['kibana::config']
+      -> Class['kibana::install']
     }
     default: {
-      Class['::kibana::install']
-      -> Class['::kibana::config']
-      ~> Class['::kibana::service']
+      Class['kibana::install']
+      -> Class['kibana::config']
+      ~> Class['kibana::service']
     }
   }
 }

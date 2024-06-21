@@ -88,7 +88,7 @@ Defaults!<%= command %> !log_output
 #
 # Defaults   env_keep += "HOME"
 
-Defaults    secure_path = /usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/opt/puppetlabs/bin
+Defaults    secure_path = <%= @secure_path %>
 
 ## Next comes the main part: which users can run what software on 
 ## which machines (the sudoers file can be shared between multiple
@@ -107,10 +107,12 @@ root	ALL=(ALL) 	ALL
 # %sys ALL = NETWORKING, SOFTWARE, SERVICES, STORAGE, DELEGATING, PROCESSES, LOCATE, DRIVERS
 
 ## Allows people in group wheel to run all commands
+<%- if @wheel_config != 'password' %># <% end -%>
 %wheel	ALL=(ALL)	ALL
 
 ## Same thing without a password
-# %wheel	ALL=(ALL)	NOPASSWD: ALL
+<%- if @wheel_config != 'nopassword' %># <% end -%>
+%wheel	ALL=(ALL)	NOPASSWD: ALL
 
 ## Allows members of the users group to mount and unmount the 
 ## cdrom as root

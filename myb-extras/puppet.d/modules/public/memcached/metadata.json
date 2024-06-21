@@ -1,6 +1,6 @@
 {
   "name": "saz-memcached",
-  "version": "7.0.0",
+  "version": "8.2.0",
   "author": "saz",
   "summary": "Manage memcached via Puppet",
   "license": "Apache-2.0",
@@ -12,22 +12,26 @@
     {"name":"puppet","version_requirement":">= 6.1.0 < 8.0.0" }
   ],
   "dependencies": [
-    {"name":"puppetlabs/stdlib","version_requirement":">= 4.13.1 < 8.0.0"},
-    {"name":"puppetlabs/firewall","version_requirement":">= 0.1.0 < 4.0.0"},
-    {"name":"camptocamp/systemd","version_requirement":">= 2.10.0 < 4.0.0"},
+    {"name":"puppetlabs/stdlib","version_requirement":">= 4.13.1 < 9.0.0"},
+    {"name":"puppetlabs/firewall","version_requirement":">= 0.1.0 < 6.0.0"},
+    {"name":"puppet/systemd","version_requirement":">= 2.10.0 < 5.0.0"},
     {"name":"puppet/selinux","version_requirement":">= 3.2.0 < 4.0.0"}
   ],
   "operatingsystem_support": [
     {
       "operatingsystem": "RedHat",
       "operatingsystemrelease": [
-        "7"
+        "7",
+        "8",
+        "9"
       ]
     },
     {
       "operatingsystem": "CentOS",
       "operatingsystemrelease": [
-        "7"
+        "7",
+        "8",
+        "9"
       ]
     },
     {
@@ -45,15 +49,16 @@
     {
       "operatingsystem": "Debian",
       "operatingsystemrelease": [
-        "9",
-        "10"
+        "10",
+        "11"
       ]
     },
     {
       "operatingsystem": "Ubuntu",
       "operatingsystemrelease": [
         "18.04",
-        "20.04"
+        "20.04",
+        "22.04"
       ]
     },
     {

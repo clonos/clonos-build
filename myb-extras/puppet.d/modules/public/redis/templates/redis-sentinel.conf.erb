@@ -7,11 +7,15 @@ tls-port <%= @sentinel_tls_port %>
 <% end -%>
 dir <%= @working_dir %>
 daemonize <%= @daemonize ? 'yes' : 'no' %>
+supervised auto
 pidfile <%= @pid_file %>
 protected-mode <%= @protected_mode ? 'yes' : 'no' %>
 
 <% if @sentinel_announce_hostnames -%>
 sentinel announce-hostnames <%= @sentinel_announce_hostnames %>
+<% end -%>
+<% if @sentinel_announce_ip -%>
+sentinel announce-ip <%= @sentinel_announce_ip %>
 <% end -%>
 <% if @sentinel_resolve_hostnames -%>
 sentinel resolve-hostnames <%= @sentinel_resolve_hostnames %>

@@ -127,33 +127,40 @@
 #   Whether to purge pool config files not created
 #   by this module
 #
+# [*reload_fpm_on_config_changes*]
+#   by default, we reload the service on changes.
+#   But certain options, like socket owner, will only be applied during a restart.
+#   If set to false, a restart will be executed instead of a reload.
+#   This default will be changed in a future release.
+#
 class php (
   String $ensure                                  = $php::params::ensure,
   Boolean $manage_repos                           = $php::params::manage_repos,
   Boolean $fpm                                    = true,
-  $fpm_service_enable                             = $php::params::fpm_service_enable,
-  $fpm_service_ensure                             = $php::params::fpm_service_ensure,
-  $fpm_service_name                               = $php::params::fpm_service_name,
-  $fpm_service_provider                           = undef,
-  Hash $fpm_pools                                 = {},
+  Boolean $fpm_service_enable                     = $php::params::fpm_service_enable,
+  Enum['running', 'stopped'] $fpm_service_ensure  = $php::params::fpm_service_ensure,
+  String[1] $fpm_service_name                     = $php::params::fpm_service_name,
+  Optional[String[1]] $fpm_service_provider       = undef,
+  Hash $fpm_pools                                 = $php::params::fpm_pools,
   Hash $fpm_global_pool_settings                  = {},
-  $fpm_inifile                                    = $php::params::fpm_inifile,
-  $fpm_package                                    = undef,
-  $fpm_user                                       = $php::params::fpm_user,
-  $fpm_group                                      = $php::params::fpm_group,
+  Stdlib::Absolutepath $fpm_inifile               = $php::params::fpm_inifile,
+  Optional[String[1]] $fpm_package                = undef,
+  String[1] $fpm_user                             = $php::params::fpm_user,
+  String[1] $fpm_group                            = $php::params::fpm_group,
+  Stdlib::Filemode $fpm_log_dir_mode              = $php::params::fpm_log_dir_mode,
   Boolean $embedded                               = false,
   Boolean $dev                                    = true,
   Boolean $composer                               = true,
-  Boolean $pear                                   = true,
+  Boolean $pear                                   = $php::params::pear,
   String $pear_ensure                             = $php::params::pear_ensure,
   Boolean $phpunit                                = false,
   Boolean $apache_config                          = false,
-  $proxy_type                                     = undef,
-  $proxy_server                                   = undef,
+  Optional[String[1]] $proxy_type                 = undef,
+  Optional[String[1]] $proxy_server               = undef,
   Hash $extensions                                = {},
   Hash $settings                                  = {},
   Hash $cli_settings                              = {},
-  $package_prefix                                 = $php::params::package_prefix,
+  Optional[String[1]] $package_prefix             = $php::params::package_prefix,
   Stdlib::Absolutepath $config_root_ini           = $php::params::config_root_ini,
   Stdlib::Absolutepath $config_root_inifile       = $php::params::config_root_inifile,
   Optional[Stdlib::Absolutepath] $ext_tool_enable = $php::params::ext_tool_enable,
@@ -162,8 +169,8 @@ class php (
   String $log_owner                               = $php::params::fpm_user,
   String $log_group                               = $php::params::fpm_group,
   Boolean $pool_purge                             = $php::params::pool_purge,
+  Boolean $reload_fpm_on_config_changes           = true,
 ) inherits php::params {
-
   $real_fpm_package = pick($fpm_package, "${package_prefix}${php::params::fpm_package_suffix}")
 
   $real_settings = $settings
@@ -178,17 +185,17 @@ class php (
     contain php::repo
   }
 
-    class { 'php::packages': }
-    -> class { 'php::cli':
-      settings => $final_cli_settings,
-    }
-    contain php::packages
-    contain php::cli
+  class { 'php::packages': }
+  -> class { 'php::cli':
+    settings => $final_cli_settings,
+  }
+  contain php::packages
+  contain php::cli
 
   # Configure global PHP settings in php.ini
   if $facts['os']['family'] != 'Debian' {
     Class['php::packages']
-    -> class {'php::global':
+    -> class { 'php::global':
       settings => $real_settings,
     }
     contain php::global
@@ -231,7 +238,7 @@ class php (
   }
 
   create_resources('php::extension', $real_extensions, {
-    require => Class['php::cli'],
+      require => Class['php::cli'],
   })
 
   # On FreeBSD purge the system-wide extensions.ini. It is going

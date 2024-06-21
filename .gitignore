@@ -1,3 +1,6 @@
 cbsd
 micro1
 myb/*
+cmd.subr
+myb-extras/puppet.d
+cbsd.lock

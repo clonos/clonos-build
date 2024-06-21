@@ -5,7 +5,7 @@ domain <%= @domainname_real %>
 <%- end -%>
 <% if !@searchpath.empty? -%>
 <% if @searchpath.kind_of? Array -%>
-search <%= @searchpath.join(" ") %>
+search <%= @searchpath.uniq().join(" ") %>
 <% else -%>
 search <%= @searchpath %>
 <% end -%>
@@ -14,5 +14,7 @@ search <%= @searchpath %>
 nameserver <%= ns %>
 <% end -%>
 <% if @options && !@options.empty? -%>
-options <%= @options.join(" ") %>
+<% @options.each do |option| -%>
+options <%= option %>
+<% end -%>
 <% end -%>

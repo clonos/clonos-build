@@ -5,18 +5,25 @@
 # @author Tyler Langlois <tyler.langlois@elastic.co>
 #
 class kibana::config {
-
-  $_ensure = $::kibana::ensure ? {
-    'absent' => $::kibana::ensure,
+  $_ensure = $kibana::ensure ? {
+    'absent' => $kibana::ensure,
     default  => 'file',
   }
-  $config = $::kibana::config
 
   file { '/etc/kibana/kibana.yml':
     ensure  => $_ensure,
-    content => template("${module_name}/etc/kibana/kibana.yml.erb"),
-    owner   => 'kibana',
-    group   => 'kibana',
+    content => Sensitive(kibana::hash2yaml($kibana::config)),
+    owner   => $kibana::kibana_user,
+    group   => $kibana::kibana_group,
     mode    => '0660',
+  }
+
+  if $kibana::plugindir {
+    file { $kibana::plugindir:
+      ensure => 'directory',
+      owner  => $kibana::kibana_user,
+      group  => $kibana::kibana_group,
+      mode   => '0755',
+    }
   }
 }

@@ -1,0 +1,86 @@
+# convert seconds to human readable time
+if [ -z "${ECHO}" ]; then
+	if [ -n "${NOCOLOR}" ]; then
+		ECHO="echo"
+	else
+		ECHO="echo -e"
+		if [ -r "/usr/local/cbsd/subr/ansiicolor.subr" ]; then
+			. /usr/local/cbsd/subr/ansiicolor.subr
+		fi
+	fi
+fi
+
+displaytime()
+{
+	local T=$1
+	local D=$((T/60/60/24))
+	local H=$((T/60/60%24))
+	local M=$((T/60%60))
+	local S=$((T%60))
+	[ ${D} -gt 0 ] && printf '%d days ' $D
+	[ $H -gt 0 ] && printf '%d hours ' $H
+	[ $M -gt 0 ] && printf '%d minutes ' $M
+	[ $D -gt 0 -o $H -gt 0 -o $M -gt 0 ] && printf 'and '
+	printf '%d seconds\n' $S
+}
+
+
+# st_time should exist
+time_stats()
+{
+	local _diff_time _end_time _abs_diff_time
+
+	[ -z "${st_time}" ] && return 0
+
+	_end_time=$( ${DATE_CMD} +%s )
+	_diff_time=$(( _end_time - st_time ))
+
+#       if [ ${_diff_time} -gt 5 ]; then
+#               _diff_time_color="${W1_COLOR}"
+#       else
+                _diff_time_color="${H1_COLOR}"
+#       fi
+
+	_diff_time=$( displaytime ${_diff_time} )
+
+	_abs_diff_time=$(( _end_time - FULL_ST_TIME ))
+	_abs_diff_time=$( displaytime ${_abs_diff_time} )
+
+	${ECHO} "${*} ${N2_COLOR}in ${_diff_time_COLOR}${_diff_time}${N2_COLOR} ( absolute: ${W1_COLOR}${_abs_diff_time} ${N2_COLOR})${N0_COLOR}"
+}
+
+# save/export static metrics via /var/www/metrics file
+# $1 - target (filename without .html$), destination file: ${_rootdir}/${1}.html
+# $2 - name of the item, e.g. 'first_boot_space_utils'
+# $3 - values
+# Example:
+#  put_prometheus_file_metrics "first_boot" "first_boot_space_utils" 233
+put_prometheus_file_metrics()
+{
+	[ -z "${3}" ] && return 0
+
+	local _target="${1}"
+	local _item="${2}"
+	local _values="${3}"
+
+	local _rootdir="/var/www/metrics"
+	[ ! -d "${_rootdir}" ] && return 0
+
+	local _hostname=$( ${HOSTNAME_CMD} -f )
+	[ -z "${_hostname}" ] && _hostname="amnesia"
+
+	local _newlink=$( ${MKTEMP_CMD} -p ${_rootdir} )
+
+	if [ ! -r ${_rootdir}/${_target}.html ]; then
+		echo "${_item}{instance=\"${_hostname}\"} ${_values}" > ${_newlink}
+		${LN_CMD} -sf ${_newlink} ${_rootdir}/${_target}.html
+		return 0
+	fi
+
+	local _oldlink=$( ${READLINK_CMD} ${_rootdir}/${_target}.html )
+	${GREP_CMD} -v "^${_item}{" ${_oldlink} > ${_newlink}
+
+	echo "${_item}{instance=\"${_hostname}\"} ${_values}" >> ${_newlink}
+	${LN_CMD} -sf ${_newlink} ${_rootdir}/${_target}.html
+	${RM_CMD} -f ${_oldlink}
+}

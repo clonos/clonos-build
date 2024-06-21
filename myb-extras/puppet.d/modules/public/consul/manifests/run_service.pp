@@ -1,10 +1,9 @@
-# == Class consul::service
 #
-# This class is meant to be called from consul
-# It ensure the service is running
+# @summary This class is meant to be called from consul. It ensures the service is running
+# @api private
 #
 class consul::run_service {
-
+  assert_private()
   $service_name = $consul::init_style_real ? {
     'launchd' => 'io.consul.daemon',
     default   => 'consul',
@@ -31,11 +30,10 @@ class consul::run_service {
   }
 
   if $consul::install_method == 'docker' {
-
     $server_mode = pick($consul::config_hash[server], false)
 
     if $server_mode {
-      $env = [ '\'CONSUL_ALLOW_PRIVILEGED_PORTS=\'' ]
+      $env = ['\'CONSUL_ALLOW_PRIVILEGED_PORTS=\'']
       $docker_command = 'agent -server'
     } else {
       $env = undef

@@ -6,25 +6,25 @@ progdir=$( dirname ${progdir} )
 
 . /etc/rc.conf          # mybbasever
 set +e
-
+. ${progdir}/cmd.subr
 . ${progdir}/brand.conf
 
 if [ -z "${mybbasever}" ]; then
-	echo "Please specify mybbasever= via /etc/rc.conf, e.g: sysrc -q mybbasever=\"14.0\""
+	echo "Please specify mybbasever= via /etc/rc.conf, e.g.: sysrc -q mybbasever=\"14.1\""
 	exit 1
 fi
 
 # re-check before upload
 case "${OSNAME}" in
 	MyBee)
-		if [ -z "${MYB_UPLOAD_140}" ]; then
-			echo "no such MYB_UPLOAD_140 string in rc.conf"
+		if [ -z "${MYB_UPLOAD_141}" ]; then
+			echo "no such MYB_UPLOAD_141 string in rc.conf, e.g.: sysrc -q MYB_UPLOAD_141=\"rsync://FQDN/xxxx/\""
 			exit 1
 		fi
 		;;
 	ClonOS)
-		if [ -z "${CLONOS_UPLOAD_140}" ]; then
-			echo "no such CLONOS_UPLOAD_140 string in rc.conf"
+		if [ -z "${CLONOS_UPLOAD_141}" ]; then
+			echo "no such CLONOS_UPLOAD_141 string in rc.conf, e.g.: sysrc -q CLONOS_UPLOAD_141=\"rsync://FQDN/xxxx/\""
 			exit 1
 		fi
 		;;
@@ -40,21 +40,21 @@ service ntpd start
 # cleanup old data
 if [ -d ${progdir}/cbsd ]; then
 	echo "remove old artifact dir: ${progdir}/cbsd"
-	rm -rf ${progdir}/cbsd
+	${RM_CMD} -rf ${progdir}/cbsd
 fi
 
 if [ -d /usr/src ]; then
 	cd /usr/src
-	git reset --hard
+	${GIT_CMD} reset --hard
 fi
 
 if [ -d ~cbsd/src/src_${mybbasever} ]; then
 	cd ~cbsd/src/src_${mybbasever}
-	git reset --hard
+	${GIT_CMD} reset --hard
 fi
 
 cd /tmp
-mkdir ${progdir}/cbsd
+${MKDIR_CMD} ${progdir}/cbsd
 
 for i in cpr3e421 cprd07dc cpr9ca75 mybee1 micro1; do
 	cbsd jremove ${i}

@@ -29,6 +29,16 @@
 #  Whether to create user or rely on external code for that
 # @param modules
 #  Structured, array of blackbox module definitions for different probe types
+# @param export_scrape_job
+#  Whether to export a scrape job for this service
+# @param scrape_host
+#  Hostname or IP address to scrape
+# @param scrape_port
+#  Host port to scrape
+# @param scrape_job_name
+#  Name of the scrape job to export, if export_scrape_job is true
+# @param scrape_job_labels
+#  Labels to add to the scrape job, if export_scrape_job is true
 # @param os
 #  Operating system (linux is the only one supported)
 # @param package_ensure
@@ -53,9 +63,7 @@
 #  Optional proxy server, with port number if needed. ie: https://example.com:8080
 # @param proxy_type
 #  Optional proxy server type (none|http|https|ftp)
-# Example for configuring named blackbox modules via hiera
-# details of the format: https://github.com/prometheus/blackbox_exporter/blob/master/CONFIGURATION.md
-# @example
+# @example  Example for configuring named blackbox modules via hiera
 # prometheus::blackbox_exporter::modules:
 #   simple_ssl:
 #     prober: http
@@ -66,21 +74,22 @@
 #     prober: tcp
 #     tcp:
 #       preferred_ip_protocol: ip4
+# @ see https://github.com/prometheus/blackbox_exporter/blob/master/CONFIGURATION.md
 class prometheus::blackbox_exporter (
-  String[1] $config_file,
-  String $download_extension,
-  Prometheus::Uri $download_url_base,
-  Array[String] $extra_groups,
-  String[1] $group,
-  String[1] $package_ensure,
-  String[1] $package_name,
-  String[1] $user,
-  String[1] $version,
+  Stdlib::Absolutepath $config_file = '/etc/blackbox-exporter.yaml',
+  String $download_extension = 'tar.gz',
+  Prometheus::Uri $download_url_base = 'https://github.com/prometheus/blackbox_exporter/releases',
+  Array[String] $extra_groups = [],
+  String[1] $group = 'blackbox-exporter',
+  String[1] $package_ensure = 'latest',
+  String[1] $package_name = 'blackbox_exporter',
+  String[1] $user = 'blackbox-exporter',
+  String[1] $version = '0.17.0',
   Boolean $restart_on_change                                 = true,
   Boolean $service_enable                                    = true,
   Stdlib::Ensure::Service $service_ensure                    = 'running',
   String[1] $service_name                                    = 'blackbox_exporter',
-  Prometheus::Initstyle $init_style                          = $facts['service_provider'],
+  Prometheus::Initstyle $init_style                          = $prometheus::init_style,
   Prometheus::Install $install_method                        = $prometheus::install_method,
   Boolean $manage_group                                      = true,
   Boolean $manage_service                                    = true,

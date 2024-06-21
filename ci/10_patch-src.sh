@@ -11,6 +11,7 @@ progdir=$( dirname ${progdir} )
 [ ! -r "${distdir}/subr/cbsdbootstrap.subr" ] && exit 1
 . ${distdir}/subr/cbsdbootstrap.subr || exit 1
 
+. ${progdir}/cmd.subr
 . ${progdir}/brand.conf
 
 SRC_ROOT="${srcdir}/src_${mybbasever}/src"

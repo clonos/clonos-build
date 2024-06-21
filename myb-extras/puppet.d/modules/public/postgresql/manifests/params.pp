@@ -25,8 +25,8 @@ class postgresql::params inherits postgresql::globals {
   $manage_selinux               = pick($manage_selinux, false)
   $package_ensure               = 'present'
   $module_workdir               = pick($module_workdir,'/tmp')
-  $password_encryption          = undef
-  $extra_systemd_config         = ''
+  $password_encryption          = versioncmp($version, '14') ? { -1 => 'md5', default => 'scram-sha-256' }
+  $extra_systemd_config         = undef
   $manage_datadir               = true
   $manage_logdir                = true
   $manage_xlogdir               = true
@@ -85,13 +85,8 @@ class postgresql::params inherits postgresql::globals {
         $postgresql_conf_mode   = pick($postgresql_conf_mode, '0600')
       }
 
-      if pick($service_provider, $facts['service_provider']) == 'systemd' {
-        $service_reload = "systemctl reload ${service_name}"
-        $service_status = pick($service_status, "systemctl status ${service_name}")
-      } else {
-        $service_reload = "service ${service_name} reload"
-        $service_status = pick($service_status, "service ${service_name} status")
-      }
+      $service_reload = "systemctl reload ${service_name}"
+      $service_status = pick($service_status, "systemctl status ${service_name}")
 
       $psql_path           = pick($psql_path, "${bindir}/psql")
 
@@ -104,7 +99,7 @@ class postgresql::params inherits postgresql::globals {
 
       if $postgresql::globals::postgis_package_name {
         $postgis_package_name = $postgresql::globals::postgis_package_name
-      } elsif $facts['os']['release']['major'] == '5' {
+      } elsif $facts['os']['name'] == 'Fedora' {
         $postgis_package_name = 'postgis'
       } elsif $postgis_version and versioncmp($postgis_version, '2') < 0 {
         $postgis_package_name = "postgis${package_version}"
@@ -121,8 +116,8 @@ class postgresql::params inherits postgresql::globals {
 
       # Archlinux doesn't have a client-package but has a libs package which
       # pulls in postgresql server
-      $client_package_name    = pick($client_package_name, 'postgresql')
-      $server_package_name    = pick($server_package_name, 'postgresql-libs')
+      $client_package_name    = pick($client_package_name, 'postgresql-libs')
+      $server_package_name    = pick($server_package_name, 'postgresql')
       $java_package_name      = pick($java_package_name, 'postgresql-jdbc')
       # Archlinux doesn't have develop packages
       $devel_package_name     = pick($devel_package_name, 'postgresql-devel')
@@ -135,7 +130,7 @@ class postgresql::params inherits postgresql::globals {
       $confdir                = pick($confdir, $datadir)
       $psql_path              = pick($psql_path, "${bindir}/psql")
 
-      $service_status         = $service_status
+      $service_status         = pick($service_status, "systemctl status ${service_name}")
       $service_reload         = "systemctl reload ${service_name}"
       $python_package_name    = pick($python_package_name, 'python-psycopg2')
       # Archlinux does not have a perl::DBD::Pg package
@@ -164,18 +159,21 @@ class postgresql::params inherits postgresql::globals {
       $perl_package_name      = pick($perl_package_name, 'libdbd-pg-perl')
       $plperl_package_name    = pick($plperl_package_name, "postgresql-plperl-${version}")
       $plpython_package_name  = pick($plpython_package_name, "postgresql-plpython-${version}")
-      $python_package_name    = pick($python_package_name, 'python-psycopg2')
+
+      $_ubuntu_2204 = ($facts['os']['name'] == 'Ubuntu' and versioncmp($facts['os']['release']['full'], '22.04') >= 0)
+      $_debian_12 = ($facts['os']['name'] == 'Debian' and versioncmp($facts['os']['release']['full'], '12') >= 0)
+
+      if $_ubuntu_2204 or $_debian_12 {
+        $python_package_name = pick($python_package_name, 'python3-psycopg2')
+      } else {
+        $python_package_name = pick($python_package_name, 'python-psycopg2')
+      }
 
       $bindir                 = pick($bindir, "/usr/lib/postgresql/${version}/bin")
       $datadir                = pick($datadir, "/var/lib/postgresql/${version}/main")
       $confdir                = pick($confdir, "/etc/postgresql/${version}/main")
-      if pick($service_provider, $facts['service_provider']) == 'systemd' {
-        $service_reload = "systemctl reload ${service_name}"
-        $service_status = pick($service_status, "systemctl status ${service_name}")
-      } else {
-        $service_reload = "service ${service_name} reload"
-        $service_status = pick($service_status, "service ${service_name} status")
-      }
+      $service_reload         = "systemctl reload ${service_name}"
+      $service_status         = pick($service_status, "systemctl status ${service_name}")
       $psql_path              = pick($psql_path, '/usr/bin/psql')
       $postgresql_conf_mode   = pick($postgresql_conf_mode, '0644')
     }
@@ -204,19 +202,9 @@ class postgresql::params inherits postgresql::globals {
     }
 
     'FreeBSD': {
-      case $version {
-        '94', '95': {
-          $user                 = pick($user, 'pgsql')
-          $group                = pick($group, 'pgsql')
-          $datadir              = pick($datadir, '/usr/local/pgsql/data')
-        }
-        default: {
-          $user                 = pick($user, 'postgres')
-          $group                = pick($group, 'postgres')
-          $datadir              = pick($datadir, "/var/db/postgres/data${version}")
-        }
-      }
-
+      $user                 = pick($user, 'postgres')
+      $group                = pick($group, 'postgres')
+      $datadir              = pick($datadir, "/var/db/postgres/data${version}")
       $link_pg_config       = true
       $client_package_name  = pick($client_package_name, "databases/postgresql${version}-client")
       $server_package_name  = pick($server_package_name, "databases/postgresql${version}-server")
@@ -279,13 +267,8 @@ class postgresql::params inherits postgresql::globals {
       $bindir               = pick($bindir, "/usr/lib/postgresql${version}/bin")
       $datadir              = pick($datadir, '/var/lib/pgsql/data')
       $confdir              = pick($confdir, $datadir)
-      if $facts['os']['name'] == 'SLES' and versioncmp($facts['os']['release']['full'], '11.4') <= 0 {
-        $service_status     = pick($service_status, "/etc/init.d/${service_name} status")
-        $service_reload     = "/etc/init.d/${service_name} reload"
-      } else {
-        $service_status     = pick($service_status, "systemctl status ${service_name}")
-        $service_reload     = "systemctl reload ${service_name}"
-      }
+      $service_status       = pick($service_status, "systemctl status ${service_name}")
+      $service_reload       = "systemctl reload ${service_name}"
       $psql_path            = pick($psql_path, "${bindir}/psql")
 
       $needs_initdb         = pick($needs_initdb, true)
@@ -298,7 +281,7 @@ class postgresql::params inherits postgresql::globals {
       # Since we can't determine defaults on our own, we rely on users setting
       # parameters with the postgresql::globals class. Here we are checking
       # that the mandatory minimum is set for the module to operate.
-      $err_prefix = "Module ${module_name} does not provide defaults for osfamily: ${facts['os']['family']} operatingsystem: ${facts['os']['name']}; please specify a value for ${module_name}::globals::"
+      $err_prefix = "Module ${module_name} does not provide defaults for osfamily: ${facts['os']['family']} operatingsystem: ${facts['os']['name']}; please specify a value for ${module_name}::globals::" # lint:ignore:140chars
       if ($needs_initdb == undef) { fail("${err_prefix}needs_initdb") }
       if ($service_name == undef) { fail("${err_prefix}service_name") }
       if ($client_package_name == undef) { fail("${err_prefix}client_package_name") }

@@ -4,6 +4,33 @@ All notable changes to this project will be documented in this file.
 Each new release typically also includes the latest modulesync defaults.
 These should not affect the functionality of the module.
 
+## [v7.1.0](https://github.com/voxpupuli/puppet-archive/tree/v7.1.0) (2023-10-30)
+
+[Full Changelog](https://github.com/voxpupuli/puppet-archive/compare/v7.0.0...v7.1.0)
+
+**Implemented enhancements:**
+
+- Add Rocky & AlmaLinux support [\#510](https://github.com/voxpupuli/puppet-archive/pull/510) ([bastelfreak](https://github.com/bastelfreak))
+- Add Debian 12 support [\#509](https://github.com/voxpupuli/puppet-archive/pull/509) ([bastelfreak](https://github.com/bastelfreak))
+- Add OracleLinux 9 support [\#508](https://github.com/voxpupuli/puppet-archive/pull/508) ([bastelfreak](https://github.com/bastelfreak))
+- Add Puppet 8 support [\#502](https://github.com/voxpupuli/puppet-archive/pull/502) ([bastelfreak](https://github.com/bastelfreak))
+
+## [v7.0.0](https://github.com/voxpupuli/puppet-archive/tree/v7.0.0) (2023-06-05)
+
+[Full Changelog](https://github.com/voxpupuli/puppet-archive/compare/v6.1.2...v7.0.0)
+
+**Breaking changes:**
+
+- Drop Puppet 6 support [\#495](https://github.com/voxpupuli/puppet-archive/pull/495) ([bastelfreak](https://github.com/bastelfreak))
+
+**Implemented enhancements:**
+
+- Use require\_relative to load libraries [\#494](https://github.com/voxpupuli/puppet-archive/pull/494) ([ekohl](https://github.com/ekohl))
+
+**Merged pull requests:**
+
+- puppetlabs/stdlib: Allow 9.x [\#499](https://github.com/voxpupuli/puppet-archive/pull/499) ([bastelfreak](https://github.com/bastelfreak))
+
 ## [v6.1.2](https://github.com/voxpupuli/puppet-archive/tree/v6.1.2) (2023-04-13)
 
 [Full Changelog](https://github.com/voxpupuli/puppet-archive/compare/v6.1.1...v6.1.2)

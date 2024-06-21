@@ -1,18 +1,24 @@
-# == Class grafana::config
+# @summary Manage grafana configuration
 #
-# This class is called from grafana
-#
+# @api private
 class grafana::config {
+  if $grafana::cfg =~ Sensitive {
+    $cfg = $grafana::cfg.unwrap
+    $cfg_content = Sensitive(template('grafana/config.ini.erb'))
+  } else {
+    $cfg = $grafana::cfg
+    $cfg_content = template('grafana/config.ini.erb')
+  }
+
   case $grafana::install_method {
     'docker': {
       if $grafana::container_cfg {
-        $cfg = $grafana::cfg
         $myprovision = false
 
         file { 'grafana.ini':
           ensure  => file,
           path    => $grafana::cfg_location,
-          content => template('grafana/config.ini.erb'),
+          content => $cfg_content,
           owner   => 'grafana',
           group   => 'grafana',
           notify  => Class['grafana::service'],
@@ -20,14 +26,13 @@ class grafana::config {
       }
     }
     'package','repo': {
-      $cfg = $grafana::cfg
       $myprovision = true
 
       file { 'grafana.ini':
         ensure  => file,
         path    => $grafana::cfg_location,
-        content => template('grafana/config.ini.erb'),
-        owner   => 'grafana',
+        content => $cfg_content,
+        owner   => 'root',
         group   => 'grafana',
         notify  => Class['grafana::service'],
       }
@@ -53,12 +58,11 @@ class grafana::config {
       }
     }
     'archive': {
-      $cfg = $grafana::cfg
       $myprovision = true
 
       file { "${grafana::install_dir}/conf/custom.ini":
         ensure  => file,
-        content => template('grafana/config.ini.erb'),
+        content => $cfg_content,
         owner   => 'grafana',
         group   => 'grafana',
         notify  => Class['grafana::service'],
@@ -77,19 +81,23 @@ class grafana::config {
   }
 
   if $grafana::ldap_cfg {
-    if $grafana::ldap_cfg =~ Array {
-      $ldap_cfg_ary = $grafana::ldap_cfg
+    if $grafana::ldap_cfg =~ Sensitive {
+      $ldap_cfg = $grafana::ldap_cfg.unwrap
     } else {
-      $ldap_cfg_ary = [$grafana::ldap_cfg]
+      $ldap_cfg = $grafana::ldap_cfg
     }
 
     $template_body = [
-      "<% scope['ldap_cfg_ary'].each do |v| %>",
+      "<% [scope['ldap_cfg']].flatten(1).each do |v| %>",
       "<%= require 'toml'; TOML::Generator.new(v).body %>\n",
       '<% end %>',
     ]
 
-    $ldap_cfg_toml = inline_template($template_body.join(''))
+    if $grafana::ldap_cfg =~ Sensitive {
+      $ldap_cfg_toml = Sensitive(inline_template($template_body.join('')))
+    } else {
+      $ldap_cfg_toml = inline_template($template_body.join(''))
+    }
 
     file { '/etc/grafana/ldap.toml':
       ensure  => file,
@@ -154,12 +162,13 @@ class grafana::config {
       # template uses:
       #   - pdatasources
       file { $grafana::provisioning_datasources_file:
-        ensure  => file,
-        owner   => 'grafana',
-        group   => 'grafana',
-        mode    => '0640',
-        content => epp('grafana/pdatasources.yaml.epp'),
-        notify  => Class['grafana::service'],
+        ensure    => file,
+        owner     => 'grafana',
+        group     => 'grafana',
+        mode      => '0640',
+        show_diff => false,
+        content   => epp('grafana/pdatasources.yaml.epp'),
+        notify    => Class['grafana::service'],
       }
     }
   }

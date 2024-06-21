@@ -22,9 +22,9 @@
 # Copyright 2015 Martin Meinhold, unless otherwise noted.
 #
 define roundcube::plugin (
-  $ensure = present,
-  $config_file_template = undef,
-  $options_hash = {},
+  Variant[String, Enum['present', 'absent']] $ensure = present,
+  Optional[String] $config_file_template = undef,
+  Hash $options_hash = {},
 ) {
   include roundcube
   if $roundcube::plugins_manage == false {
@@ -50,14 +50,6 @@ define roundcube::plugin (
   $plugin_config_file = "${application_dir}/plugins/${plugin_name}/config.inc.php"
   $plugin_config_template_file = "${plugin_config_file}.dist"
   $options = $options_hash
-
-if ($roundcube::archive_provider == package) {
-  concat::fragment { "${config_file}__plugins_${plugin_name}":
-    target  => $config_file,
-    content => "  '${plugin_name}',\n",
-    order   => '55',
-  }
-} else {
 
   if !$system_plugin {
     exec { "${roundcube::composer_command_name} require ${name}:${ensure} --update-no-dev --ignore-platform-reqs":
@@ -102,7 +94,6 @@ if ($roundcube::archive_provider == package) {
       require => File_line[$plugin_config_template_file],
     }
 
-
     if !empty($options_hash) {
       concat::fragment { "${plugin_config_file}__custom_config":
         target  => $plugin_config_file,
@@ -127,7 +118,7 @@ if ($roundcube::archive_provider == package) {
     content => "  '${plugin_name}',\n",
     order   => '55',
   }
-}
+
   # ensure plugins are executed before the symlink is updated
   Roundcube::Plugin[$title] ~> Class['roundcube::service']
 }

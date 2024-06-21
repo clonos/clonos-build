@@ -2,7 +2,7 @@ class dynmotd(
   $ensure = 'present',
 )
 {
-  case $::osfamily {
+  case $facts['os']['family'] {
     'FreeBSD': {
       file { '/usr/local/bin':
         ensure => directory,
@@ -12,7 +12,7 @@ class dynmotd(
         mode   => '0755',
         owner  => 'root',
         group  => 'wheel',
-        source => [ "puppet:///modules/dynmotd/dynmotd.sh.${::fqdn}", 'puppet:///modules/dynmotd/dynmotd.sh.FreeBSD' ]
+        source => [ "puppet:///modules/dynmotd/dynmotd.sh.${facts['networking']['fqdn']}", 'puppet:///modules/dynmotd/dynmotd.sh.FreeBSD' ]
       }
       if $ensure == 'present' {
         file_line { 'freebsd-dynmotd-profile':

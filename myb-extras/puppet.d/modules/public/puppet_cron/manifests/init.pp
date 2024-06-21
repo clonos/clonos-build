@@ -28,7 +28,7 @@ class puppet_cron(
 
   $minutes_arr = split($minutes_str, ',')
 
-  case $::osfamily {
+  case $facts['os']['family'] {
     'Debian': {
       ensure_resource('package', 'cron', {'ensure' => 'present'})
       $croncmd = "env PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:/opt/puppetlabs/bin timeout 360 nice -n 19 ionice -c 3 /usr/bin/flock -w1 -x /tmp/puppetd.lock /opt/puppetlabs/bin/puppet agent -t --no-daemonize --logdest syslog > /dev/null 2>&1"

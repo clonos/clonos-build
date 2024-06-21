@@ -33,9 +33,15 @@
 # @param manage_service
 #   Boolean to choose if the SSH daemon should be managed.
 #
+# @param manage_packages
+#   Boolean to choose if SSH client packages should be managed.
+#
 # @param packages
 #   Installation package(s) for the SSH server. Leave empty if the client package(s) also
 #   include the server binaries (eg: Suse SLES and SLED).
+#
+# @param packages_ensure
+#   Ensure parameter to SSH server package(s).
 #
 # @param packages_adminfile
 #   Path to adminfile for SSH server package(s) installation. Needed for Solaris.
@@ -54,6 +60,11 @@
 #
 # @param service_hasstatus
 #   hasstatus attribute for SSH daemon.
+#
+# @param config_files
+#   Hash of configuration entries passed to ssh::config_file_server define.
+#   Please check the docs for ssh::config_file_client and the type Ssh::Sshd_Config
+#   for a list and details of the parameters usable here.
 #
 # @param service_name
 #   Name of the SSH daemon.
@@ -124,7 +135,7 @@
 #
 # @param challenge_response_authentication
 #   Value(s) passed to ChallengeResponseAuthentication parameter in sshd_config. Unused if empty.
-#   Check https://man.openbsd.org/sshd_config#ChrootDirectory for possible values.
+#   Check https://man.openbsd.org/sshd_config#KbdInteractiveAuthentication for possible values.
 #
 # @param chroot_directory
 #   Value(s) passed to ChrootDirectory parameter in sshd_config. Unused if empty.
@@ -225,6 +236,18 @@
 # @param include
 #   Value(s) passed to Include parameter in sshd_config. Unused if empty.
 #   Check https://man.openbsd.org/sshd_config#Include for possible values.
+#
+# @param include_dir_owner
+#   The owner of the include directory
+#
+# @param include_dir_group
+#   The group of the include directory
+#
+# @param include_dir_mode
+#   The mode of the include directory
+#
+# @param include_dir_purge
+#   Sets whether to purge the include_dir of unmanaged files
 #
 # @param ip_qos
 #   Value(s) passed to IPQoS parameter in sshd_config. Unused if empty.
@@ -445,7 +468,9 @@
 #   Uses one array item per line to be added.
 #
 class ssh::server (
+  Boolean $manage_packages = true,
   Array[String[1]] $packages = [],
+  Variant[Enum['present', 'absent', 'purged', 'disabled', 'installed', 'latest'], String[1]] $packages_ensure = 'installed',
   Optional[Stdlib::Absolutepath] $packages_adminfile = undef,
   Optional[Stdlib::Absolutepath] $packages_source = undef,
   Stdlib::Absolutepath $config_path = '/etc/ssh/sshd_config',
@@ -463,6 +488,7 @@ class ssh::server (
   Boolean $service_enable = true,
   Boolean $service_hasrestart = true,
   Boolean $service_hasstatus = true,
+  Hash $config_files = {},
   # all paramters below this line are for sshd_config
   Optional[Array[String[1]]] $accept_env = undef,
   Optional[Enum['any', 'inet', 'inet6']] $address_family = undef,
@@ -499,13 +525,17 @@ class ssh::server (
   Optional[Array[String[1]]] $hostbased_accepted_algorithms = undef,
   Optional[Ssh::Yes_no] $hostbased_authentication = undef,
   Optional[Ssh::Yes_no] $hostbased_uses_name_from_packet_only = undef,
-  Optional[String[1]] $host_certificate = undef,
+  Optional[Array[String[1]]] $host_certificate = undef,
   Optional[Array[String[1]]] $host_key = undef,
   Optional[String[1]] $host_key_agent = undef,
   Optional[Array[String[1]]] $host_key_algorithms = undef,
   Optional[Ssh::Yes_no] $ignore_rhosts = undef,
   Optional[Ssh::Yes_no] $ignore_user_known_hosts = undef,
-  Optional[String[1]] $include = undef,
+  Optional[Stdlib::Absolutepath] $include = undef,
+  String[1] $include_dir_owner = 'root',
+  String[1] $include_dir_group = 'root',
+  Stdlib::Filemode $include_dir_mode = '0700',
+  Boolean $include_dir_purge = true,
   Optional[String[1]] $ip_qos = undef,
   Optional[Ssh::Yes_no] $kbd_interactive_authentication = undef,
   Optional[Ssh::Yes_no] $kerberos_authentication = undef,
@@ -563,12 +593,22 @@ class ssh::server (
   # the sshd_config file.
   Optional[Array[String[1]]] $custom = undef,
 ) {
+  if $manage_packages {
+    package { $packages:
+      ensure    => $packages_ensure,
+      source    => $packages_source,
+      adminfile => $packages_adminfile,
+      before    => 'File[sshd_config]',
+    }
+    $packages_require = Package[$packages]
+  } else {
+    $packages_require = undef
+  }
 
-  package { $packages:
-    ensure    => installed,
-    source    => $packages_source,
-    adminfile => $packages_adminfile,
-    before    => 'File[sshd_config]',
+  if $manage_service {
+    $notify_service = Service['sshd_service']
+  } else {
+    $notify_service = undef
   }
 
   file { 'sshd_config' :
@@ -578,6 +618,24 @@ class ssh::server (
     owner   => $config_owner,
     group   => $config_group,
     content => template('ssh/sshd_config.erb'),
+  }
+
+  if $include {
+    $include_dir = dirname($include)
+    file { 'sshd_config_include_dir':
+      ensure  => 'directory',
+      path    => $include_dir,
+      owner   => $include_dir_owner,
+      group   => $include_dir_group,
+      mode    => $include_dir_mode,
+      purge   => $include_dir_purge,
+      recurse => $include_dir_purge,
+      force   => $include_dir_purge,
+      require => $packages_require,
+      notify  => $notify_service,
+    }
+  } else {
+    $include_dir = undef
   }
 
   if $banner_content != undef {
@@ -600,6 +658,12 @@ class ssh::server (
       hasrestart => $service_hasrestart,
       hasstatus  => $service_hasstatus,
       subscribe  => File['sshd_config'],
+    }
+  }
+
+  $config_files.each |$file, $lines| {
+    ssh::config_file_server { $file:
+      * => $lines,
     }
   }
 }

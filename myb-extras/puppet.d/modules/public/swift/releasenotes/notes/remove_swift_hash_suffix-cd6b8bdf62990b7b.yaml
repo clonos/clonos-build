@@ -1,4 +1,0 @@
----
-other:
-  - remove swift_hash_suffix deprecated in Mitaka and change
-    tests to use swift_hash_path_suffix.

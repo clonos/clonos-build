@@ -1,3 +1,0 @@
----
-deprecations:
-  - keystone::python class is deprecated, please use keystone::client.

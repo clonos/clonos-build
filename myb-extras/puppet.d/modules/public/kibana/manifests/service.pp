@@ -5,9 +5,8 @@
 # @author Tyler Langlois <tyler.langlois@elastic.co>
 #
 class kibana::service {
-
-  if $::kibana::ensure != 'absent' {
-    case $::kibana::status {
+  if $kibana::ensure != 'absent' {
+    case $kibana::status {
       # Stop service and disable on boot
       'disabled': {
         $_ensure = false
@@ -39,7 +38,7 @@ class kibana::service {
     $_enable = false
   }
 
-  service { 'kibana':
+  service { $kibana::service_name:
     ensure => $_ensure,
     enable => $_enable,
   }

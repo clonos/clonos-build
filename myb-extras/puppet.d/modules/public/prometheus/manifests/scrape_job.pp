@@ -1,5 +1,6 @@
-# @summary
-#   This define is used to export prometheus scrape settings from nodes to be scraped to the node
+# @summary This module manages prometheus scrape jobs.
+#
+# @note  This define is used to export prometheus scrape settings from nodes to be scraped to the node
 #   running prometheus itself.
 #   This can be used to make prometheus find instances of your running service or application.
 # @param job_name
@@ -18,7 +19,7 @@ define prometheus::scrape_job (
   Hash[String[1], String[1]] $labels = {},
   Stdlib::Absolutepath $collect_dir  = undef,
 ) {
-  $config = to_yaml([
+  $config = stdlib::to_yaml([
       {
         targets => $targets,
         labels  => $labels,

@@ -13,7 +13,7 @@ progdir=$( dirname ${progdir} )
 
 # lookup for RSYNC
 . /etc/rc.conf
-
+. ${progdir}/cmd.subr
 . ${progdir}/brand.conf
 
 # re-check before upload

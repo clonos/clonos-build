@@ -1,6 +1,5 @@
-#
-# @summary This module manages prometheus unbound exporter. The exporter needs to be compiled by hand! (https://github.com/kumina/unbound_exporter/issues/21)
-#
+# @summary This module manages prometheus unbound exporter.
+# @note The exporter needs to be compiled by hand! (https://github.com/kumina/unbound_exporter/issues/21)
 # @param arch
 #  Architecture
 # @param bin_dir
@@ -70,7 +69,7 @@ class prometheus::unbound_exporter (
   Boolean $service_enable                                    = true,
   Stdlib::Ensure::Service $service_ensure                    = 'running',
   String[1] $service_name                                    = 'unbound_exporter',
-  Prometheus::Initstyle $init_style                          = $facts['service_provider'],
+  Prometheus::Initstyle $init_style                          = $prometheus::init_style,
   Prometheus::Install $install_method                        = 'none',
   Boolean $manage_group                                      = true,
   Boolean $manage_service                                    = true,

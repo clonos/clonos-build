@@ -4,6 +4,111 @@ All notable changes to this project will be documented in this file.
 Each new release typically also includes the latest modulesync defaults.
 These should not affect the functionality of the module.
 
+## [v9.3.0](https://github.com/voxpupuli/puppet-redis/tree/v9.3.0) (2023-11-14)
+
+[Full Changelog](https://github.com/voxpupuli/puppet-redis/compare/v9.2.0...v9.3.0)
+
+**Implemented enhancements:**
+
+- Add Puppet 8 support [\#484](https://github.com/voxpupuli/puppet-redis/pull/484) ([bastelfreak](https://github.com/bastelfreak))
+
+## [v9.2.0](https://github.com/voxpupuli/puppet-redis/tree/v9.2.0) (2023-11-03)
+
+[Full Changelog](https://github.com/voxpupuli/puppet-redis/compare/v9.1.0...v9.2.0)
+
+**Implemented enhancements:**
+
+- Allow puppet/systemd 6.x [\#490](https://github.com/voxpupuli/puppet-redis/pull/490) ([evgeni](https://github.com/evgeni))
+
+**Merged pull requests:**
+
+- fix spelling of "redis dnf module" [\#491](https://github.com/voxpupuli/puppet-redis/pull/491) ([evgeni](https://github.com/evgeni))
+
+## [v9.1.0](https://github.com/voxpupuli/puppet-redis/tree/v9.1.0) (2023-07-29)
+
+[Full Changelog](https://github.com/voxpupuli/puppet-redis/compare/v9.0.0...v9.1.0)
+
+**Implemented enhancements:**
+
+- puppetlabs/stdlib: Allow 9.x [\#483](https://github.com/voxpupuli/puppet-redis/pull/483) ([bastelfreak](https://github.com/bastelfreak))
+
+**Merged pull requests:**
+
+- Add Rocky/AlmaLinux support [\#487](https://github.com/voxpupuli/puppet-redis/pull/487) ([bastelfreak](https://github.com/bastelfreak))
+- Specify environment module path for bolt [\#475](https://github.com/voxpupuli/puppet-redis/pull/475) ([traylenator](https://github.com/traylenator))
+
+## [v9.0.0](https://github.com/voxpupuli/puppet-redis/tree/v9.0.0) (2023-06-01)
+
+[Full Changelog](https://github.com/voxpupuli/puppet-redis/compare/v8.8.0...v9.0.0)
+
+**Breaking changes:**
+
+- Drop EoL Debian 9 support [\#469](https://github.com/voxpupuli/puppet-redis/pull/469) ([bastelfreak](https://github.com/bastelfreak))
+- Drop Puppet 6 support [\#468](https://github.com/voxpupuli/puppet-redis/pull/468) ([bastelfreak](https://github.com/bastelfreak))
+
+**Implemented enhancements:**
+
+- Add param to pass to apt-key adv [\#466](https://github.com/voxpupuli/puppet-redis/pull/466) ([pwf](https://github.com/pwf))
+
+**Fixed bugs:**
+
+- Fix missing puppet strings [\#481](https://github.com/voxpupuli/puppet-redis/pull/481) ([ghoneycutt](https://github.com/ghoneycutt))
+- Fix for redis.conf.epp bug: save\_db\_to\_disk = false does not work.  [\#478](https://github.com/voxpupuli/puppet-redis/pull/478) ([pankajr](https://github.com/pankajr))
+
+**Closed issues:**
+
+- save\_db\_to\_disk = false does not work [\#477](https://github.com/voxpupuli/puppet-redis/issues/477)
+- Support deferred values for requirepass [\#473](https://github.com/voxpupuli/puppet-redis/issues/473)
+- Replace `slaveof` with `replicaof` [\#401](https://github.com/voxpupuli/puppet-redis/issues/401)
+
+**Merged pull requests:**
+
+- Allow deferrables for masterauth & requirepass [\#476](https://github.com/voxpupuli/puppet-redis/pull/476) ([ThiefMaster](https://github.com/ThiefMaster))
+- CI: Switch sysctl module to new namespace & cleanup .fixtures.yml [\#471](https://github.com/voxpupuli/puppet-redis/pull/471) ([bastelfreak](https://github.com/bastelfreak))
+- Drop Puppet 6 CI leftovers [\#470](https://github.com/voxpupuli/puppet-redis/pull/470) ([bastelfreak](https://github.com/bastelfreak))
+- add replicaof parameter\(v2\) [\#465](https://github.com/voxpupuli/puppet-redis/pull/465) ([jonasbartho](https://github.com/jonasbartho))
+
+## [v8.8.0](https://github.com/voxpupuli/puppet-redis/tree/v8.8.0) (2023-01-27)
+
+[Full Changelog](https://github.com/voxpupuli/puppet-redis/compare/v8.7.0...v8.8.0)
+
+**Implemented enhancements:**
+
+- bump puppet/systemd to \< 5.0.0 [\#463](https://github.com/voxpupuli/puppet-redis/pull/463) ([jhoblitt](https://github.com/jhoblitt))
+
+**Fixed bugs:**
+
+- add missing default config\_file\_orig for SUSE [\#462](https://github.com/voxpupuli/puppet-redis/pull/462) ([lbetz](https://github.com/lbetz))
+
+## [v8.7.0](https://github.com/voxpupuli/puppet-redis/tree/v8.7.0) (2022-12-09)
+
+[Full Changelog](https://github.com/voxpupuli/puppet-redis/compare/v8.6.0...v8.7.0)
+
+**Implemented enhancements:**
+
+- Allow custom replica announce IP/port and Sentinel announce IP [\#459](https://github.com/voxpupuli/puppet-redis/pull/459) ([pierre-claranet](https://github.com/pierre-claranet))
+
+## [v8.6.0](https://github.com/voxpupuli/puppet-redis/tree/v8.6.0) (2022-12-05)
+
+[Full Changelog](https://github.com/voxpupuli/puppet-redis/compare/v8.5.0...v8.6.0)
+
+**Implemented enhancements:**
+
+- Add support for managing Redis APT repo [\#456](https://github.com/voxpupuli/puppet-redis/pull/456) ([zaben903](https://github.com/zaben903))
+
+## [v8.5.0](https://github.com/voxpupuli/puppet-redis/tree/v8.5.0) (2022-10-28)
+
+[Full Changelog](https://github.com/voxpupuli/puppet-redis/compare/v8.4.0...v8.5.0)
+
+**Implemented enhancements:**
+
+- Use a single regular expression in the Redis fact [\#451](https://github.com/voxpupuli/puppet-redis/pull/451) ([ekohl](https://github.com/ekohl))
+- Add support for managing Redis dnfmodule on EL 8+ [\#450](https://github.com/voxpupuli/puppet-redis/pull/450) ([ehelms](https://github.com/ehelms))
+
+**Merged pull requests:**
+
+- Fix get function tests [\#452](https://github.com/voxpupuli/puppet-redis/pull/452) ([ehelms](https://github.com/ehelms))
+
 ## [v8.4.0](https://github.com/voxpupuli/puppet-redis/tree/v8.4.0) (2022-05-31)
 
 [Full Changelog](https://github.com/voxpupuli/puppet-redis/compare/v8.3.0...v8.4.0)

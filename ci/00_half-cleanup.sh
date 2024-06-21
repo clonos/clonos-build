@@ -7,7 +7,7 @@ progdir=$( dirname ${progdir} )
 
 . /etc/rc.conf          # mybbasever
 set +e
-
+. ${progdir}/cmd.subr
 . ${progdir}/brand.conf
 
 if [ -z "${mybbasever}" ]; then

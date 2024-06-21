@@ -55,8 +55,8 @@ define apt::setting (
     $_priority = $priority
   }
 
-  $_path = $::apt::config_files[$setting_type]['path']
-  $_ext  = $::apt::config_files[$setting_type]['ext']
+  $_path = $apt::config_files[$setting_type]['path']
+  $_ext  = $apt::config_files[$setting_type]['ext']
 
   if $notify_update {
     $_notify = Class['apt::update']

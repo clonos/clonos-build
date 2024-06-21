@@ -50,7 +50,7 @@ class Puppet::Provider::Cron
           return ''
         end
 
-        Puppet::Util::Execution.execute("#{cmdbase} -l", failonfail: true, combine: true)
+        Puppet::Util::Execution.execute("#{cmdbase} -l", failonfail: true, combine: true).to_s
       rescue => detail
         case detail.to_s
         when %r{no crontab for}
@@ -71,7 +71,7 @@ class Puppet::Provider::Cron
           cmd = "/bin/echo yes | #{cmd}"
         end
 
-        Puppet::Util::Execution.execute(cmd, failonfail: true, combine: true)
+        Puppet::Util::Execution.execute(cmd, failonfail: true, combine: true).to_s
       end
 
       # Overwrite a specific @path's cron tab; must be passed the @path name
@@ -113,7 +113,7 @@ class Puppet::Provider::Cron
           return ''
         end
 
-        Puppet::Util::Execution.execute(['crontab', '-l'], cronargs)
+        Puppet::Util::Execution.execute(['crontab', '-l'], cronargs).to_s
       rescue => detail
         case detail.to_s
         when %r{can't open your crontab}
@@ -129,7 +129,7 @@ class Puppet::Provider::Cron
 
       # Remove a specific @path's cron tab.
       def remove
-        Puppet::Util::Execution.execute(['crontab', '-r'], cronargs)
+        Puppet::Util::Execution.execute(['crontab', '-r'], cronargs).to_s
       rescue => detail
         raise FileReadError, _('Could not remove crontab for %{path}: %{detail}') % { path: @path, detail: detail }, detail.backtrace
       end
@@ -144,7 +144,7 @@ class Puppet::Provider::Cron
           output_file.close
           # We have to chown the stupid file to the user.
           File.chown(Puppet::Util.uid(@path), nil, output_file.path)
-          Puppet::Util::Execution.execute(['crontab', output_file.path], cronargs)
+          Puppet::Util::Execution.execute(['crontab', output_file.path], cronargs).to_s
         rescue => detail
           raise FileReadError, _('Could not write crontab for %{path}: %{detail}') % { path: @path, detail: detail }, detail.backtrace
         ensure
@@ -164,7 +164,7 @@ class Puppet::Provider::Cron
           return ''
         end
 
-        Puppet::Util::Execution.execute(['crontab', '-l'], cronargs)
+        Puppet::Util::Execution.execute(['crontab', '-l'], cronargs).to_s
       rescue => detail
         case detail.to_s
         when %r{open.*in.*directory}
@@ -180,7 +180,7 @@ class Puppet::Provider::Cron
 
       # Remove a specific @path's cron tab.
       def remove
-        Puppet::Util::Execution.execute(['crontab', '-r'], cronargs)
+        Puppet::Util::Execution.execute(['crontab', '-r'], cronargs).to_s
       rescue => detail
         raise FileReadError, _('Could not remove crontab for %{path}: %{detail}') % { path: @path, detail: detail }, detail.backtrace
       end
@@ -196,7 +196,7 @@ class Puppet::Provider::Cron
           output_file.close
           # We have to chown the stupid file to the user.
           File.chown(Puppet::Util.uid(@path), nil, output_file.path)
-          Puppet::Util::Execution.execute(['crontab', output_file.path], cronargs)
+          Puppet::Util::Execution.execute(['crontab', output_file.path], cronargs).to_s
         rescue => detail
           raise FileReadError, _('Could not write crontab for %{path}: %{detail}') % { path: @path, detail: detail }, detail.backtrace
         ensure

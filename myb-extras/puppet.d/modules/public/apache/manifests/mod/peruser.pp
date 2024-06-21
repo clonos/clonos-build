@@ -1,20 +1,43 @@
+# @summary
+#   Installs `mod_peruser`.
+# 
+# @param minspareprocessors
+# 
+# @param minprocessors
+#   The minimum amount of processors
+# 
+# @param maxprocessors
+#   The maximum amount of processors
+# 
+# @param maxclients
+#   The maximum amount of clients
+# 
+# @param maxrequestsperchild
+#   The maximum amount of requests per child
+# 
+# @param idletimeout
+# 
+# @param expiretimeout
+# 
+# @param keepalive
+# 
 class apache::mod::peruser (
-  $minspareprocessors = '2',
-  $minprocessors = '2',
-  $maxprocessors = '10',
-  $maxclients = '150',
-  $maxrequestsperchild = '1000',
-  $idletimeout = '120',
-  $expiretimeout = '120',
-  $keepalive = 'Off',
+  Integer $minspareprocessors  = 2,
+  Integer $minprocessors       = 2,
+  Integer $maxprocessors       = 10,
+  Integer $maxclients          = 150,
+  Integer $maxrequestsperchild = 1000,
+  Integer $idletimeout         = 120,
+  Integer $expiretimeout       = 120,
+  Apache::OnOff $keepalive     = 'Off',
 ) {
-  include ::apache
-  case $::osfamily {
-    'freebsd' : {
-      fail("Unsupported osfamily ${::osfamily}")
+  include apache
+  case $facts['os']['family'] {
+    'FreeBSD' : {
+      fail("Unsupported osfamily ${$facts['os']['family']}")
     }
     default: {
-      if $::osfamily == 'gentoo' {
+      if $facts['os']['family'] == 'Gentoo' {
         ::portage::makeconf { 'apache2_mpms':
           content => 'peruser',
         }
@@ -34,11 +57,11 @@ class apache::mod::peruser (
       }
       File {
         owner => 'root',
-        group => $::apache::params::root_group,
-        mode  => $::apache::file_mode,
+        group => $apache::params::root_group,
+        mode  => $apache::file_mode,
       }
 
-      $mod_dir = $::apache::mod_dir
+      $mod_dir = $apache::mod_dir
 
       # Template uses:
       # - $minspareprocessors
@@ -50,25 +73,37 @@ class apache::mod::peruser (
       # - $expiretimeout
       # - $keepalive
       # - $mod_dir
-      file { "${::apache::mod_dir}/peruser.conf":
+      $parameters = {
+        'minspareprocessors'  => $minspareprocessors,
+        'minprocessors'       => $minprocessors,
+        'maxprocessors'       => $maxprocessors,
+        'maxclients'          => $maxclients,
+        'maxrequestsperchild' => $maxrequestsperchild,
+        'idletimeout'         => $idletimeout,
+        'expiretimeout'       => $expiretimeout,
+        'keepalive'           => $keepalive,
+        'mod_dir'             => $mod_dir,
+      }
+
+      file { "${apache::mod_dir}/peruser.conf":
         ensure  => file,
-        mode    => $::apache::file_mode,
-        content => template('apache/mod/peruser.conf.erb'),
-        require => Exec["mkdir ${::apache::mod_dir}"],
-        before  => File[$::apache::mod_dir],
+        mode    => $apache::file_mode,
+        content => epp('apache/mod/peruser.conf.epp', $parameters),
+        require => Exec["mkdir ${apache::mod_dir}"],
+        before  => File[$apache::mod_dir],
         notify  => Class['apache::service'],
       }
-      file { "${::apache::mod_dir}/peruser":
+      file { "${apache::mod_dir}/peruser":
         ensure  => directory,
-        require => File[$::apache::mod_dir],
+        require => File[$apache::mod_dir],
       }
-      file { "${::apache::mod_dir}/peruser/multiplexers":
+      file { "${apache::mod_dir}/peruser/multiplexers":
         ensure  => directory,
-        require => File["${::apache::mod_dir}/peruser"],
+        require => File["${apache::mod_dir}/peruser"],
       }
-      file { "${::apache::mod_dir}/peruser/processors":
+      file { "${apache::mod_dir}/peruser/processors":
         ensure  => directory,
-        require => File["${::apache::mod_dir}/peruser"],
+        require => File["${apache::mod_dir}/peruser"],
       }
 
       ::apache::peruser::multiplexer { '01-default': }

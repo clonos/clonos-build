@@ -3,7 +3,7 @@
 [![Build Status](https://github.com/sensson/puppet-powerdns/workflows/CI/badge.svg)](https://github.com/sensson/puppet-powerdns/actions) [![Puppet Forge](https://img.shields.io/puppetforge/v/sensson/powerdns.svg?maxAge=2592000?style=plastic)](https://forge.puppet.com/sensson/powerdns)
 
 This module can be used to configure both the recursor and authoritative
-PowerDNS 4 server. It supports Puppet 5 and higher.
+PowerDNS 4 server. It officially supports Puppet 7 and higher.
 
 ## Examples
 
@@ -43,6 +43,24 @@ class { 'powerdns':
   db_root_password => 'v3rys3c4r3',
   recursor         => true,
 }
+```
+
+### Recursor forward zones
+
+Multiple forward zones can be configured using `powerdns::forward_zones`.
+
+```puppet
+include powerdns::recursor
+```
+
+The configuration will be serialized into `forward-zones-file` config file.
+
+```yaml
+powerdns::forward_zones:
+  'example.com': 10.0.0.1
+  'foo': 192.168.1.1
+   # recurse queries
+  '+.': 1.1.1.1;8.8.8.8;8.8.4.4
 ```
 
 ### Backends
@@ -107,10 +125,10 @@ You can add a zone 'example.org' by using:
 ``` puppet
  powerdns_zone{'example.org': }
 ```
-This will add the zone which is then managed through puppet any records not added 
+This will add the zone which is then managed through puppet any records not added
 through puppet will be deleted additionaly a SOA record is generated. To just ensure the
 zone is available, but not manage any records use (and do not add any powerdns\_record
-resources with target this domain): 
+resources with target this domain):
 ``` puppet
  powerdns_zone{'example.org':
    manage_records => false,
@@ -143,7 +161,11 @@ The zone records can be managed through the powerdns\_record resource. As an exa
    rcontent    => '127.0.0.1'
  }
 ```
-Remark: if the target\_zone is not managed with powerdns\_zone resource, powerdns\_record does not change anything !
+Remark: if the target\_zone is not managed with powerdns\_zone resource, powerdns\_record does not change anything!
+
+### Sensitive secrets
+
+Passwords can be passed either as plain-text strings or as [Puppet's Sensitive type](https://www.puppet.com/docs/puppet/7/lang_data_sensitive.html) when appropriate encrypted backend is configured on Puppet server.
 
 ## Reference
 
@@ -182,7 +204,7 @@ Defaults to true.
 ##### `db_root_password`
 
 If you set `backend_install` to true you are asked to specify a root
-password for your database.
+password for your database. Accepts either `String` or `Sensitive` type.
 
 ##### `db_username`
 
@@ -190,7 +212,7 @@ Set the database username. Defaults to 'powerdns'.
 
 ##### `db_password`
 
-Set the database password. Default is empty.
+Set the database password. Accepts either `String` or `Sensitive` type. Default is empty.
 
 ##### `db_name`
 
@@ -227,7 +249,7 @@ Path to the object to authenticate against. Defaults to undef.
 
 ##### `ldap_secret`
 
-Password for simple authentication against ldap_basedn. Defaults to undef.
+Password for simple authentication against ldap_basedn. Accepts either `String` or `Sensitive` type. Defaults to undef.
 
 ##### `custom_repo`
 
@@ -342,15 +364,24 @@ duplicate declaration errors.
 
 This module has been tested on:
 
-* CentOS 6, 7, 8
-* Ubuntu 14.04, 16.04, 18.04
-* Debian 8, 9
+* CentOS 7, 8
+* Ubuntu 18.04
+* Debian 10
 
 We believe it also on other operating systems such as:
 
 * Oracle Linux
 * RedHat Enterprise Linux
 * Scientific Linux
+* Arch Linux
+
+The packages on EL are a bit stupid. The schemas have the exact PowerDNS version
+hardcoded in the paths. The main class has three parameters where you can adjust
+it:
+
+* `mysql_schema_file`
+* `pgsql_schema_file`
+* `sqlite_schema_file`
 
 ## Development
 
@@ -390,14 +421,10 @@ You can run Beaker tests with:
 
 ```bash
 bundle exec rake spec_prep
-BEAKER_destroy=onpass bundle exec rake beaker:centos6
 BEAKER_destroy=onpass bundle exec rake beaker:centos7
 BEAKER_destroy=onpass bundle exec rake beaker:oel7
-BEAKER_destroy=onpass bundle exec rake beaker:ubuntu1404
-BEAKER_destroy=onpass bundle exec rake beaker:ubuntu1604
-BEAKER_destroy=onpass BEAKER_PUPPET_COLLECTION=puppet5 bundle exec rake beaker:ubuntu1804
-BEAKER_destroy=onpass bundle exec rake beaker:debian8
-BEAKER_destroy=onpass bundle exec rake beaker:debian9
+BEAKER_destroy=onpass bundle exec rake beaker:ubuntu1804
+BEAKER_destroy=onpass bundle exec rake beaker:debian10
 ```
 
 We recommend specifying `BEAKER_destroy=onpass` as it will keep the

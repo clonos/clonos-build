@@ -15,6 +15,6 @@ class phpldapadmin::package {
   }
 
   package { $phpldapadmin::params::package_name:
-    ensure => latest,
+    ensure => installed,
   }
 }

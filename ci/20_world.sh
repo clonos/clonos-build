@@ -7,7 +7,7 @@ progdir=$( realpath ${progdir} )
 progdir=$( dirname ${progdir} )
 
 . ${progdir}/brand.conf
-
+. ${progdir}/cmd.subr
 export OSNAME="${OSNAME}"
 cbsd world ver=${mybbasever}
 

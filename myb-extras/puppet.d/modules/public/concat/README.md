@@ -9,7 +9,8 @@
 5. [Reference - An under-the-hood peek at what the module is doing and how](#reference)
     * [Removed functionality](#removed-functionality)
 6. [Limitations - OS compatibility, etc.](#limitations)
-7. [Development - Guide for contributing to the module](#development)
+7. [License](#license)
+8. [Development - Guide for contributing to the module](#development)
 
 <a id="overview"></a>
 ## Overview
@@ -122,28 +123,16 @@ When you're finished, the motd file will look something like this:
 
 See [REFERENCE.md](https://github.com/puppetlabs/puppetlabs-concat/blob/main/REFERENCE.md)
 
-<a id="removed-functionality"></a>
-### Removed functionality
-
-The following functionality existed in previous versions of the concat module, but was removed in version 2.0.0:
-
-Parameters removed from `concat::fragment`:
-* `gnu`
-* `backup`
-* `group`
-* `mode`
-* `owner`
-
-The `concat::setup` class has also been removed.
-
-Prior to concat version 2.0.0, if you set the `warn` parameter to a string value of `true`, `false`, 'yes', 'no', 'on', or 'off', the module translated the string to the corresponding boolean value. In concat version 2.0.0 and newer, the `warn_header` parameter treats those values the same as other strings and uses them as the content of your header message. To avoid that, pass the `true` and `false` values as booleans instead of strings.
-
 <a id="limitations"></a>
 ## Limitations
 
 This module has been tested on [all PE-supported platforms](https://forge.puppetlabs.com/supported#compat-matrix), and no issues have been identified.
 
 For an extensive list of supported operating systems, see [metadata.json](https://github.com/puppetlabs/puppetlabs-concat/blob/main/metadata.json)
+
+## License
+
+This codebase is licensed under the Apache2.0 licensing, however due to the nature of the codebase the open source dependencies may also use a combination of [AGPL](https://opensource.org/license/agpl-v3/), [BSD-2](https://opensource.org/license/bsd-2-clause/), [BSD-3](https://opensource.org/license/bsd-3-clause/), [GPL2.0](https://opensource.org/license/gpl-2-0/), [LGPL](https://opensource.org/license/lgpl-3-0/), [MIT](https://opensource.org/license/mit/) and [MPL](https://opensource.org/license/mpl-2-0/) Licensing.
 
 ## Development
 
@@ -152,7 +141,8 @@ To run the acceptance tests follow the instructions [here](https://github.com/pu
 You can also find a tutorial and walkthrough of using Litmus and the PDK on [YouTube](https://www.youtube.com/watch?v=FYfR7ZEGHoE).
 
 If you run into an issue with this module, or if you would like to request a feature, please [file a ticket](https://tickets.puppetlabs.com/browse/MODULES/).
-Every Monday the Puppet IA Content Team has [office hours](https://puppet.com/community/office-hours) in the [Puppet Community Slack](http://slack.puppet.com/), alternating between an EMEA friendly time (1300 UTC) and an Americas friendly time (0900 Pacific, 1700 UTC).
+Every Tuesday the Content and Tooling Team has [office hours](https://puppet.com/community/office-hours) in the [Puppet Community Slack](http://slack.puppet.com/), where you can ask questions about this and any other supported modules.
+This session usually runs at, approximately, 15:00 (BST), for about an hour.
 
 If you have problems getting this module up and running, please [contact Support](http://puppetlabs.com/services/customer-support).
 

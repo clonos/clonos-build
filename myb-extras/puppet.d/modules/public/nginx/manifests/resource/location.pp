@@ -127,6 +127,11 @@
 #   This directive sets the time for caching different replies.
 # @param proxy_cache_lock
 #   This directive sets the locking mechanism for pouplating cache.
+# @param proxy_cache_background_update
+#   Allows starting a background subrequest to update an expired cache item
+# @param proxy_cache_convert_head
+#    Enables or disables the conversion of the “HEAD” method to “GET” for caching.
+#    When the conversion is disabled, the cache key should be configured to include the $request_method.
 # @param proxy_cache_bypass
 #   Defines conditions which the response will not be cached
 # @param proxy_method
@@ -171,6 +176,9 @@
 #   no longer inherit headers from the parent server context
 # @param gzip_static
 #   Defines gzip_static, nginx default is off
+# @param reset_timedout_connection
+#   Enables or disables resetting timed out connections and connections closed
+#   with the non-standard code 444.
 #
 # @example Simple example
 #   nginx::resource::location { 'test2.local-bob':
@@ -280,6 +288,8 @@ define nginx::resource::location (
   Optional[String] $proxy_cache_key                                = undef,
   Optional[String] $proxy_cache_use_stale                          = undef,
   Optional[Enum['on', 'off']] $proxy_cache_lock                    = undef,
+  Optional[Enum['on', 'off']] $proxy_cache_background_update       = undef,
+  Optional[Enum['on', 'off']] $proxy_cache_convert_head            = undef,
   Optional[Variant[Array, String]] $proxy_cache_valid              = undef,
   Optional[Variant[Array, String]] $proxy_cache_bypass             = undef,
   Optional[String] $proxy_method                                   = undef,
@@ -300,6 +310,7 @@ define nginx::resource::location (
   Optional[String] $expires                                        = undef,
   Hash $add_header                                                 = {},
   Optional[Enum['on', 'off', 'always']] $gzip_static               = undef,
+  Optional[Enum['on', 'off']] $reset_timedout_connection           = undef,
 ) {
   if ! defined(Class['nginx']) {
     fail('You must include the nginx base class before using any defined resources')
@@ -342,7 +353,7 @@ define nginx::resource::location (
     file { $fastcgi_params:
       ensure  => 'file',
       mode    => $nginx::global_mode,
-      content => template('nginx/server/fastcgi.conf.erb'),
+      content => template($nginx::fastcgi_conf_template),
       tag     => 'nginx_config_file',
     }
   }
@@ -351,7 +362,7 @@ define nginx::resource::location (
     file { $uwsgi_params:
       ensure  => 'file',
       mode    => $nginx::global_mode,
-      content => template('nginx/server/uwsgi_params.erb'),
+      content => template($nginx::uwsgi_params_template),
       tag     => 'nginx_config_file',
     }
   }

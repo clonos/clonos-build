@@ -6,15 +6,16 @@ progdir=$( dirname ${progdir} )
 
 . /etc/rc.conf		# mybbasever
 set +e
-
+. ${progdir}/cmd.subr
 . ${progdir}/brand.conf
 
 echo "Build ${OSNAME} base version: ${mybbasever}"
-cbsd srcup ver=${mybbasever} rev=d338712beb1
+cbsd srcup ver=${mybbasever}
+# rev=d338712beb1
 
 src_dir_makefile="/usr/jails/src/src_${mybbasever}/src/Makefile"
 
-if [ ! -r ${src_dir_makefile} ]; then
+if [ ! -r "${src_dir_makefile}" ]; then
 	echo "no such source: ${src_dir_makefile}"
 	exit 1
 fi

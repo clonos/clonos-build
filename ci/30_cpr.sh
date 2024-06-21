@@ -4,13 +4,13 @@ pgm="${0##*/}"				# Program basename
 progdir="${0%/*}"			# Program directory
 progdir=$( realpath ${progdir} )
 progdir=$( dirname ${progdir} )
-
+. ${progdir}/cmd.subr
 . ${progdir}/brand.conf
 
-dstdir=$( mktemp -d )
+dstdir=$( ${MKTEMP_CMD} -d )
 
 cd /usr/ports
-git reset --hard || true
+${GIT_CMD} reset --hard || true
 cbsd portsup
 
 ## "OVERLAY"

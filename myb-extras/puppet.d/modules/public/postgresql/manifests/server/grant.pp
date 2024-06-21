@@ -3,8 +3,13 @@
 # @param role Specifies the role or user whom you are granting access to.
 # @param db Specifies the database to which you are granting access.
 # @param privilege Specifies the privilege to grant. Valid options: 'ALL', 'ALL PRIVILEGES' or 'object_type' dependent string.
-# @param object_type Specifies the type of object to which you are granting privileges. Valid options: 'DATABASE', 'SCHEMA', 'SEQUENCE', 'ALL SEQUENCES IN SCHEMA', 'TABLE' or 'ALL TABLES IN SCHEMA'.
-# @param object_name Specifies name of object_type to which to grant access, can be either a string or a two element array. String: 'object_name' Array: ['schema_name', 'object_name']
+# @param object_type
+#   Specifies the type of object to which you are granting privileges.
+#   Valid options: 'DATABASE', 'SCHEMA', 'SEQUENCE', 'ALL SEQUENCES IN SCHEMA', 'TABLE' or 'ALL TABLES IN SCHEMA'.
+# @param object_name
+#   Specifies name of object_type to which to grant access, can be either a string or a two element array.
+#   String: 'object_name' Array: ['schema_name', 'object_name']
+# @param object_arguments Specifies any arguments to be passed alongisde the access grant.
 # @param psql_db Specifies the database to execute the grant against. This should not ordinarily be changed from the default
 # @param psql_user Sets the OS user to run psql.
 # @param port Port to use when connecting.
@@ -13,10 +18,11 @@
 # @param ensure Specifies whether to grant or revoke the privilege. Default is to grant the privilege. Valid values: 'present', 'absent'.
 # @param group Sets the OS group to run psql
 # @param psql_path Sets the path to psql command
+# @param instance The name of the Postgresql database instance.
 define postgresql::server::grant (
   String $role,
   String $db,
-  String $privilege                     = '',
+  String $privilege                     = '', # lint:ignore:params_empty_string_assignment
   Pattern[#/(?i:^COLUMN$)/,
     /(?i:^ALL SEQUENCES IN SCHEMA$)/,
     /(?i:^ALL TABLES IN SCHEMA$)/,
@@ -31,17 +37,18 @@ define postgresql::server::grant (
     /(?i:^SCHEMA$)/,
     /(?i:^SEQUENCE$)/
     #/(?i:^VIEW$)/
-  ] $object_type                        = 'database',
-  Optional[Variant[Array[String,2,2],String[1]]] $object_name = undef,
-  Array[String[1],0] $object_arguments  = [],
-  String $psql_db                       = $postgresql::server::default_database,
-  String $psql_user                     = $postgresql::server::user,
-  Integer $port                         = $postgresql::server::port,
-  Boolean $onlyif_exists                = false,
-  Hash $connect_settings                = $postgresql::server::default_connect_settings,
-  Enum['present', 'absent'] $ensure     = 'present',
-  String $group                         = $postgresql::server::group,
-  String $psql_path                     = $postgresql::server::psql_path,
+  ] $object_type                         = 'database',
+  Optional[Variant[Array[String,2,2],String[1]]] $object_name       = undef,
+  Array[String[1],0]                             $object_arguments  = [],
+  String                                         $psql_db           = $postgresql::server::default_database,
+  String                                         $psql_user         = $postgresql::server::user,
+  Stdlib::Port $port = $postgresql::server::port,
+  Boolean                                        $onlyif_exists     = false,
+  Hash                                           $connect_settings  = $postgresql::server::default_connect_settings,
+  Enum['present', 'absent']                      $ensure            = 'present',
+  String                                         $group             = $postgresql::server::group,
+  Stdlib::Absolutepath                           $psql_path         = $postgresql::server::psql_path,
+  String[1]                                      $instance          = 'main',
 ) {
   case $ensure {
     default: {
@@ -69,16 +76,7 @@ define postgresql::server::grant (
     $_object_name = $object_name
   }
 
-  #
-  # Port, order of precedence: $port parameter, $connect_settings[PGPORT], $postgresql::server::port
-  #
-  if $port != undef {
-    $port_override = $port
-  } elsif $connect_settings != undef and has_key( $connect_settings, 'PGPORT') {
-    $port_override = undef
-  } else {
-    $port_override = $postgresql::server::port
-  }
+  $port_override = pick($connect_settings['PGPORT'], $port)
 
   ## Munge the input values
   $_object_type = upcase($object_type)
@@ -329,6 +327,7 @@ define postgresql::server::grant (
       if $ensure == 'present' {
         if $_privilege == 'ALL' or $_privilege == 'ALL PRIVILEGES' {
           # GRANT ALL
+          # lint:ignore:140chars
           $custom_unless = "SELECT 1 WHERE NOT EXISTS
              ( SELECT 1 FROM
                ( SELECT t.tablename,count(privilege_type) AS priv_count FROM pg_catalog.pg_tables AS t
@@ -338,13 +337,16 @@ define postgresql::server::grant (
                  GROUP BY t.tablename
                ) AS j WHERE j.priv_count < 7
              )"
+          # lint:endignore:140chars
         } else {
           # GRANT $_privilege
+          # lint:ignore:140chars
           $custom_unless = "SELECT 1 WHERE NOT EXISTS
              ( SELECT 1 FROM pg_catalog.pg_tables AS t
                LEFT JOIN information_schema.role_table_grants AS g ON t.tablename = g.table_name AND g.grantee = '${role}' AND g.table_schema = '${schema}' AND g.privilege_type = '${_privilege}'
                WHERE t.schemaname = '${schema}' AND g.table_name IS NULL
              )"
+          # lint:endignore:140chars
         }
       } else {
         if $_privilege == 'ALL' or $_privilege == 'ALL PRIVILEGES' {
@@ -425,10 +427,15 @@ define postgresql::server::grant (
       }
       # Never put double quotes into has_*_privilege function
       $_granted_object = join($_object_name, '.')
+      # pg_* views does not contain schema name as part of the object name
+      $_togrant_object_only = $_object_name[1]
     }
     default: {
       $_granted_object = $_object_name
       $_togrant_object = $_object_name
+      # if $_togrant_object_only not set, set it to a default value $_togrant_object
+      # allows an Array or String to be passed as $_object_name i.e. [$schema, $table] or $table
+      $_togrant_object_only = $_togrant_object
     }
   }
 
@@ -445,10 +452,10 @@ define postgresql::server::grant (
   }
 
   $_onlyif = $onlyif_function ? {
-    'table_exists'    => "SELECT true FROM pg_tables WHERE tablename = '${_togrant_object}'",
-    'language_exists' => "SELECT true from pg_language WHERE lanname = '${_togrant_object}'",
+    'table_exists'    => "SELECT true FROM pg_tables WHERE tablename = '${_togrant_object_only}'",
+    'language_exists' => "SELECT true from pg_language WHERE lanname = '${_togrant_object_only}'",
     'role_exists'     => "SELECT 1 FROM pg_roles WHERE rolname = '${role}' or '${role}' = 'PUBLIC'",
-    'function_exists' => "SELECT true FROM pg_proc WHERE (oid::regprocedure)::text = '${_togrant_object}${arguments}'",
+    'function_exists' => "SELECT true FROM pg_proc WHERE (oid::regprocedure)::text = '${_togrant_object_only}${arguments}'",
     default           => undef,
   }
 
@@ -465,15 +472,16 @@ define postgresql::server::grant (
     psql_user        => $psql_user,
     psql_group       => $group,
     psql_path        => $psql_path,
+    instance         => $instance,
     unless           => $_unless,
     onlyif           => $_onlyif,
   }
 
-  if($role != undef and defined(Postgresql::Server::Role[$role])) {
+  if defined(Postgresql::Server::Role[$role]) {
     Postgresql::Server::Role[$role] -> Postgresql_psql["grant:${name}"]
   }
 
-  if($db != undef and defined(Postgresql::Server::Database[$db])) {
+  if defined(Postgresql::Server::Database[$db]) {
     Postgresql::Server::Database[$db] -> Postgresql_psql["grant:${name}"]
   }
 }

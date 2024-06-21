@@ -3,7 +3,9 @@
 #
 # See https://man.openbsd.org/ssh_config for more info
 
+<% if @host != nil -%>
 Host <%= @host %>
+<% end -%>
 <% if @add_keys_to_agent != nil -%>
   AddKeysToAgent <%= @add_keys_to_agent %>
 <% end -%>
@@ -136,7 +138,9 @@ Host <%= @host %>
   IdentityAgent <%= @identity_agent %>
 <% end -%>
 <% if @identity_file != nil -%>
-  IdentityFile <%= @identity_file.join(',') %>
+<%   @identity_file.each do |v| -%>
+  IdentityFile <%= v %>
+<%   end -%>
 <% end -%>
 <% if @ignore_unknown != nil -%>
   IgnoreUnknown <%= @ignore_unknown.join(',') %>

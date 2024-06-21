@@ -7,7 +7,7 @@ pgm="${0##*/}"				# Program basename
 progdir="${0%/*}"			# Program directory
 progdir=$( realpath ${progdir} )
 progdir=$( dirname ${progdir} )
-
+. ${progdir}/cmd.subr
 . ${progdir}/brand.conf
 : ${distdir="/usr/local/cbsd"}
 [ ! -r "${distdir}/subr/cbsdbootstrap.subr" ] && exit 1

@@ -4,6 +4,94 @@ All notable changes to this project will be documented in this file.
 Each new release typically also includes the latest modulesync defaults.
 These should not affect the functionality of the module.
 
+## [v10.0.0](https://github.com/voxpupuli/puppet-nodejs/tree/v10.0.0) (2023-09-25)
+
+[Full Changelog](https://github.com/voxpupuli/puppet-nodejs/compare/v9.1.0...v10.0.0)
+
+**Breaking changes:**
+
+- Drop support for Debian 9, Ubuntu 16.04 and 18.04, FreeBSD 11, add support for Puppet 8, add support for RHEL 9 [\#453](https://github.com/voxpupuli/puppet-nodejs/pull/453) ([bastelfreak](https://github.com/bastelfreak))
+
+## [v9.1.0](https://github.com/voxpupuli/puppet-nodejs/tree/v9.1.0) (2023-09-16)
+
+[Full Changelog](https://github.com/voxpupuli/puppet-nodejs/compare/v9.0.1...v9.1.0)
+
+**Breaking changes:**
+
+- Drop Puppet 6 support [\#467](https://github.com/voxpupuli/puppet-nodejs/pull/467) ([bastelfreak](https://github.com/bastelfreak))
+
+**Implemented enhancements:**
+
+- Add support for Debian 11, FreeBSD 13 [\#448](https://github.com/voxpupuli/puppet-nodejs/pull/448) ([smortex](https://github.com/smortex))
+
+**Fixed bugs:**
+
+- Disable failovermethod in yumrepo on EL8 [\#456](https://github.com/voxpupuli/puppet-nodejs/pull/456) ([sircubbi](https://github.com/sircubbi))
+
+## [v9.0.1](https://github.com/voxpupuli/puppet-nodejs/tree/v9.0.1) (2021-08-25)
+
+[Full Changelog](https://github.com/voxpupuli/puppet-nodejs/compare/v9.0.0...v9.0.1)
+
+**Merged pull requests:**
+
+- Allow stdlib 8.0.0 [\#446](https://github.com/voxpupuli/puppet-nodejs/pull/446) ([smortex](https://github.com/smortex))
+
+## [v9.0.0](https://github.com/voxpupuli/puppet-nodejs/tree/v9.0.0) (2021-03-23)
+
+[Full Changelog](https://github.com/voxpupuli/puppet-nodejs/compare/v8.1.0...v9.0.0)
+
+**Breaking changes:**
+
+- Drop Puppet 5 support; Enable Puppet 7 support [\#443](https://github.com/voxpupuli/puppet-nodejs/pull/443) ([bastelfreak](https://github.com/bastelfreak))
+- Drop EL6 support [\#438](https://github.com/voxpupuli/puppet-nodejs/pull/438) ([ekohl](https://github.com/ekohl))
+- Drop EOL Debian 8 [\#425](https://github.com/voxpupuli/puppet-nodejs/pull/425) ([bastelfreak](https://github.com/bastelfreak))
+
+**Implemented enhancements:**
+
+- puppetlabs/stdlib: Allow 7.x [\#442](https://github.com/voxpupuli/puppet-nodejs/pull/442) ([bastelfreak](https://github.com/bastelfreak))
+- add parameter $manage\_nodejs\_package [\#432](https://github.com/voxpupuli/puppet-nodejs/pull/432) ([kenyon](https://github.com/kenyon))
+- Debian and Ubuntu versioning and package name fixes [\#431](https://github.com/voxpupuli/puppet-nodejs/pull/431) ([kenyon](https://github.com/kenyon))
+
+**Fixed bugs:**
+
+- Missing dependency on package resource that installs NPM when using the nodesource repository [\#404](https://github.com/voxpupuli/puppet-nodejs/issues/404)
+- Add FreeBSD support [\#435](https://github.com/voxpupuli/puppet-nodejs/pull/435) ([igalic](https://github.com/igalic))
+
+**Closed issues:**
+
+- Evaluation Error: Operator '\[\]' is not applicable to an Undef Value - Ubuntu 20.04 [\#440](https://github.com/voxpupuli/puppet-nodejs/issues/440)
+- nodejs::npm::global\_config\_entry cannot work on a platform that puts npm into a different path [\#434](https://github.com/voxpupuli/puppet-nodejs/issues/434)
+- Installation on CentOS 7 fails, can't remove npm package [\#287](https://github.com/voxpupuli/puppet-nodejs/issues/287)
+
+**Merged pull requests:**
+
+- README.md: fix link to nodejs blog [\#430](https://github.com/voxpupuli/puppet-nodejs/pull/430) ([kenyon](https://github.com/kenyon))
+
+## [v8.1.0](https://github.com/voxpupuli/puppet-nodejs/tree/v8.1.0) (2020-09-18)
+
+[Full Changelog](https://github.com/voxpupuli/puppet-nodejs/compare/v8.0.0...v8.1.0)
+
+Last release with Debian 8 support! After this 8.1.0 release we will do a 9.0.0 one without Debian 8 support.
+
+**Implemented enhancements:**
+
+- Error "Package 'nodejs-dev' has no installation candidate" on Ubuntu 20.04 [\#421](https://github.com/voxpupuli/puppet-nodejs/issues/421)
+
+**Fixed bugs:**
+
+- Read the exit code from the output status [\#423](https://github.com/voxpupuli/puppet-nodejs/pull/423) ([ekohl](https://github.com/ekohl))
+
+**Closed issues:**
+
+- Release bump [\#415](https://github.com/voxpupuli/puppet-nodejs/issues/415)
+
+**Merged pull requests:**
+
+- Drop duplicate class declaration [\#426](https://github.com/voxpupuli/puppet-nodejs/pull/426) ([bastelfreak](https://github.com/bastelfreak))
+- modulesync 3.0.0 & puppet-lint updates [\#424](https://github.com/voxpupuli/puppet-nodejs/pull/424) ([bastelfreak](https://github.com/bastelfreak))
+- Fix nodejs dev package name for Ubuntu 20.04 . \#421 [\#422](https://github.com/voxpupuli/puppet-nodejs/pull/422) ([cliffano](https://github.com/cliffano))
+- Require puppet-epel over stahnma-epel [\#419](https://github.com/voxpupuli/puppet-nodejs/pull/419) ([dhoppe](https://github.com/dhoppe))
+
 ## [v8.0.0](https://github.com/voxpupuli/puppet-nodejs/tree/v8.0.0) (2020-03-10)
 
 [Full Changelog](https://github.com/voxpupuli/puppet-nodejs/compare/v7.0.1...v8.0.0)
@@ -37,11 +125,8 @@ These should not affect the functionality of the module.
 
 **Fixed bugs:**
 
-- Fix idempotence of unquoted secrets [\#390](https://github.com/voxpupuli/puppet-nodejs/pull/390) ([aboks](https://github.com/aboks))
-
-**Merged pull requests:**
-
 - Allow puppetlabs/stdlib 6.x [\#396](https://github.com/voxpupuli/puppet-nodejs/pull/396) ([dhoppe](https://github.com/dhoppe))
+- Fix idempotence of unquoted secrets [\#390](https://github.com/voxpupuli/puppet-nodejs/pull/390) ([aboks](https://github.com/aboks))
 
 ## [v7.0.0](https://github.com/voxpupuli/puppet-nodejs/tree/v7.0.0) (2019-02-02)
 
@@ -498,7 +583,7 @@ These should not affect the functionality of the module.
 - FM-1523: Added module summary to metadata.json [\#95](https://github.com/voxpupuli/puppet-nodejs/pull/95) ([jbondpdx](https://github.com/jbondpdx))
 - Add Archlinux support [\#90](https://github.com/voxpupuli/puppet-nodejs/pull/90) ([Filirom1](https://github.com/Filirom1))
 - updated travis to current versions of puppet [\#79](https://github.com/voxpupuli/puppet-nodejs/pull/79) ([jlambert121](https://github.com/jlambert121))
-- fix requires for proxy config when on ubuntu \#51 [\#70](https://github.com/voxpupuli/puppet-nodejs/pull/70) ([wenlock](https://github.com/wenlock))
+- fix requires for proxy config when on ubuntu \#51 [\#70](https://github.com/voxpupuli/puppet-nodejs/pull/70) ([sfc-gh-eraigosa](https://github.com/sfc-gh-eraigosa))
 
 ## [0.6.1](https://github.com/voxpupuli/puppet-nodejs/tree/0.6.1) (2014-07-15)
 
@@ -546,7 +631,7 @@ These should not affect the functionality of the module.
 
 **Merged pull requests:**
 
-- Remove special cases for Precise [\#41](https://github.com/voxpupuli/puppet-nodejs/pull/41) ([lunaryorn](https://github.com/lunaryorn))
+- Remove special cases for Precise [\#41](https://github.com/voxpupuli/puppet-nodejs/pull/41) ([swsnr](https://github.com/swsnr))
 - Add version parameter [\#28](https://github.com/voxpupuli/puppet-nodejs/pull/28) ([bfirsh](https://github.com/bfirsh))
 
 ## [0.3.0](https://github.com/voxpupuli/puppet-nodejs/tree/0.3.0) (2013-08-01)
@@ -565,11 +650,7 @@ These should not affect the functionality of the module.
 
 ## [0.2.1](https://github.com/voxpupuli/puppet-nodejs/tree/0.2.1) (2012-12-28)
 
-[Full Changelog](https://github.com/voxpupuli/puppet-nodejs/compare/0.3.1...0.2.1)
-
-## [0.3.1](https://github.com/voxpupuli/puppet-nodejs/tree/0.3.1) (2012-12-28)
-
-[Full Changelog](https://github.com/voxpupuli/puppet-nodejs/compare/0.2.0...0.3.1)
+[Full Changelog](https://github.com/voxpupuli/puppet-nodejs/compare/0.2.0...0.2.1)
 
 **Merged pull requests:**
 

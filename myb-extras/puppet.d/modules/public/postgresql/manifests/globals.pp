@@ -2,7 +2,8 @@
 #
 # @note
 #   Most server-specific defaults should be overridden in the postgresql::server class.
-#   This class should be used only if you are using a non-standard OS, or if you are changing elements that can only be changed here, such as version or manage_package_repo.
+#   This class should be used only if you are using a non-standard OS, or if you are changing elements that can only be changed here, such
+#   as version or manage_package_repo.
 #
 #
 # @param client_package_name  Overrides the default PostgreSQL client package name.
@@ -25,7 +26,6 @@
 # @param validcon_script_path Scipt path for the connection validation check.
 #
 # @param initdb_path Path to the initdb command.
-# @param createdb_path Deprecated. Path to the createdb command.
 # @param psql_path Sets the path to the psql command.
 # @param pg_hba_conf_path Specifies the path to your pg_hba.conf file.
 # @param pg_ident_conf_path Specifies the path to your pg_ident.conf file.
@@ -40,8 +40,10 @@
 #    Overrides the default PostgreSQL data directory for the target platform.
 #    Changing the datadir after installation causes the server to come to a full stop before making the change.
 #    For Red Hat systems, the data directory must be labeled appropriately for SELinux.
-#    On Ubuntu, you must explicitly set needs_initdb = true to allow Puppet to initialize the database in the new datadir (needs_initdb defaults to true on other systems).
-#    Warning! If datadir is changed from the default, Puppet does not manage purging of the original data directory, which causes it to fail if the data directory is changed back to the original
+#    On Ubuntu, you must explicitly set needs_initdb = true to allow Puppet to initialize the database in the new datadir (needs_initdb
+#    defaults to true on other systems).
+#    Warning! If datadir is changed from the default, Puppet does not manage purging of the original data directory, which causes it to fail
+#    if the data directory is changed back to the original
 #
 # @param confdir Overrides the default PostgreSQL configuration directory for the target platform.
 # @param bindir Overrides the default PostgreSQL binaries directory for the target platform.
@@ -58,21 +60,26 @@
 #
 # @param repo_baseurl Sets the baseurl for the PostgreSQL repository. Useful if you host your own mirror of the repository.
 # @param yum_repo_commonurl Sets the url for the PostgreSQL common Yum repository. Useful if you host your own mirror of the YUM repository.
+# @param apt_source_release Overrides the default release for the apt source.
 #
-# @param needs_initdb Explicitly calls the initdb operation after the server package is installed and before the PostgreSQL service is started.
+# @param needs_initdb
+#   Explicitly calls the initdb operation after the server package is installed and before the PostgreSQL service is started.
 #
 # @param encoding
 #   Sets the default encoding for all databases created with this module.
-#   On certain operating systems, this is also used during the template1 initialization, so it becomes a default outside of the module as well.
+#   On certain operating systems, this is also used during the template1 initialization,
+#   so it becomes a default outside of the module as well.
 # @param locale
 #   Sets the default database locale for all databases created with this module.
-#   On certain operating systems, this is also used during the template1 initialization, so it becomes a default outside of the module as well.
+#   On certain operating systems, this is also used during the template1 initialization,
+#   so it becomes a default outside of the module as well.
 #   On Debian, you'll need to ensure that the 'locales-all' package is installed for full functionality of PostgreSQL.
 # @param data_checksums
 #   Use checksums on data pages to help detect corruption by the I/O system that would otherwise be silent.
 #   Warning: This option is used during initialization by initdb, and cannot be changed later.
 #
-# @param timezone Sets the default timezone of the postgresql server. The postgresql built-in default is taking the systems timezone information.
+# @param timezone
+#   Sets the default timezone of the postgresql server. The postgresql built-in default is taking the systems timezone information.
 #
 # @param manage_pg_hba_conf Allow Puppet to manage the pg_hba.conf file.
 # @param manage_pg_ident_conf Allow Puppet to manage the pg_ident.conf file.
@@ -81,6 +88,7 @@
 #   Whether to manage the postgresql conf file permissions. This means owner,
 #   group and mode. Contents are not managed but should be managed through
 #   postgresql::server::config_entry.
+# @param manage_selinux Allows Puppet to manage the appropriate configuration file for selinux.
 #
 # @param manage_datadir Set to false if you have file{ $datadir: } already defined
 # @param manage_logdir Set to false if you have file{ $logdir: } already defined
@@ -89,85 +97,86 @@
 # @param manage_package_repo Sets up official PostgreSQL repositories on your host if set to true.
 # @param manage_dnf_module
 #   Manage the DNF module. This only makes sense on distributions that use DNF
-#   package manager, such as EL8 or Fedora. It also requires Puppet 5.5.20+ or
-#   Puppet 6.15.0+ since they ship the dnfmodule provider.
-# @param module_workdir Specifies working directory under which the psql command should be executed. May need to specify if '/tmp' is on volume mounted with noexec option.
-#
+#   package manager, such as EL8, EL9 or Fedora.
+# @param module_workdir
+#   Specifies working directory under which the psql command should be executed.
+#   May need to specify if '/tmp' is on volume mounted with noexec option.
 #
 class postgresql::globals (
-  $client_package_name                             = undef,
-  $server_package_name                             = undef,
-  $contrib_package_name                            = undef,
-  $devel_package_name                              = undef,
-  $java_package_name                               = undef,
-  $docs_package_name                               = undef,
-  $perl_package_name                               = undef,
-  $plperl_package_name                             = undef,
-  $plpython_package_name                           = undef,
-  $python_package_name                             = undef,
-  $postgis_package_name                            = undef,
+  Optional[String[1]] $client_package_name         = undef,
+  Optional[String[1]] $server_package_name         = undef,
+  Optional[String[1]] $contrib_package_name        = undef,
+  Optional[String[1]] $devel_package_name          = undef,
+  Optional[String[1]] $java_package_name           = undef,
+  Optional[String[1]] $docs_package_name           = undef,
+  Optional[String[1]] $perl_package_name           = undef,
+  Optional[String[1]] $plperl_package_name         = undef,
+  Optional[String[1]] $plpython_package_name       = undef,
+  Optional[String[1]] $python_package_name         = undef,
+  Optional[String[1]] $postgis_package_name        = undef,
 
-  $service_name                                    = undef,
-  $service_provider                                = undef,
-  $service_status                                  = undef,
-  $default_database                                = undef,
+  Optional[String[1]] $service_name                = undef,
+  Optional[String[1]] $service_provider            = undef,
+  Optional[String[1]] $service_status              = undef,
+  Optional[String[1]] $default_database            = undef,
 
-  $validcon_script_path                            = undef,
+  Optional[String[1]] $validcon_script_path        = undef,
 
-  $initdb_path                                     = undef,
-  $createdb_path                                   = undef,
-  $psql_path                                       = undef,
-  $pg_hba_conf_path                                = undef,
-  $pg_ident_conf_path                              = undef,
-  $postgresql_conf_path                            = undef,
-  Optional[Stdlib::Filemode] $postgresql_conf_mode = undef,
-  $recovery_conf_path                              = undef,
-  $default_connect_settings                        = {},
+  Optional[Stdlib::Absolutepath] $initdb_path          = undef,
+  Optional[Stdlib::Absolutepath] $psql_path            = undef,
+  Optional[Stdlib::Absolutepath] $pg_hba_conf_path     = undef,
+  Optional[Stdlib::Absolutepath] $pg_ident_conf_path   = undef,
+  Optional[Stdlib::Absolutepath] $postgresql_conf_path = undef,
+  Optional[Stdlib::Filemode] $postgresql_conf_mode     = undef,
+  Optional[Stdlib::Absolutepath] $recovery_conf_path   = undef,
+  Hash $default_connect_settings                       = {},
 
-  $pg_hba_conf_defaults                            = undef,
+  Optional[Boolean] $pg_hba_conf_defaults          = undef,
 
-  $datadir                                         = undef,
-  $confdir                                         = undef,
-  $bindir                                          = undef,
-  $xlogdir                                         = undef,
-  $logdir                                          = undef,
-  $log_line_prefix                                 = undef,
-  $manage_datadir                                  = undef,
-  $manage_logdir                                   = undef,
-  $manage_xlogdir                                  = undef,
+  Optional[Stdlib::Absolutepath] $datadir          = undef,
+  Optional[Stdlib::Absolutepath] $confdir          = undef,
+  Optional[Stdlib::Absolutepath] $bindir           = undef,
+  Optional[Stdlib::Absolutepath] $xlogdir          = undef,
+  Optional[Stdlib::Absolutepath] $logdir           = undef,
+  Optional[String[1]] $log_line_prefix             = undef,
+  Optional[Boolean] $manage_datadir                = undef,
+  Optional[Boolean] $manage_logdir                 = undef,
+  Optional[Boolean] $manage_xlogdir                = undef,
 
-  $user                                            = undef,
-  $group                                           = undef,
+  Optional[String[1]] $user                        = undef,
+  Optional[String[1]] $group                       = undef,
 
-  $version                                         = undef,
-  $postgis_version                                 = undef,
-  $repo_proxy                                      = undef,
-  $repo_baseurl                                    = undef,
-  $yum_repo_commonurl                              = undef,
+  Optional[String[1]] $version                     = undef,
+  Optional[String[1]] $postgis_version             = undef,
+  Optional[String[1]] $repo_proxy                  = undef,
+  Optional[String[1]] $repo_baseurl                = undef,
+  Optional[String[1]] $yum_repo_commonurl          = undef,
+  Optional[String[1]] $apt_source_release          = undef,
 
-  $needs_initdb                                    = undef,
+  Optional[Boolean] $needs_initdb                  = undef,
 
-  $encoding                                        = undef,
-  $locale                                          = undef,
-  $data_checksums                                  = undef,
-  $timezone                                        = undef,
+  Optional[String[1]] $encoding                    = undef,
+  Optional[String[1]] $locale                      = undef,
+  Optional[Boolean] $data_checksums                = undef,
+  Optional[String[1]] $timezone                    = undef,
 
-  $manage_pg_hba_conf                              = undef,
-  $manage_pg_ident_conf                            = undef,
-  $manage_recovery_conf                            = undef,
-  $manage_postgresql_conf_perms                    = undef,
-  $manage_selinux                                  = undef,
+  Optional[Boolean] $manage_pg_hba_conf            = undef,
+  Optional[Boolean] $manage_pg_ident_conf          = undef,
+  Optional[Boolean] $manage_recovery_conf          = undef,
+  Optional[Boolean] $manage_postgresql_conf_perms  = undef,
+  Optional[Boolean] $manage_selinux                = undef,
 
-  $manage_package_repo                             = undef,
+  Optional[Boolean] $manage_package_repo           = undef,
   Boolean $manage_dnf_module                       = false,
-  $module_workdir                                  = undef,
+  Optional[Stdlib::Absolutepath] $module_workdir   = undef,
 ) {
   # We are determining this here, because it is needed by the package repo
   # class.
   $default_version = $facts['os']['family'] ? {
     /^(RedHat|Linux)/ => $facts['os']['name'] ? {
       'Fedora' => $facts['os']['release']['major'] ? {
-        /^(36)$/       => '14',
+        /^(38)$/       => '15',
+        /^(36|37)$/    => '14',
         /^(34|35)$/    => '13',
         /^(32|33)$/    => '12',
         /^(31)$/       => '11.6',
@@ -187,24 +196,17 @@ class postgresql::globals (
         '9'     => '13',
         '8'     => '10',
         '7'     => '9.2',
-        '6'     => '8.4',
-        '5'     => '8.1',
         default => undef,
       },
     },
     'Debian' => $facts['os']['name'] ? {
       'Debian' => $facts['os']['release']['major'] ? {
-        '8'     => '9.4',
-        '9'     => '9.6',
         '10'    => '11',
         '11'    => '13',
+        '12'    => '15',
         default => undef,
       },
       'Ubuntu' => $facts['os']['release']['major'] ? {
-        /^(14.04)$/ => '9.3',
-        /^(14.10|15.04|15.10)$/ => '9.4',
-        /^(16.04|16.10)$/ => '9.5',
-        /^(17.04|17.10)$/ => '9.6',
         /^(18.04)$/ => '10',
         /^(20.04)$/ => '12',
         /^(21.04|21.10)$/ => '13',
@@ -245,8 +247,6 @@ class postgresql::globals (
   }
 
   $default_postgis_version = $globals_version ? {
-    '8.1'   => '1.3.6',
-    '8.4'   => '2.0',
     '9.0'   => '2.1',
     '9.1'   => '2.1',
     '91'    => '2.1',
@@ -273,6 +273,7 @@ class postgresql::globals (
       proxy     => $repo_proxy,
       baseurl   => $repo_baseurl,
       commonurl => $yum_repo_commonurl,
+      release   => $apt_source_release,
     }
   }
 

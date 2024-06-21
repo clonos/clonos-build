@@ -1,11 +1,11 @@
 stub-zone:
   name: "<%= @name %>"
-<% if @address -%>
-<% addrs = PuppetX::Unbound::ValidateAddrs.new(@address) -%>
-<% addrs.name_list.each do |addr| -%>
-  stub-host: <%= addr %>
-<% end -%>
-<% addrs.ip_list.each do |addr| -%>
+<% [@address].flatten.each do |addr| -%>
   stub-addr: <%= addr %>
 <% end -%>
+<% @nameservers.each do |host| -%>
+  stub-host: <%= host %>
+<% end -%>
+<% if @no_cache == 'true' or @no_cache == true -%>
+  stub-no-cache: yes
 <% end -%>

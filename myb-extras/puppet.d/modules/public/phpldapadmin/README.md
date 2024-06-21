@@ -123,7 +123,7 @@ If not specified, you wil be prompted for the password.
 
 ## Limitations
 
-This module has been tested on Ubuntu 14.04 and CentOS 6.5. It should also work on Debian/Ubuntu 12.04 and RedHat/CentOS 7.
+This module has been tested on Ubuntu 14.04 and CentOS 6.5. It should also work on Debian/Ubuntu 12.04, RedHat/CentOS 7 and FreeBSD 10+.
 
 At the moment it does not configure the phpldapadmin app with SASL.
 

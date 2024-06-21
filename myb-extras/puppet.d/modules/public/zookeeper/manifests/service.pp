@@ -1,8 +1,7 @@
 # Class: zookeeper::service
 #
-# PRIVATE CLASS - do not use directly (use main `zookeeper` class).
+# @private - do not use directly (use main `zookeeper` class).
 class zookeeper::service inherits zookeeper {
-
   case $zookeeper::install_method {
     'archive': {
       $_zoo_dir = "${zookeeper::archive_install_dir}/${module_name}"
@@ -16,21 +15,22 @@ class zookeeper::service inherits zookeeper {
   }
 
   if $zookeeper::manage_service_file == true {
-    if $zookeeper::service_provider == 'systemd'  {
+    exec { 'systemctl daemon-reload # for zookeeper':
+      refreshonly => true,
+      path        => $facts['path'],
+    }
+    if $zookeeper::service_provider == 'systemd' {
       file { "${zookeeper::systemd_path}/${zookeeper::service_name}.service":
-        ensure  => 'present',
+        ensure  => file,
         content => template("${module_name}/zookeeper.service.erb"),
-      }
-      ~> exec { 'systemctl daemon-reload # for zookeeper':
-        refreshonly => true,
-        path        => $::path,
+        notify  => Exec['systemctl daemon-reload # for zookeeper'],
       }
     } elsif (
       $zookeeper::service_provider == 'init'
       or $zookeeper::service_provider == 'redhat'
-    )  {
+    ) {
       file { "/etc/init.d/${zookeeper::service_name}":
-        ensure  => present,
+        ensure  => file,
         content => template("${module_name}/zookeeper.${facts['os']['family']}.init.erb"),
         mode    => '0755',
         before  => Service[$zookeeper::service_name],
@@ -46,7 +46,7 @@ class zookeeper::service inherits zookeeper {
     provider   => $zookeeper::service_provider,
     enable     => true,
     require    => [
-      Class['::zookeeper::install'],
+      Class['zookeeper::install'],
       File["${zookeeper::cfg_dir}/zoo.cfg"]
     ],
   }
@@ -57,12 +57,9 @@ class zookeeper::service inherits zookeeper {
     File["${zookeeper::cfg_dir}/zoo.cfg"] ~> Service[$zookeeper::service_name]
     File["${zookeeper::cfg_dir}/${zookeeper::environment_file}"] ~> Service[$zookeeper::service_name]
     File["${zookeeper::cfg_dir}/log4j.properties"] ~> Service[$zookeeper::service_name]
-    if $::zookeeper::manage_service_file {
-      if $zookeeper::service_provider == 'systemd'  {
-        Exec['systemctl daemon-reload # for zookeeper'] ~> Service[$::zookeeper::service_name]
-      } else {
-        Service[$::zookeeper::service_name]
-      }
+
+    if $zookeeper::manage_service_file and $zookeeper::service_provider == 'systemd' {
+      Exec['systemctl daemon-reload # for zookeeper'] ~> Service[$zookeeper::service_name]
     }
   }
 }

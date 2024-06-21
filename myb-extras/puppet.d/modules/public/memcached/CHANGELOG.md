@@ -4,6 +4,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [8.2.0]
+### Added
+- Support puppet/systemd < 5.0.0 (#143)
+- Support puppetlabs/firewall < 6.0.0
+### Changed
+- Stop using deprecated Stdlib::Compat::Ip_address (#145)
+### Removed
+- remove Debian 9 as supported OS
+
+## [8.1.0]
+### Added
+- Support for RedHat 9 and CentOS 9
+
+## [8.0.0]
+### Changed
+- BREAKING CHANGE: switch from camptocamp/systemd to puppet/systemd
+- Improved tests
+- Load modern facts first (#138)
+- Make sure memcached logfile exists (#140)
+- Allow stdlib < 9.0.0
+### Fixed
+- Fix duplicate systemd daemon-reload execs (#137)
+### Added
+- Added support for Debian 11 and Ubuntu 22.04
+
 ## [7.0.0]
 ### Changed
 - BREAKING CHANGE: Testing for Puppet 5 has been dropped

@@ -12,7 +12,6 @@ class nginx::params {
     'log_user'                => 'nginx',
     'log_group'               => 'root',
     'log_mode'                => '0750',
-    'run_dir'                 => '/var/nginx',
     'package_name'            => 'nginx',
     'passenger_package_name'  => 'passenger',
     'manage_repo'             => false,
@@ -31,6 +30,7 @@ class nginx::params {
       'text/vnd.sun.j2me.app-descriptor'                                          => 'jad',
       'text/vnd.wap.wml'                                                          => 'wml',
       'text/x-component'                                                          => 'htc',
+      'image/avif'                                                                => 'avif',
       'image/png'                                                                 => 'png',
       'image/tiff'                                                                => 'tif tiff',
       'image/vnd.wap.wbmp'                                                        => 'wbmp',
@@ -39,7 +39,8 @@ class nginx::params {
       'image/x-ms-bmp'                                                            => 'bmp',
       'image/svg+xml'                                                             => 'svg svgz',
       'image/webp'                                                                => 'webp',
-      'application/font-woff'                                                     => 'woff',
+      'font/woff'                                                                 => 'woff',
+      'font/woff2'                                                                => 'woff2',
       'application/java-archive'                                                  => 'jar war ear',
       'application/json'                                                          => 'json',
       'application/mac-binhex40'                                                  => 'hqx',
@@ -51,9 +52,14 @@ class nginx::params {
       'application/vnd.ms-excel'                                                  => 'xls',
       'application/vnd.ms-fontobject'                                             => 'eot',
       'application/vnd.ms-powerpoint'                                             => 'ppt',
+      'application/vnd.oasis.opendocument.graphics'                               => 'odg',
+      'application/vnd.oasis.opendocument.presentation'                           => 'odp',
+      'application/vnd.oasis.opendocument.spreadsheet'                            => 'ods',
+      'application/vnd.oasis.opendocument.text'                                   => 'odt',
       'application/vnd.wap.wmlc'                                                  => 'wmlc',
       'application/vnd.google-earth.kml+xml'                                      => 'kml',
       'application/vnd.google-earth.kmz'                                          => 'kmz',
+      'application/wasm'                                                          => 'wasm',
       'application/x-7z-compressed'                                               => '7z',
       'application/x-cocoa'                                                       => 'cco',
       'application/x-java-archive-diff'                                           => 'jardiff',
@@ -106,27 +112,14 @@ class nginx::params {
       }
     }
     'Debian': {
-      if ($facts['os']['name'] == 'ubuntu' and $facts['os']['distro']['codename'] == 'xenial') {
-        $_module_os_overrides = {
-          'manage_repo' => true,
-          'daemon_user' => 'www-data',
-          'log_user'    => 'root',
-          'log_group'   => 'adm',
-          'log_mode'    => '0755',
-          'run_dir'     => '/run/nginx',
-        }
-        # The following was designed/tested on Ubuntu 18 and Debian 9/10 but probably works on newer versions as well
-      } else {
-        $_module_os_overrides = {
-          'manage_repo'             => true,
-          'daemon_user'             => 'www-data',
-          'log_user'                => 'root',
-          'log_group'               => 'adm',
-          'log_mode'                => '0755',
-          'run_dir'                 => '/run/nginx',
-          'passenger_package_name'  => 'libnginx-mod-http-passenger',
-          'include_modules_enabled' => true,
-        }
+      $_module_os_overrides = {
+        'manage_repo'             => true,
+        'daemon_user'             => 'www-data',
+        'log_user'                => 'root',
+        'log_group'               => 'adm',
+        'log_mode'                => '0755',
+        'passenger_package_name'  => 'libnginx-mod-http-passenger',
+        'include_modules_enabled' => true,
       }
     }
     'DragonFly', 'FreeBSD': {
@@ -135,7 +128,7 @@ class nginx::params {
         'daemon_user' => 'www',
         'root_group'  => 'wheel',
         'log_group'   => 'wheel',
-        'log_user'    => 'root',
+        'log_user'    => 'www',
       }
     }
     'Gentoo': {
@@ -144,7 +137,7 @@ class nginx::params {
       }
     }
     'RedHat': {
-      if ($facts['os']['name'] in ['RedHat', 'CentOS', 'Oracle', 'virtuozzolinux'] and $facts['os']['release']['major'] in ['6', '7']) {
+      if ($facts['os']['name'] in ['RedHat', 'CentOS', 'Oracle', 'virtuozzolinux', 'Rocky', 'AlmaLinux'] and $facts['os']['release']['major'] in ['6', '7', '8', '9']) {
         $_module_os_overrides = {
           'manage_repo' => true,
           'log_group'   => 'nginx',
@@ -180,7 +173,6 @@ class nginx::params {
         'log_dir'     => '/var/www/logs',
         'log_user'    => 'www',
         'log_group'   => 'wheel',
-        'run_dir'     => '/var/www',
       }
     }
     'AIX': {
@@ -190,7 +182,6 @@ class nginx::params {
         'conf_dir'    => '/opt/freeware/etc/nginx/',
         'log_dir'     => '/opt/freeware/var/log/nginx/',
         'log_group'   => 'system',
-        'run_dir'     => '/opt/freeware/share/nginx/html',
       }
     }
     default: {
@@ -201,7 +192,7 @@ class nginx::params {
     }
   }
 
-  $_module_parameters = merge($_module_defaults, $_module_os_overrides)
+  $_module_parameters = $_module_defaults + $_module_os_overrides
   ### END Operating System Configuration
 
   ### Referenced Variables
@@ -211,27 +202,16 @@ class nginx::params {
   $log_user                = $_module_parameters['log_user']
   $log_group               = $_module_parameters['log_group']
   $log_mode                = $_module_parameters['log_mode']
-  $run_dir                 = $_module_parameters['run_dir']
-  $temp_dir                = '/tmp'
   $pid                     = $_module_parameters['pid']
   $include_modules_enabled = $_module_parameters['include_modules_enabled']
 
-  $client_body_temp_path   = "${run_dir}/client_body_temp"
   $daemon_user             = $_module_parameters['daemon_user']
-  $global_owner            = 'root'
   $global_group            = $_module_parameters['root_group']
-  $global_mode             = '0644'
-  $http_access_log_file    = 'access.log'
   $manage_repo             = $_module_parameters['manage_repo']
   $mime_types              = $_module_parameters['mime_types']
-  $nginx_error_log_file    = 'error.log'
   $root_group              = $_module_parameters['root_group']
   $package_name            = $_module_parameters['package_name']
   $passenger_package_name  = $_module_parameters['passenger_package_name']
-  $proxy_temp_path         = "${run_dir}/proxy_temp"
-  $sites_available_owner   = 'root'
   $sites_available_group   = $_module_parameters['root_group']
-  $sites_available_mode    = '0644'
-  $super_user              = true
   ### END Referenced Variables
 }

@@ -1,6 +1,8 @@
 # @summary This resource wraps the grant resource to manage table grants specifically.
 #
-# @param privilege Specifies comma-separated list of privileges to grant. Valid options: 'ALL', 'SELECT', 'INSERT', 'UPDATE', 'DELETE', 'TRUNCATE', 'REFERENCES', 'TRIGGER'.
+# @param privilege
+#   Specifies comma-separated list of privileges to grant.
+#   Valid options: 'ALL', 'SELECT', 'INSERT', 'UPDATE', 'DELETE', 'TRUNCATE', 'REFERENCES', 'TRIGGER'.
 # @param table Specifies the table to which you are granting access.
 # @param db Specifies which database the table is in.
 # @param role Specifies the role or user to whom you are granting access.
@@ -11,16 +13,17 @@
 # @param connect_settings Specifies a hash of environment variables used when connecting to a remote server.
 # @param onlyif_exists Create grant only if it doesn't exist.
 define postgresql::server::table_grant (
-  $privilege,
-  $table,
-  $db,
-  $role,
-  $ensure           = undef,
-  $port             = undef,
-  $psql_db          = undef,
-  $psql_user        = undef,
-  $connect_settings = undef,
-  $onlyif_exists    = false,
+  Enum['ALL', 'SELECT', 'INSERT', 'UPDATE', 'DELETE', 'TRUNCATE', 'REFERENCES', 'TRIGGER', 'all', 'select', 'insert', 'update', 'delete',
+  'truncate', 'references', 'trigger'] $privilege,
+  String[1]                                           $table,
+  String[1]                                           $db,
+  String[1]                                           $role,
+  Optional[Enum['present', 'absent']]                 $ensure           = undef,
+  Optional[Stdlib::Port]                              $port             = undef,
+  Optional[String[1]]                                 $psql_db          = undef,
+  Optional[String[1]]                                 $psql_user        = undef,
+  Optional[Hash]                                      $connect_settings = undef,
+  Boolean                                             $onlyif_exists    = false,
 ) {
   postgresql::server::grant { "table:${name}":
     ensure           => $ensure,

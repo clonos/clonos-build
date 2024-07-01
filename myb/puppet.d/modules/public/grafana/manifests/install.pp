@@ -1,5 +1,6 @@
-# == Class grafana::install
+# @summary Manage grafana installation
 #
+# @api private
 class grafana::install {
   $base_url = 'https://dl.grafana.com/oss/release'
   if $grafana::archive_source != undef {
@@ -87,14 +88,20 @@ class grafana::install {
             if !defined(Class['apt']) {
               include apt
             }
+
+            $real_repo_release = $grafana::repo_name ? {
+              /(stable|beta)/  => $grafana::repo_name,
+              'custom'         => $grafana::repo_release,
+            }
+
             apt::source { 'grafana':
-              location     => 'https://packages.grafana.com/oss/deb',
-              release      => $grafana::repo_name,
+              location     => $grafana::repo_url,
+              release      => $real_repo_release,
               architecture => 'amd64,arm64,armhf',
               repos        => 'main',
               key          => {
-                'id'     => '4E40DDF6D76E284A4A6780E48C8C34C524098CB6',
-                'source' => 'https://packages.grafana.com/gpg.key',
+                'id'     => $grafana::repo_key_id,
+                'source' => $grafana::repo_gpg_key_url,
               },
               before       => Package['grafana'],
             }
@@ -115,8 +122,8 @@ class grafana::install {
           if ( $grafana::manage_package_repo ) {
             # http://docs.grafana.org/installation/rpm/#install-via-yum-repository
             $baseurl = $grafana::repo_name ? {
-              'stable' => 'https://packages.grafana.com/oss/rpm',
-              'beta'   => 'https://packages.grafana.com/oss/rpm-beta',
+              /(stable|custom)/  => $grafana::repo_url,
+              'beta'             => "${grafana::repo_url}-${grafana::repo_name}",
             }
 
             yumrepo { 'grafana':
@@ -128,7 +135,7 @@ class grafana::install {
               descr    => "grafana-${grafana::repo_name} repo",
               baseurl  => $baseurl,
               gpgcheck => 1,
-              gpgkey   => 'https://packages.grafana.com/gpg.key',
+              gpgkey   => $grafana::repo_gpg_key_url,
               enabled  => 1,
               before   => Package['grafana'],
             }

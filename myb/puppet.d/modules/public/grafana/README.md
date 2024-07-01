@@ -101,7 +101,7 @@ Manages the Grafana configuration file. Grafana comes with its own default
 settings in a different configuration file (/opt/grafana/current/conf/defaults.ini),
 therefore this module does not supply any defaults.
 
-This parameter only accepts a hash as its value. Keys with hashes as values will
+This parameter only accepts a `Hash` (or `Sensitive[Hash]`) as its value. Keys with hashes as values will
 generate sections, any other values are just plain values. The example below will
 result in...
 
@@ -154,12 +154,21 @@ Some minor notes:
 * The order of the keys in this hash is the same as they will be written to the
   configuration file. So settings that do not fall under a section will have to
   come before any sections in the hash.
+* If your configuration contains secrets you want hidden in Puppet log output and reports
+  use a `Sensitive[Hash]` instead of a normal `Hash`
 
 #### `ldap_cfg`
 
+Manages the Grafana LDAP configuration file. This hash is directly translated
+into the corresponding TOML file, allowing for full flexibility in generating
+the configuration.
+
+See the [LDAP documentation](http://docs.grafana.org/v2.1/installation/ldap/)
+for more information.
+
 ##### TOML note
 
-This option **requires** the [toml](https://github.com/toml-lang/toml) gem. Either
+This option **requires** the [toml](https://rubygems.org/gems/toml/) gem. Either
 install the gem using puppet's native gem provider,
 [puppetserver_gem](https://forge.puppetlabs.com/puppetlabs/puppetserver_gem),
 [pe_gem](https://forge.puppetlabs.com/puppetlabs/pe_gem),
@@ -174,6 +183,10 @@ or manually using one of the following:
   # AIO or PE puppetserver
   /opt/puppet/bin/puppetserver gem install toml
 ```
+##### secrets
+
+LDAP configuration usually contains secrets. If you want to stop these being leaked in logs and reports,
+the `ldap_cfg` parameter will optionally accept the `Sensitive` data type.
 
 ##### cfg note
 
@@ -186,32 +199,13 @@ be enabled in the main configuration file. Enable it in cfg with:
   config_file => '/etc/grafana/ldap.toml',
 },
 ```
-
-#### Integer note
-
-Puppet may convert integers into strings while parsing the hash and converting
-into toml. This can be worked around by appending 0 to an integer.
-
-Example:
-
-```
-port => 636+0,
-```
-
-Manages the Grafana LDAP configuration file. This hash is directly translated
-into the corresponding TOML file, allowing for full flexibility in generating
-the configuration.
-
-See the [LDAP documentation](http://docs.grafana.org/v2.1/installation/ldap/)
-for more information.
-
 #### Example LDAP config
 
 ```
-ldap_cfg => {
+ldap_cfg => Sensitive({
   servers => [
     { host            => 'ldapserver1.domain1.com',
-      port            => 636+0,
+      port            => 636,
       use_ssl         => true,
       search_filter   => '(sAMAccountName=%s)',
       search_base_dns => [ 'dc=domain1,dc=com' ],
@@ -224,21 +218,21 @@ ldap_cfg => {
     surname   => 'sn',
     username  => 'sAMAccountName',
     member_of => 'memberOf',
-    email     => 'email',
+    email     => 'mail',
   }
-},
+}),
 ```
 
 If you want to connect to multiple LDAP servers using different configurations,
 use an array to enwrap the configurations as shown below.
 
 ```
-ldap_cfg => [
+ldap_cfg => Sensitive([
   {
     servers => [
       {
         host            => 'ldapserver1.domain1.com',
-        port            => 636+0,
+        port            => 636,
         use_ssl         => true,
         search_filter   => '(sAMAccountName=%s)',
         search_base_dns => [ 'dc=domain1,dc=com' ],
@@ -251,12 +245,12 @@ ldap_cfg => [
       surname   => 'sn',
       username  => 'sAMAccountName',
       member_of => 'memberOf',
-      email     => 'email',
+      email     => 'mail',
     },
     'servers.group_mappings' => [
       {
-        group_dn => cn=grafana_viewers,ou=groups,dc=domain1,dc=com
-        org_role: Viewer
+        group_dn => 'cn=grafana_viewers,ou=groups,dc=domain1,dc=com',
+        org_role => 'Viewer',
       }
     ],
   },
@@ -264,7 +258,7 @@ ldap_cfg => [
     servers => [
       {
         host            => 'ldapserver2.domain2.com',
-        port            => 389+0,
+        port            => 389,
         use_ssl         => false,
         start_tls       => true,
         search_filter   => '(uid=%s)',
@@ -288,7 +282,7 @@ ldap_cfg => [
       }
     ],
   },
-]
+])
 
 
 #####
@@ -307,7 +301,7 @@ grafana::ldap_cfg:
       surname: sn
       username: sAMAccountName
       member_of: memberOf
-      email: email
+      email: mail
     servers.group_mappings:
       - group_dn: cn=grafana_viewers,ou=groups,dc=domain1,dc=com
         org_role: Viewer
@@ -532,6 +526,7 @@ In order to use the organization resource, add the following to your manifest:
 
 ```puppet
 grafana_organization { 'example_org':
+  ensure           => present,
   grafana_url      => 'http://localhost:3000',
   grafana_user     => 'admin',
   grafana_password => '5ecretPassw0rd',
@@ -540,9 +535,8 @@ grafana_organization { 'example_org':
 
 `grafana_url`, `grafana_user`, and `grafana_password` are required to create organizations via the API.
 
-`name` is optional if the name will differ from example_org above.
-
-`address` is an optional parameter that requires a hash. Address settings are `{"address1":"","address2":"","city":"","zipCode":"","state":"","country":""}`
+set `ensure => absent` if you want to remove an organization.
+Removing the default organization, (`Main org.`), is not supported.
 
 #### `grafana_team`
 
@@ -905,9 +899,20 @@ grafana_user { 'username':
   full_name         => 'John Doe',
   password          => 'Us3r5ecret',
   email             => 'john@example.com',
+  organizations     => {
+    'Example Org' => 'Editor',
+    'Main org.'   => 'Viewer',
+    'Another Org' => 'Admin',
+  },
 }
 ```
+
 `grafana_api_path` is only required if using sub-paths for the API
+
+If `organizations` is specified, the user's organizations will be managed.
+These should be specified as a hash of organization names and roles.
+
+If puppet is managing any of these organizations, they will be autorequired.
 
 ##### `grafana::notification`
 

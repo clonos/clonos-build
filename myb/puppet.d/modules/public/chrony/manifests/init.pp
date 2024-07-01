@@ -2,9 +2,16 @@
 #
 # @example Install chrony with default options
 #   include chrony
-# @example Use specific servers
+# @example Use specific servers (These will be configured with the `iburst` option.)
 #   class { 'chrony':
 #     servers => [ 'ntp1.corp.com', 'ntp2.corp.com', ],
+#   }
+# @example Two specific servers without `iburst`
+#   class { 'chrony':
+#     servers => {
+#       'ntp1.corp.com' => [],
+#       'ntp2.corp.com' => [],
+#     },
 #   }
 # @example Ensure a secret password is used for chronyc
 #   class { 'chrony':
@@ -45,8 +52,18 @@
 #
 # @see https://chrony.tuxfamily.org
 #
+# @param bindaddress
+#   Array of addresses of interfaces on which chronyd will listen for NTP traffic.
+#   Listens on all addresses if left empty.
 # @param bindcmdaddress
 #   Array of addresses of interfaces on which chronyd will listen for monitoring command packets.
+# @param initstepslew
+#   Allow chronyd to make a rapid measurement of the system clock error at boot time,
+#   and to correct the system clock by stepping before normal operation begins.
+# @param sourcedir
+#   The confdir directive includes configuration files with the .conf suffix from a directory.
+# @param confdir
+#   The sourcedir directive is identical to the confdir directive, except the configuration files have the .sources suffix, they can only specify NTP sources.
 # @param cmdacl
 #   An array of ACLs for monitoring access. This expects a list of directives, for
 #   example: `['cmdallow 1.2.3.4', 'cmddeny 1.2.3']`. The order will be respected at
@@ -67,7 +84,7 @@
 # @param config_template
 #   This determines which template puppet should use for the chrony configuration.
 # @param config_keys
-#   This sets the file to write chrony keys into.
+#   This sets the file to write chrony keys into. Set to '' to remove `keyfile` attribute from the config.
 # @param config_keys_manage
 #   Determines whether puppet will manage the content of the keys file after it has been created for the first time.
 # @param config_keys_template
@@ -84,13 +101,22 @@
 #   A file for chrony to record clock drift in.
 # @param local_stratum
 #   Override the stratum of the server which will be reported to clients
-#   when the local reference is active.
+#   when the local reference is active. Use `false` to not set local_stratum in
+#   chrony configuration.
+# @param ntpsigndsocket
+#   This sets the location of the Samba ntp_signd socket when it is running as a Domain Controller (DC).
 # @param stratumweight
 #   Sets how much distance should be added per stratum to the synchronisation distance when chronyd
 #   selects the synchronisation source from available sources.
 #   When not set, chronyd's default will be used, which since version 2.0 of chrony, is 0.001 seconds.
 # @param log_options
 #   Specify which information is to be logged.
+# @param logbanner
+#   Specify how often the log banner is placed in the logfile.
+# @param logchange
+#   Sets the threshold for the adjustment of the system clock that will generate a syslog message.
+#   Clock errors detected via NTP packets, reference clocks, or timestamps entered via the settime
+#   command of chronyc are logged.
 # @param package_ensure
 #   This can be set to 'present' or 'latest' or a specific version to choose the
 #   chrony package to be installed.
@@ -104,14 +130,20 @@
 #   Also see [`package_source`](#package_source).
 # @param peers
 #   This selects the servers to use for NTP peers (symmetric association).
-#   It is an array of servers.
+#   It can be an array of peers or a hash of peers with their respective options.
 # @param servers
 #   This selects the servers to use for NTP servers.  It can be an array of servers
-#   or a hash of servers to their respective options.
+#   or a hash of servers to their respective options. If an array is used, `iburst` will be configured for each server.
+#   If you don't want to use `iburst`, use a hash instead.
 # @param pools
 #   This is used to specify one or more *pools* of NTP servers to use instead of individual NTP servers.
-#   Similar to [`server`](#server), it can be an array of pools or a hash of pools to their respective options.
+#   Similar to [`server`](#server), it can be an array of pools, (using iburst), or a hash of pools to their respective options.
 #   See [pool](https://chrony.tuxfamily.org/doc/3.4/chrony.conf.html#pool)
+# @param minsources
+#   Sets the minimum number of sources that need to be considered as selectable in the source selection algorithm
+#   before the local clock is updated.
+# @param minsamples
+#   Specifies the minimum number of readings kept for tracking of the NIC clock.
 # @param refclocks
 #   This should be a Hash of hardware reference clock drivers to use.  They hash
 #   can either list a single list of options for the driver, or any array of
@@ -135,6 +167,9 @@
 #   Also see [`makestep_seconds`](#makestep_seconds).
 # @param queryhosts
 #   This adds the networks, hosts that are allowed to query the daemon.
+# @param denyqueryhosts
+#   Similar to queryhosts, except that it denies NTP client access to a particular subnet or host,
+#   rather than allowing it.
 # @param port
 #   Port the service should listen on. Module default is `undef` which means that port
 #   isn't added to chrony.conf, and chrony listens to the default ntp port 123 if
@@ -147,6 +182,14 @@
 #   This selects if puppet should manage the service in the first place.
 # @param service_name
 #   This selects the name of the chrony service for puppet to manage.
+# @param wait_enable
+#   This determines if the chrony-wait service should be enabled at boot.
+# @param wait_ensure
+#   This determines if the chrony-wait service should be running or not.
+# @param wait_manage
+#   This selects if puppet should manage the chrony-wait service in the first place.
+# @param wait_name
+#   This selects the name of the chrony-wait service for puppet to manage.
 # @param smoothtime
 #   Specify the smoothing of the time parameter as a string, for example `smoothtime 50000 0.01`.
 # @param mailonchange
@@ -155,12 +198,34 @@
 #   Specify the time limit for triggering events.
 # @param lock_all
 #   Force chrony to only use RAM & prevent swapping.
+# @param sched_priority
+#   Set the CPU thread scheduler, this value is OS specific.
 # @param leapsecmode
 #   Configures how to insert the leap second mode.
 # @param leapsectz
 #   Specifies a timezone that chronyd can use to determine the offset between UTC and TAI.
+# @param maxdistance
+#   Sets the maximum root distance of a source to be acceptable for synchronisation of the clock.
 # @param maxslewrate
 #   Maximum rate for chronyd to slew the time. Only float type values possible, for example: `maxslewrate 1000.0`.
+# @param ntsserverkey
+#   This directive specifies a file containing a private key in the PEM format for chronyd to operate as an NTS server.
+# @param ntsservercert
+#   This directive specifies a file containing a certificate in the PEM format for chronyd to operate as an NTS server.
+# @param ntsport
+#   This directive specifies the TCP port on which chronyd will provide the NTS Key Establishment (NTS-KE) service.
+# @param maxntsconnections
+#   This directive specifies the maximum number of concurrent NTS-KE connections per process that the NTS server will accept.
+# @param ntsprocesses
+#   This directive specifies how many helper processes will chronyd operating as an NTS server start for handling client NTS-KE requests in order to improve
+#           performance with multi-core CPUs and multithreading.
+# @param ntsdumpdir
+#   This directive specifies a directory where chronyd operating as an NTS server can save the keys which encrypt NTS cookies provided to clients.
+# @param ntsntpserver
+#   This directive specifies the hostname (as a fully qualified domain name) or address of the NTP server(s) which is provided in the NTS-KE response to the
+#           clients.
+# @param ntsrotate
+#   This directive specifies the rotation interval (in seconds) of the server key which encrypts the NTS cookies.
 # @param clientlog
 #   Determines whether to log client accesses.
 # @param clientloglimit
@@ -178,62 +243,91 @@
 #   interfaces or a hash of interfaces to their respective options.
 # @param dumpdir
 #   Directory to store measurement history in on exit.
+# @param maxupdateskew
+#   Sets the threshold for determining whether an estimate might be so unreliable that it should not be used
+# @param acquisitionport
+#   Sets the acquisitionport for client queries
 class chrony (
+  Array[Stdlib::IP::Address] $bindaddress                          = [],
   Array[String] $bindcmdaddress                                    = ['127.0.0.1', '::1'],
-  Array[String] $cmdacl                                            = $chrony::params::cmdacl,
+  Optional[String] $initstepslew                                   = undef,
+  Array[String] $cmdacl                                            = [],
   Optional[Stdlib::Port] $cmdport                                  = undef,
-  $commandkey                                                      = 0,
-  Stdlib::Unixpath $config                                         = $chrony::params::config,
+  NotUndef $commandkey                                             = 0,
+  Stdlib::Unixpath $config                                         = '/etc/chrony/chrony.conf',
+  Optional[Stdlib::Absolutepath] $confdir                          = undef,
+  Optional[Stdlib::Absolutepath] $sourcedir                        = undef,
   String[1] $config_template                                       = 'chrony/chrony.conf.epp',
-  Stdlib::Unixpath $config_keys                                    = $chrony::params::config_keys,
+  Variant[Stdlib::Unixpath,String[0,0]] $config_keys               = '/etc/chrony/chrony.keys',
   String[1] $config_keys_template                                  = 'chrony/chrony.keys.epp',
-  String[1] $chrony_password                                       = 'xyzzy',
-  Variant[Integer[0],String[1]] $config_keys_owner                 = $chrony::params::config_keys_owner,
-  Variant[Integer[0],String[1]] $config_keys_group                 = $chrony::params::config_keys_group,
-  Stdlib::Filemode $config_keys_mode                               = $chrony::params::config_keys_mode,
+  Variant[Sensitive[String[1]], String[1]] $chrony_password        = 'xyzzy',
+  Variant[Integer[0],String[1]] $config_keys_owner                 = 0,
+  Variant[Integer[0],String[1]] $config_keys_group                 = 0,
+  Stdlib::Filemode $config_keys_mode                               = '0640',
   Boolean $config_keys_manage                                      = true,
   Array[String[1]] $keys                                           = [],
-  Stdlib::Unixpath $driftfile                                      = $chrony::params::driftfile,
-  Integer[1,15] $local_stratum                                     = 10,
+  Stdlib::Unixpath $driftfile                                      = '/var/lib/chrony/drift',
+  Variant[Boolean[false],Integer[1,15]] $local_stratum             = 10,
+  Float $logchange                                                 = 0.5,
   Optional[String[1]] $log_options                                 = undef,
+  Optional[Integer[0]] $logbanner                                  = undef,
   String[1] $package_ensure                                        = 'present',
-  String[1] $package_name                                          = $chrony::params::package_name,
+  String[1] $package_name                                          = 'chrony',
   Optional[String] $package_source                                 = undef,
   Optional[String] $package_provider                               = undef,
-  $refclocks                                                       = [],
-  $peers                                                           = [],
-  Variant[Hash,Array[Stdlib::Host]] $servers                       = {
+  Array $refclocks                                                 = [],
+  Chrony::Servers $peers                                           = [],
+  Chrony::Servers $servers                                         = {
     '0.pool.ntp.org' => ['iburst'],
     '1.pool.ntp.org' => ['iburst'],
     '2.pool.ntp.org' => ['iburst'],
     '3.pool.ntp.org' => ['iburst'],
   },
-  Variant[Hash,Array[Stdlib::Fqdn]] $pools                         = {},
+  Chrony::Servers $pools                                           = {},
+  Optional[Integer[1]] $minsources                                 = undef,
+  Optional[Integer[1]] $minsamples                                 = undef,
   Numeric $makestep_seconds                                        = 10,
   Integer $makestep_updates                                        = 3,
-  $queryhosts                                                      = [],
+  Array[String[0]] $queryhosts                                     = [],
+  Array[String[0]] $denyqueryhosts                                 = [],
   Optional[String[1]] $mailonchange                                = undef,
   Float $threshold                                                 = 0.5,
   Boolean $lock_all                                                = false,
+  Optional[Integer[0,100]] $sched_priority                         = undef,
   Optional[Stdlib::Port] $port                                     = undef,
-  Boolean $clientlog                                               = $chrony::params::clientlog,
+  Boolean $clientlog                                               = false,
   Optional[Integer] $clientloglimit                                = undef,
   Boolean $service_enable                                          = true,
   Stdlib::Ensure::Service $service_ensure                          = 'running',
   Boolean $service_manage                                          = true,
-  String[1] $service_name                                          = $chrony::params::service_name,
+  String[1] $service_name                                          = 'chronyd',
+  Boolean $wait_enable                                             = false,
+  Stdlib::Ensure::Service $wait_ensure                             = 'stopped',
+  Boolean $wait_manage                                             = false,
+  String[1] $wait_name                                             = 'chrony-wait.service',
   Optional[String] $smoothtime                                     = undef,
   Optional[Enum['system', 'step', 'slew', 'ignore']] $leapsecmode  = undef,
   Optional[String] $leapsectz                                      = undef,
+  Optional[Float] $maxdistance                                     = undef,
   Optional[Float] $maxslewrate                                     = undef,
+  Optional[Float] $maxupdateskew                                   = undef,
   Optional[Numeric] $stratumweight                                 = undef,
   Boolean $rtcsync                                                 = true,
-  Boolean $rtconutc                                                = $chrony::params::rtconutc,
+  Boolean $rtconutc                                                = false,
   Variant[Hash,Array[String]] $hwtimestamps                        = [],
-  Optional[Stdlib::Unixpath] $dumpdir                              = $chrony::params::dumpdir,
-) inherits chrony::params {
-
-  if ! $config_keys_manage and $chrony_password != 'unset'  {
+  Optional[Stdlib::Unixpath] $dumpdir                              = undef,
+  Optional[Stdlib::Unixpath] $ntpsigndsocket                       = undef,
+  Optional[Stdlib::Absolutepath] $ntsserverkey                     = undef,
+  Optional[Stdlib::Absolutepath] $ntsservercert                    = undef,
+  Optional[Stdlib::Port] $ntsport                                  = undef,
+  Optional[Integer[0]] $maxntsconnections                          = undef,
+  Optional[Integer[0]] $ntsprocesses                               = undef,
+  Optional[Stdlib::Absolutepath]  $ntsdumpdir                      = undef,
+  Optional[String]  $ntsntpserver                                  = undef,
+  Optional[Integer[0]] $ntsrotate                                  = undef,
+  Optional[Integer[1,65535]] $acquisitionport                      = undef,
+) {
+  if ! $config_keys_manage and $chrony_password != 'unset' {
     fail("Setting \$config_keys_manage false and \$chrony_password at same time in ${module_name} is not possible.")
   }
 

@@ -35,7 +35,7 @@ class mysql::backup::xtrabackup (
   String[1]                                     $backupmethod_package     = $mysql::params::xtrabackup_package_name,
   Array[String]                                 $excludedatabases = [],
 ) inherits mysql::params {
-  ensure_packages($backupmethod_package)
+  stdlib::ensure_packages($backupmethod_package)
 
   $backuppassword_unsensitive = if $backuppassword =~ Sensitive {
     $backuppassword.unwrap
@@ -46,7 +46,7 @@ class mysql::backup::xtrabackup (
   if $backupuser and $backuppassword {
     mysql_user { "${backupuser}@localhost":
       ensure        => $ensure,
-      password_hash => mysql::password($backuppassword),
+      password_hash => Deferred('mysql::password', [$backuppassword]),
       require       => Class['mysql::server::root_password'],
     }
     # Percona XtraBackup needs additional grants/privileges to work with MySQL 8
@@ -110,9 +110,9 @@ class mysql::backup::xtrabackup (
 
   if $install_cron {
     if $facts['os']['family'] == 'RedHat' {
-      ensure_packages('cronie')
+      stdlib::ensure_packages('cronie')
     } elsif $facts['os']['family'] != 'FreeBSD' {
-      ensure_packages('cron')
+      stdlib::ensure_packages('cron')
     }
   }
 

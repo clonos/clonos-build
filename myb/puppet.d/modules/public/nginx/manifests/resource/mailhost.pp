@@ -17,9 +17,7 @@
 # @param ipv6_listen_port
 #   Default IPv6 Port for NGINX to listen with this server on.
 # @param ipv6_listen_options
-#   Extra options for listen directive like 'default' to catchall. Template
-#   will allways add ipv6only=on.  While issue jfryman/puppet-nginx#30 is
-#   discussed, default value is 'default'.
+#   Extra options for listen directive like 'default' to catchall.
 # @param ssl
 #   Indicates whether to setup SSL bindings for this mailhost.
 # @param ssl_cert
@@ -74,6 +72,10 @@
 #   for authorization.
 # @param xclient
 #   Whether to use xclient for smtp
+# @param proxy_protocol 
+#   Wheter to use proxy_protocol
+# @param proxy_smtp_auth     
+#   Wheter to use proxy_smtp_auth
 # @param imap_auth
 #   Sets permitted methods of authentication for IMAP clients.
 # @param imap_capabilities
@@ -113,16 +115,18 @@
 #
 # @example SMTP server definition
 #   nginx::resource::mailhost { 'domain1.example':
-#     ensure      => present,
-#     auth_http   => 'server2.example/cgi-bin/auth',
-#     protocol    => 'smtp',
-#     listen_port => 587,
-#     ssl_port    => 465,
-#     starttls    => 'only',
-#     xclient     => 'off',
-#     ssl         => true,
-#     ssl_cert    => '/tmp/server.crt',
-#     ssl_key     => '/tmp/server.pem',
+#     ensure          => present,
+#     auth_http       => 'server2.example/cgi-bin/auth',
+#     protocol        => 'smtp',
+#     listen_port     => 587,
+#     ssl_port        => 465,
+#     starttls        => 'only',
+#     xclient         => 'off',
+#     proxy_protocol  => 'off',
+#     proxy_smtp_auth => 'off',
+#     ssl             => true,
+#     ssl_cert        => '/tmp/server.crt',
+#     ssl_key         => '/tmp/server.pem',
 #   }
 #
 define nginx::resource::mailhost (
@@ -132,7 +136,7 @@ define nginx::resource::mailhost (
   Optional[String] $listen_options               = undef,
   Boolean $ipv6_enable                           = false,
   Variant[Array[String], String] $ipv6_listen_ip = '::',
-  Stdlib::Port $ipv6_listen_port                 = 80,
+  Stdlib::Port $ipv6_listen_port                 = $listen_port,
   String $ipv6_listen_options                    = 'default ipv6only=on',
   Boolean $ssl                                   = false,
   Optional[String] $ssl_cert                     = undef,
@@ -153,10 +157,12 @@ define nginx::resource::mailhost (
   Optional[String] $ssl_trusted_cert             = undef,
   Optional[Integer] $ssl_verify_depth            = undef,
   Enum['on', 'off', 'only'] $starttls            = 'off',
-  Optional[Enum['imap', 'pop3', 'smtp']] $protocol = undef,
+  Optional[Enum['imap', 'pop3', 'sieve', 'smtp']] $protocol = undef,
   Optional[String] $auth_http                    = undef,
   Optional[String] $auth_http_header             = undef,
   Enum['on', 'off'] $xclient                     = 'on',
+  Enum['on', 'off'] $proxy_protocol              = 'off',
+  Enum['on', 'off'] $proxy_smtp_auth             = 'off',
   Optional[String] $imap_auth                    = undef,
   Optional[Array] $imap_capabilities             = undef,
   Optional[String] $imap_client_buffer           = undef,

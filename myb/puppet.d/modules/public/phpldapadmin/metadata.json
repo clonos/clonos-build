@@ -1,12 +1,16 @@
 {
   "name": "spantree-phpldapadmin",
-  "version": "0.0.14",
+  "version": "0.2.0",
   "author": "spantree",
   "summary": "Install and configure phpldapadmin",
   "license": "Apache-2.0",
   "source": "https://github.com/spantree/puppet-phpldapadmin",
   "project_page": "https://github.com/spantree/puppet-phpldapadmin",
   "issues_url": "https://github.com/spantree/puppet-phpldapadmin/issues",
+  "dependencies": [
+    {"name":"puppetlabs-stdlib","version_requirement":">=4.0.0 <7.0.0"}
+  ],
+  "data_provider": null,
   "description": "Small puppet module to manage the installation and config of phpldapadmin",
   "tags": [
     "php",
@@ -18,14 +22,16 @@
       "operatingsystem": "Debian",
       "operatingsystemrelease": [
         "6",
-        "7"
+        "7",
+        "8"
       ]
     },
     {
       "operatingsystem": "Ubuntu",
       "operatingsystemrelease": [
         "12.04",
-        "14.04"
+        "14.04",
+        "16.04"
       ]
     },
     {
@@ -41,12 +47,19 @@
         "6",
         "7"
       ]
+    },
+    {
+      "operatingsystem": "FreeBSD",
+      "operatingsystemrelease": [
+        "10",
+        "11"
+      ]
     }
   ],
-  "dependencies": [
+  "requirements": [
     {
-      "name": "puppetlabs-stdlib",
-      "version_requirement": ">=3.3.0 <5.0.0"
+      "name": "puppet",
+      "version_requirement": ">=4.10.0 <6.7.0"
     }
   ]
 }

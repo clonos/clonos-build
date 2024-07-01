@@ -19,18 +19,18 @@ progdir=$( dirname ${progdir} )
 # re-check before upload
 case "${OSNAME}" in
 	MyBee)
-		if [ -z "${MYB_UPLOAD_140}" ]; then
-			echo "no such MYB_UPLOAD_140 string in rc.conf"
+		if [ -z "${MYB_UPLOAD_141}" ]; then
+			echo "no such MYB_UPLOAD_141 string in rc.conf"
 			exit 1
 		fi
-		RSYNC_DST="${MYB_UPLOAD_140}"
+		RSYNC_DST="${MYB_UPLOAD_141}"
 		;;
 	ClonOS)
-		if [ -z "${CLONOS_UPLOAD_140}" ]; then
-			echo "no such CLONOS_UPLOAD_140 string in rc.conf"
+		if [ -z "${CLONOS_UPLOAD_141}" ]; then
+			echo "no such CLONOS_UPLOAD_141 string in rc.conf"
 			exit 1
 		fi
-		RSYNC_DST="${CLONOS_UPLOAD_140}"
+		RSYNC_DST="${CLONOS_UPLOAD_141}"
 		;;
 	*)
 		echo "invalid brand, who are you?"
@@ -48,26 +48,25 @@ fi
 [ -z "${PKG_CMD}" ] && PKG_CMD="/usr/sbin/pkg"
 
 # save package list
-[ ! -d ${progdir}/myb ] && mkdir -p ${progdir}/myb
-grep -v '^#' ${progdir}/myb.list | sed 's:/usr/ports/::g' > ${progdir}/myb/myb.list
+[ ! -d ${progdir}/myb ] && ${MKDIR_CMD} -p ${progdir}/myb
+${GREP_CMD} -v '^#' ${progdir}/myb.list | ${SED_CMD} 's:/usr/ports/::g' > ${progdir}/myb/myb.list
 
-touch ${progdir}/myb/brand.conf
+${TOUCH_CMD} ${progdir}/myb/brand.conf
 sysrc -qf ${progdir}/myb/brand.conf OSNAME="${OSNAME}"
-
-rsync -avz ${progdir}/myb-extras/ ${progdir}/myb/
-rsync -avz ${progdir}/jail-skel/ ${workdir}/jails-data/${jname}/
+${RSYNC_CMD} -avz ${progdir}/myb-extras/ ${progdir}/myb/
+${RSYNC_CMD} -avz ${progdir}/skel/ ${workdir}/jails-data/${jname}/
 
 # in kubernetes bootsrap!
 #cp -a /usr/jails/export/micro1.img ${progdir}/myb/
 
-[ -d ${progdir}/myb/jail-skel ] && rm -rf ${progdir}/myb/jail-skel
-cp -a ${progdir}/jail-skel ${progdir}/myb/
+[ -d ${progdir}/myb/skel ] && ${RM_CMD} -rf ${progdir}/myb/skel
+${CP_CMD} -a ${progdir}/skel ${progdir}/myb/
 
-rm -rf /usr/ports/packages/All
+${RM_CMD} -rf /usr/ports/packages/All
 DT=$( date "+%d%H" )
 . ${progdir}/myb-extras/version
 VER="${myb_version}.${DT}"
-sed "s:%%VER%%:${VER}:g" /root/myb-build/ports/myb/Makefile-tpl > /root/myb-build/ports/myb/Makefile
+${SED_CMD} "s:%%VER%%:${VER}:g" /root/myb-build/ports/myb/Makefile-tpl > /root/myb-build/ports/myb/Makefile
 
 sysrc -qf ${progdir}/myb-extras/version myb_build="${DT}"
 
@@ -75,7 +74,7 @@ make -C /root/myb-build/ports/myb clean
 make -C /root/myb-build/ports/myb package
 #cd /usr/ports/packages/All
 
-mv /usr/ports/packages/All/*.pkg ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/
+${MV_CMD} /usr/ports/packages/All/*.pkg ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/
 
 #cp -a ${progdir}/cbsd/*.pkg /usr/ports/packages/All/
 
@@ -85,8 +84,8 @@ ${PKG_CMD} repo .
 
 sysrc -qf ${progdir}/myb/myb_ver.conf myb_ver_new="${myb_version}.${DT}"
 
-cp -a ${progdir}/cbsd/myb_ver.conf ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/
-cp -a ${progdir}/cbsd/myb_ver.json ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/
+${CP_CMD} -a ${progdir}/cbsd/myb_ver.conf ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/
+${CP_CMD} -a ${progdir}/cbsd/myb_ver.json ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/
 
 #echo "${RSYNC_CMD} -avz ./ ${RSYNC_DST}latest/"
 ${RSYNC_CMD} -avz --delete ./ ${RSYNC_DST}latest/

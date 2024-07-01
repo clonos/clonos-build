@@ -1,9 +1,9 @@
-# == Class consul::install
 #
-# Installs consul based on the parameters from init
+# @summary Installs consul based on the parameters from init
 #
+# @api private
 class consul::install {
-
+  assert_private()
   $real_data_dir = pick($consul::data_dir, $consul::config_hash[data_dir], $consul::config_defaults[data_dir])
 
   if $consul::manage_data_dir {
@@ -29,7 +29,6 @@ class consul::install {
     }
     'url': {
       $install_path = pick($consul::archive_path, "${real_data_dir}/archives")
-
 
       include archive
 
@@ -65,6 +64,14 @@ class consul::install {
       }
     }
     'package': {
+      if $consul::manage_repo {
+        include hashi_stack::repo
+        if $facts['os']['family'] == 'Debian' {
+          Exec['apt_update'] -> Package[$consul::package_name]
+        } else {
+          Class['hashi_stack::repo'] -> Package[$consul::package_name]
+        }
+      }
       package { $consul::package_name:
         ensure => $consul::package_ensure,
         notify => $do_notify_service,
@@ -74,7 +81,7 @@ class consul::install {
         User[$consul::user_real] -> Package[$consul::package_name]
       }
 
-      if $consul::data_dir {
+      if $consul::data_dir and $consul::manage_data_dir {
         Package[$consul::package_name] -> File[$real_data_dir]
       }
     }
@@ -85,11 +92,21 @@ class consul::install {
   }
 
   if ($consul::manage_user) and ($consul::install_method != 'docker' ) {
+    # If the consul user already exists and this tries to change its home
+    # location the puppet run will fail if the consul service is currently
+    # running. This is a workaround for
+    # https://github.com/solarkennedy/puppet-consul/issues/559
+    $consul_user_home = $consul::manage_user_home_location ? {
+      true  => $real_data_dir,
+      false => undef,
+    }
+
     user { $consul::user_real:
       ensure => 'present',
       system => true,
       groups => $consul::extra_groups,
       shell  => $consul::shell,
+      home   => $consul_user_home,
     }
 
     if ($consul::manage_group) and ($consul::install_method != 'docker' ) {

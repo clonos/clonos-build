@@ -34,10 +34,10 @@ if [ -d ${progdir}/ports/myb ]; then
 	cp -a ${progdir}/ports/myb /usr/ports/sysutils/
 fi
 
-[ -d /tmp/send-fio ] && rm -rf /tmp/send-fio
-git clone https://github.com/mergar/send-fio.git /tmp/send-fio
-cp -a /tmp/send-fio/ports/spacevm-sendfio /usr/ports/sysutils/
-rm -rf /tmp/send-fio
+[ -d /tmp/send-fio ] && ${RM_CMD} -rf /tmp/send-fio
+${GIT_CMD} clone https://github.com/mergar/send-fio.git /tmp/send-fio
+${CP_CMD} -a /tmp/send-fio/ports/spacevm-sendfio /usr/ports/sysutils/
+${RM_CMD} -rf /tmp/send-fio
 
 cpr_jname="cprc8c78"
 
@@ -58,34 +58,15 @@ if [ ! -r ${progdir}/${OSNAME}.list ]; then
 	exit 1
 fi
 
-cp -a ${progdir}/${OSNAME}.list ${progdir}/myb.list
+${CP_CMD} -a ${progdir}/${OSNAME}.list ${progdir}/myb.list
 
 echo "cbsd cpr batch=1 ver=${mybbasever} jname="${cpr_jname}" pkglist=${progdir}/myb.list dstdir=${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/"
 
 PREFETCHED_PACKAGES="\
-bash \
-beanstalkd \
-ca_root_nss \
-cdrkit \
 cmake \
 gmake \
-gnutls \
-go120 \
-hw-probe \
-jq \
-kubectl \
-mc \
-mutt \
-nginx \
+go \
 ninja \
-pkgconf \
-py39-certbot \
-python39 \
-rsync \
-sqlite3 \
-sudo \
-tmux \
-ttyd \
 "
 
 if [ "${OSNAME}" = "ClonOS" ]; then
@@ -107,6 +88,7 @@ fi
 #/usr/ports/net/realtek-re-kmod
 
 
+echo "cbsd cpr batch=1 makeconf=/root/myb-build/myb_make.conf jname=\"${cpr_jname}\" ver=${mybbasever} pkglist=${progdir}/myb.list dstdir=${dstdir} package_fetch=\"${PREFETCHED_PACKAGES}\" autoremove=1"
 cbsd cpr batch=1 makeconf=/root/myb-build/myb_make.conf jname="${cpr_jname}" ver=${mybbasever} pkglist=${progdir}/myb.list dstdir=${dstdir} package_fetch="${PREFETCHED_PACKAGES}" autoremove=1
 ret=$?
 
@@ -139,9 +121,9 @@ cbsd jstart jname=${cpr_jname} || true
 
 cbsd jstop jname=${cpr_jname} || true
 
-mv ${dstdir}/* ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/
+${MV_CMD} ${dstdir}/* ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/
 
-rm -rf ${dstdir}
+${RM_CMD} -rf ${dstdir}
 if [ ! -h ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/pkg.pkg ]; then
 	echo "no such ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/pkg.pkg"
 	exit 1

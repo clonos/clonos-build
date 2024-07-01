@@ -4,13 +4,11 @@
 #
 # PRIVATE CLASS - do not use directly (use main `zookeeper` class).
 class zookeeper::install::archive inherits zookeeper::install {
-
-
   # Apache updated the filename base for archive files in release 3.5.5
   if versioncmp($zookeeper::archive_version, '3.5.5') >= 0 {
     $filename = "apache-${module_name}-${zookeeper::archive_version}-bin"
     $archive_dl_site = $zookeeper::archive_dl_site ? {
-      undef   => 'http://apache.org/dist/zookeeper',
+      undef   => 'https://downloads.apache.org/zookeeper',
       default => $zookeeper::archive_dl_site,
     }
   } else {
@@ -36,6 +34,8 @@ class zookeeper::install::archive inherits zookeeper::install {
     checksum      => $zookeeper::archive_checksum['hash'],
     checksum_type => $zookeeper::archive_checksum['type'],
     extract_path  => $zookeeper::archive_install_dir,
+    username      => $zookeeper::repo_user,
+    password      => $zookeeper::repo_password,
     # Extract files as the user doing the extracting, which is the user
     # that runs Puppet, usually root
     extract_flags => '-x --no-same-owner -f',

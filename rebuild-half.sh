@@ -1,7 +1,7 @@
 #!/bin/sh
 export PATH="/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin"
 ### SET version in /root/myb-build/ports/myb/Makefile
-### + /root/myb-build/jail-skel/usr/local/etc/mybee/version
+### + /root/myb-build/skel/usr/local/etc/mybee/version
 
 # Brand, used in sysinstall/bsdconfig...
 export OSNAME="MyBee"

@@ -1,7 +1,7 @@
 # puppet-zookeeper
 
 [![Puppet
-Forge](http://img.shields.io/puppetforge/v/deric/zookeeper.svg)](https://forge.puppetlabs.com/deric/zookeeper) [![Build Status](https://travis-ci.org/deric/puppet-zookeeper.png?branch=master)](https://travis-ci.org/deric/puppet-zookeeper) [![Puppet Forge
+Forge](http://img.shields.io/puppetforge/v/deric/zookeeper.svg)](https://forge.puppetlabs.com/deric/zookeeper) [![Static & Spec Tests](https://github.com/deric/puppet-zookeeper/actions/workflows/spec.yml/badge.svg)](https://github.com/deric/puppet-zookeeper/actions/workflows/spec.yml) [![Puppet Forge
 Downloads](http://img.shields.io/puppetforge/dt/deric/zookeeper.svg)](https://forge.puppetlabs.com/deric/zookeeper/scores)
 
 A puppet receipt for [Apache Zookeeper](http://zookeeper.apache.org/). ZooKeeper is a high-performance coordination service for maintaining configuration information, naming, providing distributed synchronization, and providing group services.
@@ -10,14 +10,6 @@ A puppet receipt for [Apache Zookeeper](http://zookeeper.apache.org/). ZooKeeper
 
   * Puppet
   * Binary or ZooKeeper source code archive
-
-Compatibility matrix:
-
-| `puppet-zookeeper`| Puppet 3.x    | Puppet 4.x   | Puppet 5.x | Puppet 6.x     |
-| ----------------- | ------------- |--------------| -----------|----------------|
-| `0.7.x`           | :heavy_check_mark: | :heavy_check_mark: | :question: | :x: |
-| `0.8.x`           | :x:  | :heavy_check_mark: | :heavy_check_mark: | :x:       |
-| `1.0.x`           | :x:  | :x: | :heavy_check_mark: | :heavy_check_mark: |
 
 ## Basic Usage:
 
@@ -158,7 +150,7 @@ After=network-online.target
 
    - `id` - cluster-unique zookeeper's instance id (1-255)
    - `datastore`
-   - `datalogstore` - specifying this configures the `dataLogDir` ZooKeeper config values and allows for transaction logs to be stored in a different location, improving IO performance
+   - `datalogstore` - Defining `dataLogDir` allows ZooKeeper transaction logs to be stored in a different location, might improve I/O performance (e.g. if path is mounted on dedicated disk)
    - `log_dir`
    - `purge_interval` - automatically will delete ZooKeeper logs (available since ZooKeeper 3.4.0)
    - `snap_retain_count` - number of snapshots that will be kept after purging (since ZooKeeper 3.4.0)
@@ -239,42 +231,18 @@ zookeeper::datastore: '/var/lib/zookeeper'
 zookeeper::datalogstore: '/disk2/zookeeper'
 ```
 
-## Cloudera package
-
-In Cloudera distribution ZooKeeper package does not provide init scripts (same as in Debian). Package containing init scripts
-is called `zookeeper-server` and the service as well. Moreover there's initialization script which should be called after installation.
-So, the configuration might look like this:
-
-```puppet
-class { 'zookeeper':
-  packages             => ['zookeeper', 'zookeeper-server'],
-  service_name         => 'zookeeper-server',
-  initialize_datastore => true
-}
-```
-
-### Managing repository
-
-For RedHat family currently we support also managing a `cloudera` yum repo versions 4, and 5. It can be enabled with `repo` parameter:
-
-```puppet
-class { 'zookeeper':
-  repo   => 'cloudera',
-  cdhver => '5',
-}
-```
-
-#### Custom RPM repository
+### Custom RPM repository
 
 Optionally you can specify a custom repository, using a hash configuration.
 
 ```puppet
 class { 'zookeeper':
-  cdhver     => '5',
   repo       =>  {
-    name  => 'myrepo',
-    url   => 'http://cusom.url',
-    descr => 'description'
+    name      => 'myrepo',
+    url       => 'http://custom.url',
+    descr     => 'description'
+    sslverify => 1,
+    gpgcheck  => true,
   }
 }
 ```
@@ -370,7 +338,7 @@ rake beaker:sets
 ## Supported platforms
 
   * Debian/Ubuntu
-  * RedHat/CentOS/Fedora
+  * RedHat/CentOS/Fedora/Rocky
 
 ### Tested on:
 

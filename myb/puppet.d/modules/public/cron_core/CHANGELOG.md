@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
+## [v1.2.1](https://github.com/puppetlabs/puppetlabs-cron_core/tree/v1.2.1) (2023-11-28)
+
+[Full Changelog](https://github.com/puppetlabs/puppetlabs-cron_core/compare/v1.2.0...v1.2.1)
+
+### Fixed
+
+- Convert ProcessOutput to String explicitly [\#62](https://github.com/puppetlabs/puppetlabs-cron_core/pull/62) ([joshcooper](https://github.com/joshcooper))
+
+## [v1.2.0](https://github.com/puppetlabs/puppetlabs-cron_core/tree/v1.2.0) (2023-02-14)
+
+[Full Changelog](https://github.com/puppetlabs/puppetlabs-cron_core/compare/v1.1.0...v1.2.0)
+
+### Added
+
+- \(MODULES-11371\) Updates PDK template [\#55](https://github.com/puppetlabs/puppetlabs-cron_core/pull/55) ([mhashizume](https://github.com/mhashizume))
+
 ## [v1.1.0](https://github.com/puppetlabs/puppetlabs-cron_core/tree/v1.1.0) (2021-10-04)
 
 [Full Changelog](https://github.com/puppetlabs/puppetlabs-cron_core/compare/1.0.5...v1.1.0)

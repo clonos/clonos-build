@@ -17,10 +17,9 @@
 
 name="redmine"
 rcvar=redmine_enable
-command=ruby31
+command=ruby30
 
 pidfile="/usr/local/www/redmine/tmp/pids/thin.pid"
-logfile="/var/log/thin.log"
 
 load_rc_config $name
 
@@ -33,7 +32,7 @@ export PATH=$PATH:/usr/local/bin
 : ${redmine_user="www"}
 : ${redmine_group="www"}
 
-command_args="-d -D -c /usr/local/www/redmine -u ${redmine_user} -g ${redmine_group} --log ${logfile}"
+command_args="-d -D -c /usr/local/www/redmine -u ${redmine_user} -g ${redmine_group} --log /var/log/thin.log"
 start_cmd="/usr/local/bin/thin ${command_args} ${redmine_flags} start"
 
 run_rc_command "$1"

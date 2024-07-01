@@ -5,7 +5,7 @@ progdir=$( realpath ${progdir} )
 
 export PATH="/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin"
 ### SET version in /root/myb-build/ports/myb/Makefile
-### + /root/myb-build/jail-skel/usr/local/etc/mybee/version
+### + /root/myb-build/skel/usr/local/etc/mybee/version
 
 # Brand, used in sysinstall/bsdconfig...
 export OSNAME="MyBee"
@@ -53,6 +53,7 @@ cat
 column
 chmod
 chown
+chroot
 cp
 curl
 cut
@@ -83,6 +84,7 @@ sysctl
 tar
 tail
 tee
+touch
 tr
 truncate
 uname
@@ -145,8 +147,17 @@ set -o errexit
 FULL_ST_TIME=$( ${DATE_CMD} +%s )
 
 #### PREPARE
-if [ 1 -gt 2 ]; then
+#if [ 1 -gt 2 ]; then
 # first init
+
+cbsd module mode=install cpr || true
+${GREP_CMD} -q cpr ~cbsd/etc/modules.conf
+ret=$?
+if [ ${ret} -ne 0 ]; then
+	echo 'cpr.d' >> ~cbsd/etc/modules.conf
+	env NOINTER=1 cbsd initenv
+fi
+
 if [ ! -d /root/clonos-ports ]; then
 	${GIT_CMD} clone https://github.com/clonos/clonos-ports-wip.git /root/clonos-ports
 else
@@ -238,11 +249,13 @@ cbsd module mode=install puppet
 ${CP_CMD} -a /usr/local/cbsd/modules/puppet.d /root/myb-build/myb-extras/
 ${RM_CMD} -rf /root/myb-build/myb-extras/puppet.d/.git || true
 
-fi		## PREPARE
+#fi		## PREPARE
 
 # !!!
 # not for half:
 set -o errexit
+
+#if [ 1 -gt 2 ]; then
 
 ## cleanup
 st_time=$( ${DATE_CMD} +%s )
@@ -250,63 +263,148 @@ st_time=$( ${DATE_CMD} +%s )
 time_stats "${N1_COLOR}cleanup done"
 end_time=$( ${DATE_CMD} +%s )
 diff_time=$(( end_time - st_time ))
-date
 put_prometheus_file_metrics "rebuild-full" "cleanup" ${diff_time}
 
-date
-
 ## srcup
-#st_time=$( ${DATE_CMD} +%s )
-#/root/myb-build/ci/00_srcup.sh
-#time_stats "${N1_COLOR}srcup done"
-#end_time=$( ${DATE_CMD} +%s )
-#diff_time=$(( end_time - st_time ))
-#put_prometheus_file_metrics "rebuild-full" "srcup" ${diff_time}
+st_time=$( ${DATE_CMD} +%s )
+/root/myb-build/ci/00_srcup.sh
+time_stats "${N1_COLOR}srcup done"
+end_time=$( ${DATE_CMD} +%s )
+diff_time=$(( end_time - st_time ))
+put_prometheus_file_metrics "rebuild-full" "srcup" ${diff_time}
 
 # not needed anymore?
 #/root/myb-build/ci/10_patch-src.sh
 
 # world
-#st_time=$( ${DATE_CMD} +%s )
-#/root/myb-build/ci/20_world.sh
-#time_stats "${N1_COLOR}world done"
-#end_time=$( ${DATE_CMD} +%s )
-#diff_time=$(( end_time - st_time ))
-#put_prometheus_file_metrics "rebuild-full" "world" ${diff_time}
-
 st_time=$( ${DATE_CMD} +%s )
-/root/myb-build/ci/25_base-pkg.sh
-time_stats "${N1_COLOR}base-pkg done"
+/root/myb-build/ci/20_world.sh
+time_stats "${N1_COLOR}world done"
 end_time=$( ${DATE_CMD} +%s )
 diff_time=$(( end_time - st_time ))
 put_prometheus_file_metrics "rebuild-full" "world" ${diff_time}
 
-#/root/myb-build/ci/30_cpr.sh
+# basepkg
+st_time=$( ${DATE_CMD} +%s )
+/root/myb-build/ci/25_base-pkg.sh
+time_stats "${N1_COLOR}base-pkg done"
+end_time=$( ${DATE_CMD} +%s )
+fiff_time=$(( end_time - st_time ))
+put_prometheus_file_metrics "rebuild-full" "basepkg" ${diff_time}
+
+# cpr
+st_time=$( ${DATE_CMD} +%s )
+/root/myb-build/ci/30_cpr.sh
+time_stats "${N1_COLOR}cpr done"
+end_time=$( ${DATE_CMD} +%s )
+diff_time=$(( end_time - st_time ))
+put_prometheus_file_metrics "rebuild-full" "cpr" ${diff_time}
+
+# cpr-micro
+#st_time=$( ${DATE_CMD} +%s )
 #/root/myb-build/ci/35_cpr-micro.sh
-#/root/myb-build/ci/35_update_repo.sh
+#time_stats "${N1_COLOR}cpr-micro done"
+#end_time=$( ${DATE_CMD} +%s )
+#diff_time=$(( end_time - st_time ))
+#put_prometheus_file_metrics "rebuild-full" "cprmicro" ${diff_time}
+
+# update-repo
+st_time=$( ${DATE_CMD} +%s )
+/root/myb-build/ci/35_update_repo.sh
+time_stats "${N1_COLOR}update_repo done"
+end_time=$( ${DATE_CMD} +%s )
+diff_time=$(( end_time - st_time ))
+put_prometheus_file_metrics "rebuild-full" "updaterepo" ${diff_time}
+
+### HALF-build
 #fi
 
 # half build
-#/root/myb-build/ci/40_jail.sh
-#/root/myb-build/ci/44_export-micro.sh
-#/root/myb-build/ci/50_purgejail.sh
-#/root/myb-build/ci/55_purge_distribution.sh
-#/root/myb-build/ci/60_distribution-base.sh
-#/root/myb-build/ci/60_distribution-pkg.sh
-#/root/myb-build/ci/70_manifests.sh
-#/root/myb-build/ci/90_conv.sh
-#/root/myb-build/ci/95_updaterepo.sh
+
+# jail
+st_time=$( ${DATE_CMD} +%s )
+/root/myb-build/ci/40_jail.sh
+time_stats "${N1_COLOR}jail done"
+end_time=$( ${DATE_CMD} +%s )
+diff_time=$(( end_time - st_time ))
+put_prometheus_file_metrics "rebuild-full" "jail" ${diff_time}
+
+exit 0
+
+
+# export-micro
+st_time=$( ${DATE_CMD} +%s )
+/root/myb-build/ci/44_export-micro.sh
+time_stats "${N1_COLOR}export micro jail done"
+end_time=$( ${DATE_CMD} +%s )
+diff_time=$(( end_time - st_time ))
+put_prometheus_file_metrics "rebuild-full" "exportmicrojail" ${diff_time}
+
+# purgejail
+st_time=$( ${DATE_CMD} +%s )
+/root/myb-build/ci/50_purgejail.sh
+time_stats "${N1_COLOR}purgejail done"
+end_time=$( ${DATE_CMD} +%s )
+diff_time=$(( end_time - st_time ))
+put_prometheus_file_metrics "rebuild-full" "purgejail" ${diff_time}
+
+# purge_distribution
+st_time=$( ${DATE_CMD} +%s )
+/root/myb-build/ci/55_purge_distribution.sh
+time_stats "${N1_COLOR}purge_distribution done"
+end_time=$( ${DATE_CMD} +%s )
+diff_time=$(( end_time - st_time ))
+put_prometheus_file_metrics "rebuild-full" "purgedistribution" ${diff_time}
+
+# purge_distribution-base
+st_time=$( ${DATE_CMD} +%s )
+/root/myb-build/ci/60_distribution-base.sh
+time_stats "${N1_COLOR}purge_distribution_base done"
+end_time=$( ${DATE_CMD} +%s )
+diff_time=$(( end_time - st_time ))
+put_prometheus_file_metrics "rebuild-full" "purge_distribution_base" ${diff_time}
+
+# distribution-pkg
+st_time=$( ${DATE_CMD} +%s )
+/root/myb-build/ci/60_distribution-pkg.sh
+time_stats "${N1_COLOR}distribution_pkg done"
+end_time=$( ${DATE_CMD} +%s )
+diff_time=$(( end_time - st_time ))
+put_prometheus_file_metrics "rebuild-full" "distribution_pkg" ${diff_time}
+
+# manifests
+st_time=$( ${DATE_CMD} +%s )
+/root/myb-build/ci/70_manifests.sh
+time_stats "${N1_COLOR}manifests done"
+end_time=$( ${DATE_CMD} +%s )
+diff_time=$(( end_time - st_time ))
+put_prometheus_file_metrics "rebuild-full" "manifests" ${diff_time}
+
+# conv
+st_time=$( ${DATE_CMD} +%s )
+/root/myb-build/ci/90_conv.sh
+time_stats "${N1_COLOR}conv done"
+end_time=$( ${DATE_CMD} +%s )
+diff_time=$(( end_time - st_time ))
+put_prometheus_file_metrics "rebuild-full" "conv" ${diff_time}
+
+# updaterepo
+st_time=$( ${DATE_CMD} +%s )
+/root/myb-build/ci/95_updaterepo.sh
+time_stats "${N1_COLOR}updaterepo done"
+end_time=$( ${DATE_CMD} +%s )
+diff_time=$(( end_time - st_time ))
+put_prometheus_file_metrics "rebuild-full" "updaterepo" ${diff_time}
+
 set +o errexit
 
 full_diff_time=$(( full_end_time - full_st_time ))
 
-exit 0
-
-chmod 0644 /tmp/mybee1-14.0_amd64.img
+chmod 0644 /tmp/mybee1-14.1_amd64.img
 chmod 0644 /usr/jails/jails-data/mybee1-data/usr/freebsd-dist/*
 
 echo "----------------------------------"
-echo "scp /tmp/mybee1-14.0_amd64.img oleg@172.16.0.3:mybee1-14.0_amd64.img"
+echo "scp /tmp/mybee1-14.1_amd64.img oleg@172.16.0.3:mybee1-14.1_amd64.img"
 echo
 echo "cd /usr/jails/jails-data/mybee1-data/usr/freebsd-dist"
 echo "sftp -oPort=222 oleg@www.bsdstore.ru   -> /usr/local/www/myb.convectix.com/"

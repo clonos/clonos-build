@@ -24,30 +24,15 @@ class zookeeper::params {
         'service_name'             => 'zookeeper',
         'service_provider'         => $initstyle,
         'shell'                    => '/bin/false',
-        'initialize_datastore_bin' => '/usr/bin/zookeeper-server-initialize'
+        'initialize_datastore_bin' => '/usr/bin/zookeeper-server-initialize',
       }
       # 'environment' file probably read just by Debian
       # see #16, #81
       $environment_file = 'environment'
     }
-    'FreeBSD': {
-      $initstyle = 'freebsd'
-      $_os_overrides = {
-        'packages'         => ['zookeeper'],
-        'service_name'     => 'zookeeper',
-        'service_provider' => $initstyle,
-        'shell'            => '/bin/false',
-        'zk_dir'           => '/usr/local/etc/zookeeper',
-        'cfg_dir'          => '/usr/local/etc/zookeeper/conf',
-        'initialize_datastore_bin' => '/usr/local/bin/zkServer-initialize.sh'
-      }
-      # 'environment' file probably read just by Debian
-      # see #16, #81
-      $environment_file = 'java.env'
-    }
     'RedHat': {
       case $os_name {
-        'RedHat', 'CentOS': {
+        'RedHat', 'CentOS', 'Rocky': {
           if versioncmp($os_release, '7') < 0 {
             $initstyle = 'redhat'
           } else {
@@ -64,7 +49,7 @@ class zookeeper::params {
         'service_name'             => 'zookeeper-server',
         'service_provider'         => $initstyle,
         'shell'                    => '/sbin/nologin',
-        'initialize_datastore_bin' => '/usr/bin/zookeeper-server-initialize'
+        'initialize_datastore_bin' => '/usr/bin/zookeeper-server-initialize',
       }
       $environment_file = 'java.env'
     }
@@ -81,7 +66,7 @@ class zookeeper::params {
         'service_name'             => 'zookeeper-server',
         'service_provider'         => $initstyle,
         'shell'                    => '/bin/false',
-        'initialize_datastore_bin' => '/usr/bin/zookeeper-server-initialize'
+        'initialize_datastore_bin' => '/usr/bin/zookeeper-server-initialize',
       }
       $environment_file = 'java.env'
     }
@@ -119,6 +104,8 @@ class zookeeper::params {
   $java_opts = ''
   $java_package = undef
   $repo = undef
+  $repo_user = undef
+  $repo_password = undef
   $proxy_server = undef
   $proxy_type = undef
 
@@ -144,6 +131,31 @@ class zookeeper::params {
   $client_ip = undef # use e.g. $::ipaddress if you want to bind to single interface
   $client_port = 2181
   $secure_client_port = undef
+  $secure_port_only = false
+  $ssl = false
+  $ssl_protocol = 'TLSv1.2'
+  $ssl_ciphersuites = undef
+  $ssl_hostname_verification = true
+  $ssl_clientauth = 'none'
+  $keystore_location = "/etc/zookeeper/conf/keystores/${facts['networking']['fqdn']}.pem"
+  $keystore_type = 'PEM'
+  $keystore_password = undef
+  $truststore_location = '/etc/ssl/certs/ca-certificates.crt'
+  $truststore_type = 'PEM'
+  $truststore_password = undef
+  $keystore_quorum_location = "/etc/zookeeper/conf/keystores/${facts['networking']['fqdn']}.pem"
+  $keystore_quorum_type = 'PEM'
+  $keystore_quorum_password = undef
+  $truststore_quorum_location = '/etc/ssl/certs/ca-certificates.crt'
+  $truststore_quorum_password = undef
+  $truststore_quorum_type = 'PEM'
+  $ssl_quorum_ciphersuites = undef
+  $ssl_quorum_hostname_verification = true
+  $ssl_quorum_protocol = 'TLSv1.2'
+  $ssl_quorum = false
+  $quorum_listen_on_all_ips = false
+  $audit_enable = false
+  $port_unification = undef
   $datastore = '/var/lib/zookeeper'
   # datalogstore used to put transaction logs in separate location than snapshots
   $datalogstore = undef
@@ -164,6 +176,7 @@ class zookeeper::params {
   # interval in hours, purging enabled when >= 1
   $purge_interval = 0
   $servers = []
+  $pre_alloc_size = 65536
   $snap_count = 10000
   # since zookeeper 3.4, for earlier version cron task might be used
   $snap_retain_count = 3
@@ -183,13 +196,16 @@ class zookeeper::params {
   $maxfilesize = '256MB'
   $maxbackupindex = 20
   $extra_appenders = {}
+  $audit_threshold = 'INFO'
+  $audit_maxfilesize = '10M'
+  $audit_maxbackupindex = '10'
 
   # sasl options
   $sasl_krb5 = true
   $sasl_users = {}
   $keytab_path = '/etc/zookeeper/conf/zookeeper.keytab'
   $principal = "zookeeper/${facts['networking']['fqdn']}"
-  $realm = pick($trusted['domain'], $trusted['certname'])
+  $realm = pick($trusted['domain'], $trusted['certname'], 'puppet')
   $store_key = true
   $use_keytab = true
   $use_ticket_cache = false
@@ -197,4 +213,9 @@ class zookeeper::params {
   $remove_realm_principal = false
   # whitelist of Four Letter Words commands, see https://zookeeper.apache.org/doc/r3.4.12/zookeeperAdmin.html#sc_zkCommands
   $whitelist_4lw = []
+
+  # Metrics Providers
+  $metrics_provider_classname = undef
+  $metrics_provider_http_port = 7000
+  $metrics_provider_export_jvm_info = true
 }

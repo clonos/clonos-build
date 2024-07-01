@@ -188,7 +188,7 @@ class prometheus::node_exporter (
     }
   }
 
-  $web_config_content = merge($tls_server_config, $http_server_config, $basic_auth_config)
+  $web_config_content = $tls_server_config + $http_server_config + $basic_auth_config
 
   if empty($web_config_content) {
     file { $web_config_file:
@@ -199,10 +199,14 @@ class prometheus::node_exporter (
   } else {
     file { $web_config_file:
       ensure  => file,
-      content => $web_config_content.to_yaml,
+      content => $web_config_content.stdlib::to_yaml,
     }
 
-    $web_config = "--web.config=${$web_config_file}"
+    if versioncmp($version, '1.5.0') >= 0 {
+      $web_config = "--web.config.file=${$web_config_file}"
+    } else {
+      $web_config = "--web.config=${$web_config_file}"
+    }
   }
 
   $options = [

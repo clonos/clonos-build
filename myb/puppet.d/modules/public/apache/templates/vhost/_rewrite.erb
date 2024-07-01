@@ -1,4 +1,4 @@
-<%- if @rewrites -%>
+<%- if @rewrite_inherit or !@rewrites.empty? -%>
   ## Rewrite rules
   RewriteEngine On
   <%- if @rewrite_inherit -%>
@@ -8,7 +8,7 @@
   RewriteBase <%= @rewrite_base %>
   <%- end -%>
 
-  <%- [@rewrites].flatten.compact.each do |rewrite_details| -%>
+  <%- @rewrites.each do |rewrite_details| -%>
     <%- if rewrite_details['comment'] -%>
   #<%= rewrite_details['comment'] %>
     <%- end -%>
@@ -38,16 +38,14 @@
   <%- end -%>
 <%- end -%>
 <%# reverse compatibility -%>
-<% if @rewrite_rule and !@rewrites -%>
+<% if @rewrite_rule and @rewrites.empty? -%>
   ## Rewrite rules
   RewriteEngine On
   <%- if @rewrite_base -%>
   RewriteBase <%= @rewrite_base %>
   <%- end -%>
-  <%- if @rewrite_cond -%>
-    <%- Array(@rewrite_cond).each do |cond| -%>
+    <%- @rewrite_cond.each do |cond| -%>
   RewriteCond <%= cond %>
-    <%- end -%>
   <%- end -%>
   RewriteRule <%= @rewrite_rule %>
 <%- end -%>

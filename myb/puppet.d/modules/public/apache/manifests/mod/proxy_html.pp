@@ -1,28 +1,44 @@
+# @summary
+#   Installs `mod_proxy_html`.
+#
+# @see https://httpd.apache.org/docs/current/mod/mod_proxy_html.html for additional documentation.
+#
 class apache::mod::proxy_html {
-  include ::apache
-  Class['::apache::mod::proxy'] -> Class['::apache::mod::proxy_html']
-  Class['::apache::mod::proxy_http'] -> Class['::apache::mod::proxy_html']
+  include apache
+  require apache::mod::proxy
+  require apache::mod::proxy_http
 
   # Add libxml2
-  case $::osfamily {
-    /RedHat|FreeBSD|Gentoo/: {
+  case $facts['os']['family'] {
+    /RedHat|FreeBSD|Gentoo|Suse/: {
       ::apache::mod { 'xml2enc': }
       $loadfiles = undef
     }
     'Debian': {
-      $gnu_path = $::hardwaremodel ? {
+      $gnu_path = $facts['os']['hardware'] ? {
         'i686'  => 'i386',
-        default => $::hardwaremodel,
+        default => $facts['os']['hardware'],
       }
-      $loadfiles = $::apache::params::distrelease ? {
-        '6'     => ['/usr/lib/libxml2.so.2'],
-        '10'    => ['/usr/lib/libxml2.so.2'],
-        default => ["/usr/lib/${gnu_path}-linux-gnu/libxml2.so.2"],
+      case $facts['os']['name'] {
+        'Ubuntu': {
+          $loadfiles = $facts['os']['release']['major'] ? {
+            '10'    => ['/usr/lib/libxml2.so.2'],
+            default => ["/usr/lib/${gnu_path}-linux-gnu/libxml2.so.2"],
+          }
+        }
+        'Debian': {
+          $loadfiles = $facts['os']['release']['major'] ? {
+            '6'     => ['/usr/lib/libxml2.so.2'],
+            default => ["/usr/lib/${gnu_path}-linux-gnu/libxml2.so.2"],
+          }
+        }
+        default: {
+          $loadfiles = ["/usr/lib/${gnu_path}-linux-gnu/libxml2.so.2"]
+        }
       }
-      if versioncmp($::apache::apache_version, '2.4') >= 0 {
-        ::apache::mod { 'xml2enc': }
-      }
+      ::apache::mod { 'xml2enc': }
     }
+    default: {}
   }
 
   ::apache::mod { 'proxy_html':
@@ -32,11 +48,11 @@ class apache::mod::proxy_html {
   # Template uses $icons_path
   file { 'proxy_html.conf':
     ensure  => file,
-    path    => "${::apache::mod_dir}/proxy_html.conf",
-    mode    => $::apache::file_mode,
-    content => template('apache/mod/proxy_html.conf.erb'),
-    require => Exec["mkdir ${::apache::mod_dir}"],
-    before  => File[$::apache::mod_dir],
+    path    => "${apache::mod_dir}/proxy_html.conf",
+    mode    => $apache::file_mode,
+    content => epp('apache/mod/proxy_html.conf.epp'),
+    require => Exec["mkdir ${apache::mod_dir}"],
+    before  => File[$apache::mod_dir],
     notify  => Class['apache::service'],
   }
 }

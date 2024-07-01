@@ -18,13 +18,13 @@ case "${src}" in
 	cloud)
 			cache_file="${tmpdir}/bhyve-cloud.json"
 			# at the moment cloud = template, alias
-			src="template"
 			;;
 	template)
 			cache_file="${tmpdir}/bhyve-templates.json"
 			;;
 	vm)
 			cache_file="${tmpdir}/bhyve-vm.json"
+			src="iso"
 			;;
 	*)
 			err 1 "unknown src: ${src}, use: src=cloud, src=vm or src=template"
@@ -45,7 +45,8 @@ else
 	else
 		is_clonos_args=
 	fi
-	compile_bhyve_profiles --workdir ${workdir} --${src} ${is_clonos_args} > ${cache_file}
+	#compile_bhyve_profiles --workdir ${workdir} --${src} ${is_clonos_args} > ${cache_file}
+	/usr/local/bin/cbsd get-profiles src=${src} json=1 > ${cache_file}
 	${CAT_CMD} ${cache_file}
 fi
 

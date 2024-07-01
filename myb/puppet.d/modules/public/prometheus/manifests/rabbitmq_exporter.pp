@@ -89,7 +89,7 @@ class prometheus::rabbitmq_exporter (
   Stdlib::Absolutepath $bin_dir                              = $prometheus::bin_dir,
   Optional[Prometheus::Uri] $download_url                    = undef,
   Optional[String[1]] $extra_options                         = undef,
-  Prometheus::Initstyle $init_style                          = $facts['service_provider'],
+  Prometheus::Initstyle $init_style                          = $prometheus::init_style,
   Prometheus::Install $install_method                        = $prometheus::install_method,
   Boolean $manage_group                                      = true,
   Boolean $manage_service                                    = true,
@@ -124,7 +124,7 @@ class prometheus::rabbitmq_exporter (
     'RABBIT_EXPORTERS'    => join($rabbit_exporters, ','),
   }
 
-  $real_env_vars = merge($env_vars, $extra_env_vars)
+  $real_env_vars = stdlib::merge($env_vars, $extra_env_vars)
 
   prometheus::daemon { 'rabbitmq_exporter':
     install_method     => $install_method,

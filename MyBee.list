@@ -1,9 +1,24 @@
 # list for 'cbsd cpr':
 # cbsd cpr pkglist=myb.list dstdir=/tmp/mybrepo new=1
+/usr/ports/security/ca_root_nss
+/usr/ports/ftp/curl
+/usr/ports/textproc/jq
+/usr/ports/net/beanstalkd
+/usr/ports/shells/bash
+/usr/ports/sysutils/dmidecode
+/usr/ports/sysutils/hw-probe
+/usr/ports/net/rsync
+/usr/ports/sysutils/smartmontools
+/usr/ports/security/sudo
+/usr/ports/sysutils/tmux
+/usr/ports/misc/mc
+/usr/ports/sysutils/ttyd
 /usr/ports/sysutils/cbsd
 /usr/ports/sysutils/cbsd-mq-api
 /usr/ports/sysutils/cbsd-mq-router
 /usr/ports/sysutils/genisoimage
 /usr/ports/net/wireguard-go
 /usr/ports/sysutils/garm
+/usr/ports/benchmarks/fio
 /usr/ports/sysutils/spacevm-sendfio
+/usr/ports/www/nginx

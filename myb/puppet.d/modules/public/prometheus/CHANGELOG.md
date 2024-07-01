@@ -4,6 +4,103 @@ All notable changes to this project will be documented in this file.
 Each new release typically also includes the latest modulesync defaults.
 These should not affect the functionality of the module.
 
+## [v13.4.0](https://github.com/voxpupuli/puppet-prometheus/tree/v13.4.0) (2023-11-08)
+
+[Full Changelog](https://github.com/voxpupuli/puppet-prometheus/compare/v13.3.0...v13.4.0)
+
+**Implemented enhancements:**
+
+- Update puppet-strings documentation [\#700](https://github.com/voxpupuli/puppet-prometheus/pull/700) ([JGodin-C2C](https://github.com/JGodin-C2C))
+- Add systemd\_exporter [\#661](https://github.com/voxpupuli/puppet-prometheus/pull/661) ([JGodin-C2C](https://github.com/JGodin-C2C))
+
+## [v13.3.0](https://github.com/voxpupuli/puppet-prometheus/tree/v13.3.0) (2023-08-19)
+
+[Full Changelog](https://github.com/voxpupuli/puppet-prometheus/compare/v13.2.0...v13.3.0)
+
+**Implemented enhancements:**
+
+- Drop legacy systemd reload code for Puppet 5 [\#689](https://github.com/voxpupuli/puppet-prometheus/pull/689) ([bastelfreak](https://github.com/bastelfreak))
+- add proxy\_server & proxy\_type to server install [\#641](https://github.com/voxpupuli/puppet-prometheus/pull/641) ([sabo](https://github.com/sabo))
+
+**Fixed bugs:**
+
+- Fix Arch Linux Prometheus Server installation [\#684](https://github.com/voxpupuli/puppet-prometheus/pull/684) ([bastelfreak](https://github.com/bastelfreak))
+
+**Merged pull requests:**
+
+- init.pp: Add default data from hiera [\#686](https://github.com/voxpupuli/puppet-prometheus/pull/686) ([bastelfreak](https://github.com/bastelfreak))
+
+## [v13.2.0](https://github.com/voxpupuli/puppet-prometheus/tree/v13.2.0) (2023-07-29)
+
+[Full Changelog](https://github.com/voxpupuli/puppet-prometheus/compare/v13.1.0...v13.2.0)
+
+**Merged pull requests:**
+
+- systemd & archive: Allow latest deps [\#682](https://github.com/voxpupuli/puppet-prometheus/pull/682) ([bastelfreak](https://github.com/bastelfreak))
+
+## [v13.1.0](https://github.com/voxpupuli/puppet-prometheus/tree/v13.1.0) (2023-07-13)
+
+[Full Changelog](https://github.com/voxpupuli/puppet-prometheus/compare/v13.0.0...v13.1.0)
+
+**Implemented enhancements:**
+
+- remove legacy function has\_keys [\#678](https://github.com/voxpupuli/puppet-prometheus/pull/678) ([marszip](https://github.com/marszip))
+
+## [v13.0.0](https://github.com/voxpupuli/puppet-prometheus/tree/v13.0.0) (2023-06-26)
+
+[Full Changelog](https://github.com/voxpupuli/puppet-prometheus/compare/v12.5.0...v13.0.0)
+
+**Breaking changes:**
+
+- Drop Ubuntu 16.04 \(EOL\) [\#668](https://github.com/voxpupuli/puppet-prometheus/pull/668) ([smortex](https://github.com/smortex))
+- Drop Debian 9 \(EOL\) [\#667](https://github.com/voxpupuli/puppet-prometheus/pull/667) ([smortex](https://github.com/smortex))
+- puppetlabs/stdlib: Require 9.x [\#665](https://github.com/voxpupuli/puppet-prometheus/pull/665) ([hashworks](https://github.com/hashworks))
+- Drop Puppet 6 support [\#660](https://github.com/voxpupuli/puppet-prometheus/pull/660) ([bastelfreak](https://github.com/bastelfreak))
+
+**Implemented enhancements:**
+
+- Add Ubuntu 22.04 support [\#672](https://github.com/voxpupuli/puppet-prometheus/pull/672) ([bastelfreak](https://github.com/bastelfreak))
+- Add EL9 support [\#671](https://github.com/voxpupuli/puppet-prometheus/pull/671) ([bastelfreak](https://github.com/bastelfreak))
+- Add puppet 8 support [\#670](https://github.com/voxpupuli/puppet-prometheus/pull/670) ([bastelfreak](https://github.com/bastelfreak))
+
+**Merged pull requests:**
+
+- blackbox\_exporter: Move hiera data to class [\#675](https://github.com/voxpupuli/puppet-prometheus/pull/675) ([bastelfreak](https://github.com/bastelfreak))
+- postgres\_exporter: Move hiera data to class [\#674](https://github.com/voxpupuli/puppet-prometheus/pull/674) ([bastelfreak](https://github.com/bastelfreak))
+- redis\_exporter: Move hiera data to class [\#673](https://github.com/voxpupuli/puppet-prometheus/pull/673) ([bastelfreak](https://github.com/bastelfreak))
+
+## [v12.5.0](https://github.com/voxpupuli/puppet-prometheus/tree/v12.5.0) (2023-01-30)
+
+[Full Changelog](https://github.com/voxpupuli/puppet-prometheus/compare/v12.4.0...v12.5.0)
+
+**Implemented enhancements:**
+
+- Add AlmaLinux/Rocky 8 support [\#649](https://github.com/voxpupuli/puppet-prometheus/pull/649) ([bastelfreak](https://github.com/bastelfreak))
+- bump puppet/systemd to \< 5.0.0 [\#645](https://github.com/voxpupuli/puppet-prometheus/pull/645) ([jhoblitt](https://github.com/jhoblitt))
+- Adapt web.config.file option for node\_exporter versions higher than 1.5.0 [\#644](https://github.com/voxpupuli/puppet-prometheus/pull/644) ([Pigueiras](https://github.com/Pigueiras))
+- feat: Support JMX exporter [\#636](https://github.com/voxpupuli/puppet-prometheus/pull/636) ([dploeger](https://github.com/dploeger))
+- Support time\_intervals with alertmanager \>= 0.24.0 [\#618](https://github.com/voxpupuli/puppet-prometheus/pull/618) ([treydock](https://github.com/treydock))
+
+**Fixed bugs:**
+
+- Replace $facts\['service\_provider'\] by $prometheus::init\_style \(except init.pp\) [\#642](https://github.com/voxpupuli/puppet-prometheus/pull/642) ([phaedriel](https://github.com/phaedriel))
+
+**Closed issues:**
+
+- Support JMX exporter [\#635](https://github.com/voxpupuli/puppet-prometheus/issues/635)
+- Toplevel parameter init\_style ignored [\#629](https://github.com/voxpupuli/puppet-prometheus/issues/629)
+
+**Merged pull requests:**
+
+- varnish\_exporter: Move hiera data to class [\#653](https://github.com/voxpupuli/puppet-prometheus/pull/653) ([bastelfreak](https://github.com/bastelfreak))
+- graphite\_exporter: Move hiera data to class [\#652](https://github.com/voxpupuli/puppet-prometheus/pull/652) ([bastelfreak](https://github.com/bastelfreak))
+- collectd\_exporter: Move hiera data to class [\#651](https://github.com/voxpupuli/puppet-prometheus/pull/651) ([bastelfreak](https://github.com/bastelfreak))
+- apache\_exporter: Move hiera data to class [\#650](https://github.com/voxpupuli/puppet-prometheus/pull/650) ([bastelfreak](https://github.com/bastelfreak))
+- config\_file: Enforce Stdlib::Absolutepath [\#648](https://github.com/voxpupuli/puppet-prometheus/pull/648) ([bastelfreak](https://github.com/bastelfreak))
+- grok\_exporter: Move hiera data to class [\#647](https://github.com/voxpupuli/puppet-prometheus/pull/647) ([bastelfreak](https://github.com/bastelfreak))
+- Debian OS family: Install apt-transport-https during CI [\#628](https://github.com/voxpupuli/puppet-prometheus/pull/628) ([bastelfreak](https://github.com/bastelfreak))
+- prometheus: Move hiera data to class [\#624](https://github.com/voxpupuli/puppet-prometheus/pull/624) ([bastelfreak](https://github.com/bastelfreak))
+
 ## [v12.4.0](https://github.com/voxpupuli/puppet-prometheus/tree/v12.4.0) (2022-06-03)
 
 [Full Changelog](https://github.com/voxpupuli/puppet-prometheus/compare/v12.3.0...v12.4.0)

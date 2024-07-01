@@ -1,6 +1,6 @@
 {
   "name": "puppet-rabbitmq",
-  "version": "12.1.0",
+  "version": "13.2.0",
   "author": "voxpupuli",
   "summary": "Installs, configures, and manages RabbitMQ.",
   "license": "Apache-2.0",
@@ -23,13 +23,12 @@
     {
       "operatingsystem": "Debian",
       "operatingsystemrelease": [
-        "9"
+        "10"
       ]
     },
     {
       "operatingsystem": "Ubuntu",
       "operatingsystemrelease": [
-        "16.04",
         "18.04"
       ]
     },
@@ -40,25 +39,26 @@
       ]
     },
     {
-      "operatingsystem": "FreeBSD"
+      "operatingsystem": "FreeBSD",
+      "operatingsystemrelease": [
+        "12",
+        "13"
+      ]
     },
     {
       "operatingsystem": "OpenBSD"
-    },
-    {
-      "operatingsystem": "Archlinux"
     }
   ],
   "requirements": [
     {
       "name": "puppet",
-      "version_requirement": ">= 6.1.0 < 8.0.0"
+      "version_requirement": ">= 7.0.0 < 9.0.0"
     }
   ],
   "dependencies": [
     {
       "name": "puppetlabs/stdlib",
-      "version_requirement": ">= 4.13.1 < 9.0.0"
+      "version_requirement": ">= 4.25.0 < 9.0.0"
     },
     {
       "name": "puppet/archive",

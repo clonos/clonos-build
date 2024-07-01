@@ -1,20 +1,38 @@
-class apache::mod::dumpio(
-  $dump_io_input  = 'Off',
-  $dump_io_output = 'Off',
+# @summary
+#   Installs and configures `mod_dumpio`.
+# 
+# @param dump_io_input
+#   Dump all input data to the error log
+#
+# @param dump_io_output
+#   Dump all output data to the error log
+#
+# @example
+#   class{'apache':
+#     default_mods => false,
+#     log_level    => 'dumpio:trace7',
+#   }
+#   class{'apache::mod::dumpio':
+#     dump_io_input  => 'On',
+#     dump_io_output => 'Off',
+#   }
+#
+# @see https://httpd.apache.org/docs/current/mod/mod_dumpio.html for additional documentation.
+#
+class apache::mod::dumpio (
+  Apache::OnOff $dump_io_input  = 'Off',
+  Apache::OnOff $dump_io_output = 'Off',
 ) {
-  include ::apache
-  validate_re(downcase($dump_io_input), '^(on|off)$', "${dump_io_input} is not supported for dump_io_input.  Allowed values are 'On' and 'Off'.")
-  validate_re(downcase($dump_io_output), '^(on|off)$', "${dump_io_output} is not supported for dump_io_output.  Allowed values are 'On' and 'Off'.")
+  include apache
 
   ::apache::mod { 'dumpio': }
-  file{'dumpio.conf':
+  file { 'dumpio.conf':
     ensure  => file,
-    path    => "${::apache::mod_dir}/dumpio.conf",
-    mode    => $::apache::file_mode,
-    content => template('apache/mod/dumpio.conf.erb'),
-    require => Exec["mkdir ${::apache::mod_dir}"],
-    before  => File[$::apache::mod_dir],
+    path    => "${apache::mod_dir}/dumpio.conf",
+    mode    => $apache::file_mode,
+    content => epp('apache/mod/dumpio.conf.epp', { 'dump_io_input' => $dump_io_input, 'dump_io_output' => $dump_io_output, }),
+    require => Exec["mkdir ${apache::mod_dir}"],
+    before  => File[$apache::mod_dir],
     notify  => Class['apache::service'],
   }
-
 }

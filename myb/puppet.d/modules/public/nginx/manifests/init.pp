@@ -34,42 +34,56 @@
 # @param service_config_check_command
 #  Command to execute to validate the generated configuration.
 #
+# @param reset_timedout_connection
+#   Enables or disables resetting timed out connections and connections closed
+#   with the non-standard code 444.
+#
+# @param nginx_snippets
+#   Specifies a hash from which to generate `nginx::resource::snippet` resources.
+#
+# @param nginx_snippets_defaults
+#   Can be used to define default values for the parameter `nginx_snippets`.
+#
 class nginx (
   ### START Nginx Configuration ###
-  Variant[Stdlib::Absolutepath, Boolean] $client_body_temp_path = $nginx::params::client_body_temp_path,
+  Optional[Variant[Stdlib::Absolutepath, Tuple[Stdlib::Absolutepath, Integer, 1, 4]]] $client_body_temp_path      = undef,
   Boolean $confd_only                                        = false,
   Boolean $confd_purge                                       = false,
-  $conf_dir                                                  = $nginx::params::conf_dir,
+  Stdlib::Absolutepath $conf_dir                             = $nginx::params::conf_dir,
   Optional[Enum['on', 'off']] $daemon                        = undef,
-  $daemon_user                                               = $nginx::params::daemon_user,
-  $daemon_group                                              = undef,
+  String[1] $daemon_user                                     = $nginx::params::daemon_user,
+  Optional[String[1]] $daemon_group                          = undef,
   Array[String] $dynamic_modules                             = [],
-  $global_owner                                              = $nginx::params::global_owner,
-  $global_group                                              = $nginx::params::global_group,
-  $global_mode                                               = $nginx::params::global_mode,
+  String[1] $global_owner                                    = 'root',
+  String[1] $global_group                                    = $nginx::params::global_group,
+  Stdlib::Filemode $global_mode                              = '0644',
   Optional[Variant[String[1], Array[String[1]]]] $limit_req_zone = undef,
   Stdlib::Absolutepath $log_dir                              = $nginx::params::log_dir,
+  Boolean $manage_log_dir                                    = true,
   String[1] $log_user                                        = $nginx::params::log_user,
   String[1] $log_group                                       = $nginx::params::log_group,
   Stdlib::Filemode $log_mode                                 = $nginx::params::log_mode,
-  Variant[String, Array[String]] $http_access_log            = "${log_dir}/${nginx::params::http_access_log_file}",
-  $http_format_log                                           = undef,
-  Variant[String, Array[String]] $nginx_error_log            = "${log_dir}/${nginx::params::nginx_error_log_file}",
+  Variant[String, Array[String]] $http_access_log            = "${log_dir}/access.log",
+  Optional[String] $http_format_log                          = undef,
+  Variant[String, Array[String]] $stream_access_log          = "${log_dir}/stream-access.log",
+  Optional[String] $stream_custom_format_log                 = undef,
+  Variant[String, Array[String]] $nginx_error_log            = "${log_dir}/error.log",
   Nginx::ErrorLogSeverity $nginx_error_log_severity          = 'error',
-  $pid                                                       = $nginx::params::pid,
-  Variant[Stdlib::Absolutepath, Boolean] $proxy_temp_path    = $nginx::params::proxy_temp_path,
-  $root_group                                                = $nginx::params::root_group,
-  $run_dir                                                   = $nginx::params::run_dir,
-  $sites_available_owner                                     = $nginx::params::sites_available_owner,
-  $sites_available_group                                     = $nginx::params::sites_available_group,
-  $sites_available_mode                                      = $nginx::params::sites_available_mode,
-  Boolean $super_user                                        = $nginx::params::super_user,
-  $temp_dir                                                  = $nginx::params::temp_dir,
+  Variant[Stdlib::Absolutepath,Boolean] $pid                 = $nginx::params::pid,
+  Optional[Variant[Stdlib::Absolutepath, Tuple[Stdlib::Absolutepath, Integer, 1, 4]]] $proxy_temp_path = undef,
+  String[1] $root_group                                      = $nginx::params::root_group,
+  String[1] $sites_available_owner                           = 'root',
+  String[1] $sites_available_group                           = $nginx::params::sites_available_group,
+  Stdlib::Filemode $sites_available_mode                     = '0644',
+  Boolean $super_user                                        = true,
+  Stdlib::Absolutepath $temp_dir                             = '/tmp',
   Boolean $server_purge                                      = false,
   Boolean $include_modules_enabled                           = $nginx::params::include_modules_enabled,
 
   # Primary Templates
-  $conf_template                                             = 'nginx/conf.d/nginx.conf.erb',
+  String[1] $conf_template                                   = 'nginx/conf.d/nginx.conf.erb',
+  String[1] $fastcgi_conf_template                           = 'nginx/server/fastcgi.conf.erb',
+  String[1] $uwsgi_params_template                           = 'nginx/server/uwsgi_params.erb',
 
   ### START Nginx Configuration ###
   Optional[Enum['on', 'off']] $absolute_redirect             = undef,
@@ -98,7 +112,7 @@ class nginx (
   $gzip_disable                                              = 'msie6',
   $gzip_min_length                                           = 20,
   $gzip_http_version                                         = 1.1,
-  $gzip_proxied                                              = 'off',
+  Nginx::GzipProxied $gzip_proxied                           = 'off',
   $gzip_types                                                = undef,
   Enum['on', 'off'] $gzip_vary                               = 'off',
   Optional[Enum['on', 'off', 'always']] $gzip_static         = undef,
@@ -110,8 +124,11 @@ class nginx (
   Enum['on', 'off'] $http_tcp_nopush                         = 'off',
   $keepalive_timeout                                         = '65s',
   $keepalive_requests                                        = '100',
-  $log_format                                                = {},
+  Hash[String[1], Nginx::LogFormat] $log_format              = {},
+  Hash[String[1], Nginx::LogFormat] $stream_log_format       = {},
   Boolean $mail                                              = false,
+  Optional[Integer] $map_hash_bucket_size                    = undef,
+  Optional[Integer] $map_hash_max_size                       = undef,
   Variant[String, Boolean] $mime_types_path                  = 'mime.types',
   Boolean $stream                                            = false,
   String $multi_accept                                       = 'off',
@@ -139,6 +156,8 @@ class nginx (
     'Host $host',
     'X-Real-IP $remote_addr',
     'X-Forwarded-For $proxy_add_x_forwarded_for',
+    'X-Forwarded-Host $host',
+    'X-Forwarded-Proto $scheme',
     'Proxy ""',
   ],
   Array $proxy_hide_header                                   = [],
@@ -160,6 +179,7 @@ class nginx (
   Enum['on', 'off'] $ssl_prefer_server_ciphers               = 'on',
   Variant[Integer, Enum['auto']] $worker_processes           = 'auto',
   Integer $worker_rlimit_nofile                              = 1024,
+  Optional[Enum['on', 'off']] $pcre_jit                      = undef,
   String $ssl_protocols                                      = 'TLSv1 TLSv1.1 TLSv1.2',
   String $ssl_ciphers                                        = 'ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA:ECDHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-RSA-AES256-SHA256:DHE-RSA-AES256-SHA:ECDHE-ECDSA-DES-CBC3-SHA:ECDHE-RSA-DES-CBC3-SHA:EDH-RSA-DES-CBC3-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:DES-CBC3-SHA:!DSS', # lint:ignore:140chars
   Optional[Stdlib::Unixpath] $ssl_dhparam                    = undef,
@@ -175,9 +195,10 @@ class nginx (
   Optional[Stdlib::Absolutepath] $ssl_trusted_certificate    = undef,
   Optional[Integer] $ssl_verify_depth                        = undef,
   Optional[Stdlib::Absolutepath] $ssl_password_file          = undef,
+  Optional[Enum['on', 'off']] $reset_timedout_connection     = undef,
 
   ### START Package Configuration ###
-  $package_ensure                                            = present,
+  $package_ensure                                            = installed,
   $package_name                                              = $nginx::params::package_name,
   $package_source                                            = 'nginx',
   $package_flavor                                            = undef,
@@ -185,14 +206,14 @@ class nginx (
   Hash[String[1], String[1]] $mime_types                     = $nginx::params::mime_types,
   Boolean $mime_types_preserve_defaults                      = false,
   Optional[String] $repo_release                             = undef,
-  $passenger_package_ensure                                  = 'present',
+  $passenger_package_ensure                                  = installed,
   String[1] $passenger_package_name                          = $nginx::params::passenger_package_name,
   Optional[Stdlib::HTTPUrl] $repo_source                     = undef,
   ### END Package Configuration ###
 
   ### START Service Configuation ###
   Stdlib::Ensure::Service $service_ensure                    = 'running',
-  $service_enable                                            = true,
+  Boolean $service_enable                                    = true,
   $service_flags                                             = undef,
   $service_restart                                           = undef,
   $service_name                                              = 'nginx',
@@ -206,6 +227,8 @@ class nginx (
   Hash $geo_mappings_defaults                             = {},
   Hash $string_mappings                                   = {},
   Hash $string_mappings_defaults                          = {},
+  Hash $nginx_snippets                                    = {},
+  Hash $nginx_snippets_defaults                           = {},
   Hash $nginx_locations                                   = {},
   Hash $nginx_locations_defaults                          = {},
   Hash $nginx_mailhosts                                   = {},
@@ -226,6 +249,7 @@ class nginx (
   contain 'nginx::service'
 
   create_resources( 'nginx::resource::geo', $geo_mappings, $geo_mappings_defaults )
+  create_resources( 'nginx::resource::snippet', $nginx_snippets, $nginx_snippets_defaults )
   create_resources( 'nginx::resource::location', $nginx_locations, $nginx_locations_defaults )
   create_resources( 'nginx::resource::mailhost', $nginx_mailhosts, $nginx_mailhosts_defaults )
   create_resources( 'nginx::resource::map', $string_mappings, $string_mappings_defaults )

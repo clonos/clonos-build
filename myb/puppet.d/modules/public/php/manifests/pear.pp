@@ -13,7 +13,6 @@ class php::pear (
   Optional[String] $package = undef,
   Boolean $manage_repos     = $php::manage_repos,
 ) inherits php::params {
-
   assert_private()
 
   # Defaults for the pear package name
@@ -43,15 +42,12 @@ class php::pear (
 
   # the apt module provides apt::update. apt is only included if we manage any repos
   $require = $manage_repos ? {
-    true  => Class['::apt::update'],
+    true  => Class['apt::update'],
     false => undef,
   }
   # Default PHP come with xml module and no seperate package for it
-  if $facts['os']['name'] == 'Ubuntu' and versioncmp($facts['os']['release']['full'], '16.04') >= 0 {
-    ensure_packages(["${php::package_prefix}xml"], {
-      ensure  => present,
-      require => $require,
-    })
+  if $facts['os']['name'] == 'Ubuntu' and versioncmp($facts['os']['release']['full'], '18.04') >= 0 {
+    stdlib::ensure_packages(["${php::package_prefix}xml"], { ensure  => present, require => $require, })
 
     package { $package_name:
       ensure  => $ensure,

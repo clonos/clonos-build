@@ -1,6 +1,7 @@
 # == Class: nodejs: See README.md for documentation.
-class nodejs(
+class nodejs (
   $cmd_exe_path                                        = $nodejs::params::cmd_exe_path,
+  Boolean $manage_nodejs_package                       = true,
   Boolean $manage_package_repo                         = $nodejs::params::manage_package_repo,
   $nodejs_debug_package_ensure                         = $nodejs::params::nodejs_debug_package_ensure,
   Optional[String] $nodejs_debug_package_name          = $nodejs::params::nodejs_debug_package_name,
@@ -26,7 +27,6 @@ class nodejs(
   Array $use_flags                                     = $nodejs::params::use_flags,
   Optional[String] $package_provider                   = $nodejs::params::package_provider,
 ) inherits nodejs::params {
-
   if $manage_package_repo and !$repo_class {
     fail("${module_name}: The manage_package_repo parameter was set to true but no repo_class was provided.")
   }
@@ -37,6 +37,6 @@ class nodejs(
     include $repo_class
 
     Class[$repo_class]
-    -> Class['::nodejs::install']
+    -> Class['nodejs::install']
   }
 }

@@ -19,18 +19,18 @@ progdir=$( dirname ${progdir} )
 # re-check before upload
 case "${OSNAME}" in
 	MyBee)
-		if [ -z "${MYB_UPLOAD_140}" ]; then
-			echo "no such MYB_UPLOAD_140 string in rc.conf"
+		if [ -z "${MYB_UPLOAD_141}" ]; then
+			echo "no such MYB_UPLOAD_141 string in rc.conf"
 			exit 1
 		fi
-		RSYNC_DST="${MYB_UPLOAD_140}"
+		RSYNC_DST="${MYB_UPLOAD_141}"
 		;;
 	ClonOS)
-		if [ -z "${CLONOS_UPLOAD_140}" ]; then
-			echo "no such CLONOS_UPLOAD_140 string in rc.conf"
+		if [ -z "${CLONOS_UPLOAD_141}" ]; then
+			echo "no such CLONOS_UPLOAD_141 string in rc.conf"
 			exit 1
 		fi
-		RSYNC_DST="${CLONOS_UPLOAD_140}"
+		RSYNC_DST="${CLONOS_UPLOAD_141}"
 		;;
 	*)
 		echo "invalid brand, who are you?"

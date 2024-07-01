@@ -28,6 +28,9 @@
 # [*composer_command_name*]
 #   Set name of the composer executable. It is expected to find the executable via the `exec_paths`.
 #
+# [*composer_user*]
+#   Set name of the user used to execute the composer commands.
+#
 # [*composer_disable_git_ssl_verify*]
 #   Set to `true` to disable the SSL certificate check when cloning a git repository. Only required when the CA
 #   presented by the git server while installing the Roundcube dependencies is not trusted by this host.
@@ -102,9 +105,6 @@
 #   Specify custom Roundcube configuration settings. See config/defaults.inc.php in the roundcube directory for a
 #   complete list of possible configuration arguments.
 #
-# [*package_name*]
-# The name of the package managed with the 'package' archive method.
-#
 # [*cronjobs_manage*]
 #   Whether to manage cronjobs for Roundcube: either `true` or `false`.
 #
@@ -113,64 +113,41 @@
 # Copyright 2015 Martin Meinhold, unless otherwise noted.
 #
 class roundcube (
-  $version                         = $roundcube::params::version,
-  $checksum                        = $roundcube::params::checksum,
-  $checksum_type                   = $roundcube::params::checksum_type,
-  $process                         = $roundcube::params::process,
+  String $version                           = $roundcube::params::version,
+  String $checksum                          = $roundcube::params::checksum,
+  String $checksum_type                     = $roundcube::params::checksum_type,
+  String $process                           = $roundcube::params::process,
 
-  $package_dir                     = $roundcube::params::package_dir,
-  $install_dir                     = $roundcube::params::install_dir,
-  $exec_paths                      = $roundcube::params::exec_paths,
-  $composer_command_name           = $roundcube::params::composer_command_name,
-  $composer_disable_git_ssl_verify = $roundcube::params::composer_disable_git_ssl_verify,
-  $composer_manage                 = $roundcube::params::composer_manage,
-  $document_root                   = $roundcube::params::document_root,
-  $document_root_manage            = $roundcube::params::document_root_manage,
+  Stdlib::Absolutepath $package_dir         = $roundcube::params::package_dir,
+  Stdlib::Absolutepath $install_dir         = $roundcube::params::install_dir,
+  Array[Stdlib::Absolutepath] $exec_paths   = $roundcube::params::exec_paths,
+  String $composer_command_name             = $roundcube::params::composer_command_name,
+  String $composer_user                     = $roundcube::params::composer_user,
+  Boolean $composer_disable_git_ssl_verify  = $roundcube::params::composer_disable_git_ssl_verify,
+  Boolean $composer_manage                  = $roundcube::params::composer_manage,
+  Stdlib::Absolutepath $document_root       = $roundcube::params::document_root,
+  Boolean $document_root_manage             = $roundcube::params::document_root_manage,
 
-  $archive_provider                = $roundcube::params::archive_provider,
-  $archive_proxy_server            = undef,
+  String $archive_provider                  = $roundcube::params::archive_provider,
+  Optional[String] $archive_proxy_server    = undef,
 
-  $db_dsn                          = undef,
-  $db_type                         = 'pgsql',
-  $db_name                         = 'roundcubemail',
-  $db_host                         = 'localhost',
-  $db_username                     = 'roundcube',
-  $db_password                     = 'pass',
+  Optional[String] $db_dsn                  = undef,
+  String $db_type                           = 'pgsql',
+  String $db_name                           = 'roundcubemail',
+  String $db_host                           = 'localhost',
+  String $db_username                       = 'roundcube',
+  String $db_password                       = 'pass',
 
-  $imap_host                       = 'localhost',
-  $imap_port                       = 143,
-  $des_key                         = 'rcmail-!24ByteDESkey*Str',
-  String $package_name             = undef,
-  $plugins                         = [],
-  $plugins_manage                  = $roundcube::params::plugins_manage,
-  $cronjobs_manage                 = $roundcube::params::cronjobs_manage,
+  String $imap_host                         = 'localhost',
+  Integer $imap_port                        = 143,
+  String $des_key                           = 'rcmail-!24ByteDESkey*Str',
+  Array[String] $plugins                    = [],
+  Boolean $plugins_manage                   = $roundcube::params::plugins_manage,
+  Boolean $cronjobs_manage                  = $roundcube::params::cronjobs_manage,
 
-  $config_file_template            = undef,
-  $options_hash                    = {},
+  Optional[String] $config_file_template    = undef,
+  Hash $options_hash                        = {},
 ) inherits roundcube::params {
-  validate_string($version)
-  validate_string($checksum)
-  validate_string($checksum_type)
-  validate_string($process)
-  validate_absolute_path($package_dir)
-  validate_absolute_path($install_dir)
-  validate_string($composer_command_name)
-  validate_bool($composer_disable_git_ssl_verify)
-  validate_bool($composer_manage)
-  validate_absolute_path($document_root)
-  validate_bool($document_root_manage)
-  validate_string($archive_provider)
-  validate_string($db_type)
-  validate_string($db_name)
-  validate_string($db_host)
-  validate_string($db_username)
-  validate_string($db_password)
-  validate_string($imap_host)
-  validate_string($des_key)
-  validate_array($plugins)
-  validate_bool($plugins_manage)
-  validate_bool($cronjobs_manage)
-  validate_hash($options_hash)
 
   if !empty($plugins) and $plugins_manage == false {
     fail("Class[Roundcube]: conflicting parameters - plugin configuration disabled but plugins specified: ${plugins}")
@@ -182,13 +159,12 @@ class roundcube (
   }
 
   $composer_exec_environment = flatten([
-    "HOME=${::root_home}",  # root_home is provided by stdlib
+    "HOME=${facts['root_home']}", # root_home is provided by stdlib
     'COMPOSER_NO_INTERACTION=1',
     $env_git_ssl_no_verify,
   ])
 
   class { 'roundcube::install': }
-  class { 'roundcube::config': }
+  -> class { 'roundcube::config': }
   ~> class { 'roundcube::service': }
-  ~> class { 'roundcube::initdb': }
 }

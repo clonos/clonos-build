@@ -69,6 +69,10 @@
 #   with log_dir but absolute paths are also accepted.
 # @param log_level
 #   Specify the server verbosity level.
+# @param managed_by_cluster_manager
+#   Choose if redis will be managed by a cluster manager such as pacemaker or rgmanager
+# @param manage_service_file
+#   Determine if the systemd service file should be managed
 # @param masterauth
 #   If the master is password protected (using the "requirepass" configuration
 # @param maxclients
@@ -101,6 +105,10 @@
 #   Enable/disable compression of string objects using LZF when dumping.
 # @param rename_commands
 #   A list of Redis commands to rename or disable for security reasons
+# @param repl_announce_ip
+#   The specific IP or hostname a replica will report to its master
+# @param repl_announce_port
+#   The specific port a replica will report to its master
 # @param repl_backlog_size
 #   The replication backlog size
 # @param repl_backlog_ttl
@@ -150,6 +158,8 @@
 #      but to INFO and SLAVEOF.
 # @param slaveof
 #   Use slaveof to make a Redis instance a copy of another Redis server.
+# @param replicaof
+#   Use replicaof to make a Redis instance a copy of another Redis server.
 # @param slowlog_log_slower_than
 #   Tells Redis what is the execution time, in microseconds, to exceed in order
 #   for the command to get logged.
@@ -268,6 +278,11 @@
 # @param rdb_save_incremental_fsync
 #   When redis saves RDB file, if the following option is enabled
 #   the file will be fsync-ed every 32 MB of data generated.
+# @param output_buffer_limit_slave
+#   Value of client-output-buffer-limit-slave in redis config
+# @param output_buffer_limit_pubsub
+#   Value of client-output-buffer-limit-pubsub in redis config
+#
 define redis::instance (
   Boolean $activerehashing                                       = $redis::activerehashing,
   Boolean $aof_load_truncated                                    = $redis::aof_load_truncated,
@@ -300,7 +315,7 @@ define redis::instance (
   Stdlib::Absolutepath $log_dir                                  = $redis::log_dir,
   Stdlib::Filemode $log_dir_mode                                 = $redis::log_dir_mode,
   Redis::LogLevel $log_level                                     = $redis::log_level,
-  Optional[Variant[String[1], Sensitive[String[1]]]] $masterauth = $redis::masterauth,
+  Optional[Variant[String[1], Sensitive[String[1]], Deferred]] $masterauth = $redis::masterauth,
   Integer[1] $maxclients                                         = $redis::maxclients,
   Optional[Variant[Integer, String]] $maxmemory                  = $redis::maxmemory,
   Optional[Redis::MemoryPolicy] $maxmemory_policy                = $redis::maxmemory_policy,
@@ -316,12 +331,14 @@ define redis::instance (
   Boolean $protected_mode                                        = $redis::protected_mode,
   Boolean $rdbcompression                                        = $redis::rdbcompression,
   Hash[String,String] $rename_commands                           = $redis::rename_commands,
+  Optional[Stdlib::Host] $repl_announce_ip                       = $redis::repl_announce_ip,
+  Optional[Stdlib::Port] $repl_announce_port                     = $redis::repl_announce_port,
   String[1] $repl_backlog_size                                   = $redis::repl_backlog_size,
   Integer[0] $repl_backlog_ttl                                   = $redis::repl_backlog_ttl,
   Boolean $repl_disable_tcp_nodelay                              = $redis::repl_disable_tcp_nodelay,
   Integer[1] $repl_ping_slave_period                             = $redis::repl_ping_slave_period,
   Integer[1] $repl_timeout                                       = $redis::repl_timeout,
-  Optional[String] $requirepass                                  = $redis::requirepass,
+  Optional[Variant[String, Deferred]] $requirepass               = $redis::requirepass,
   Boolean $save_db_to_disk                                       = $redis::save_db_to_disk,
   Hash $save_db_to_disk_interval                                 = $redis::save_db_to_disk_interval,
   String[1] $service_user                                        = $redis::service_user,
@@ -330,6 +347,7 @@ define redis::instance (
   Boolean $slave_read_only                                       = $redis::slave_read_only,
   Boolean $slave_serve_stale_data                                = $redis::slave_serve_stale_data,
   Optional[String[1]] $slaveof                                   = $redis::slaveof,
+  Optional[String[1]] $replicaof                                 = $redis::replicaof,
   Integer[-1] $slowlog_log_slower_than                           = $redis::slowlog_log_slower_than,
   Integer[0] $slowlog_max_len                                    = $redis::slowlog_max_len,
   Boolean $stop_writes_on_bgsave_error                           = $redis::stop_writes_on_bgsave_error,
@@ -475,7 +493,7 @@ define redis::instance (
     owner   => $config_owner,
     group   => $config_group,
     mode    => $config_file_mode,
-    content => epp(
+    content => stdlib::deferrable_epp(
       $conf_template,
       {
         daemonize                     => $daemonize,
@@ -500,9 +518,12 @@ define redis::instance (
         dbfilename                    => $dbfilename,
         workdir                       => $workdir,
         slaveof                       => $slaveof,
+        replicaof                     => $replicaof,
         masterauth                    => $masterauth,
         slave_serve_stale_data        => $slave_serve_stale_data,
         slave_read_only               => $slave_read_only,
+        repl_announce_ip              => $repl_announce_ip,
+        repl_announce_port            => $repl_announce_port,
         repl_ping_slave_period        => $repl_ping_slave_period,
         repl_timeout                  => $repl_timeout,
         repl_disable_tcp_nodelay      => $repl_disable_tcp_nodelay,

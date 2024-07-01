@@ -2,11 +2,6 @@ class redmine::mysql inherits redmine {
 
   $config_file = '/usr/local/etc/mysql/my.cnf'
 
-  class { 'mysql::client':
-    package_name            => "mysql${redmine::mysql_version}-client",
-  }
-
-
   class { '::mysql::server':
     remove_default_accounts => $redmine::remove_default_accounts,
     package_name            => "mysql${redmine::mysql_version}-server",
@@ -47,7 +42,7 @@ class redmine::mysql inherits redmine {
   mysql::db { $redmine::db_name:
     user        => $redmine::db_user,
     password    => $redmine::db_password,
-    host        => $::ipaddress,
+    host        => '%',
     grant       => 'ALL',
   }
 }

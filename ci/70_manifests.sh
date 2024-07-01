@@ -33,13 +33,13 @@ fi
 #rm -f cbsd/go-*.txz
 
 #rsync -avz ${progdir}/myb-extras/ ${progdir}/myb/
-#rsync -avz ${progdir}/jail-skel/ ${workdir}/jails-data/${jname}/
+#rsync -avz ${progdir}/skel/ ${workdir}/jails-data/${jname}/
 
 # in kubernetes bootsrap!
 #cp -a /usr/jails/export/micro1.img ${progdir}/myb/
 
-#[ -d ${progdir}/myb/jail-skel ] && rm -rf ${progdir}/myb/jail-skel
-#cp -a ${progdir}/jail-skel ${progdir}/myb/
+#[ -d ${progdir}/myb/skel ] && rm -rf ${progdir}/myb/skel
+#cp -a ${progdir}/skel ${progdir}/myb/
 
 # Create myb.txz from ${progdir}/myb/
 # and copy to /cbsd/

@@ -11,9 +11,6 @@ This module was migrated from James Fryman <james@frymanet.com> to Vox Pupuli.
 
 ## INSTALLING OR UPGRADING
 
-**Please note**: This module is undergoing some structural maintenance.
-You may experience breaking changes between minor versions.
-
 This module manages NGINX configuration.
 
 ### Requirements
@@ -86,15 +83,17 @@ class { 'nginx':
 }
 
 nginx::resource::mailhost { 'domain1.example':
-  auth_http   => 'server2.example/cgi-bin/auth',
-  protocol    => 'smtp',
-  listen_port => 587,
-  ssl_port    => 465,
-  starttls    => 'only',
-  xclient     => 'off',
-  ssl         => true,
-  ssl_cert    => '/tmp/server.crt',
-  ssl_key     => '/tmp/server.pem',
+  auth_http       => 'server2.example/cgi-bin/auth',
+  protocol        => 'smtp',
+  listen_port     => 587,
+  ssl_port        => 465,
+  starttls        => 'only',
+  xclient         => 'off',
+  proxy_protocol  => 'off',
+  proxy_smtp_auth => 'off',
+  ssl             => true,
+  ssl_cert        => '/tmp/server.crt',
+  ssl_key         => '/tmp/server.pem',
 }
 ```
 

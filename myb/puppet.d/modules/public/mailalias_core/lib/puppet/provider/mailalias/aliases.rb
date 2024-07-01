@@ -6,7 +6,6 @@ Puppet::Type.type(:mailalias).provide(
   default_target: '/etc/aliases',
   filetype: :flat,
 ) do
-
   desc 'The alias provider for mailalias.'
 
   text_line :comment, match: %r{^#}
@@ -37,7 +36,7 @@ Puppet::Type.type(:mailalias).provide(
       if record[:recipient]
         dest = record[:recipient].map { |d|
           # Quote aliases that have non-alpha chars
-          if d =~ %r{[^-+\w@.]}
+          if %r{[^-+\w@.]}.match?(d)
             '"%s"' % d
           else
             d

@@ -178,10 +178,10 @@ Day ranges can only be numeric; e.g. '1-5' for weekdays, but not 'Mon-Fri'.
 
 The following parameters are available in the `cron` type.
 
-* [`name`](#name)
-* [`provider`](#provider)
+* [`name`](#-cron--name)
+* [`provider`](#-cron--provider)
 
-##### <a name="name"></a>`name`
+##### <a name="-cron--name"></a>`name`
 
 namevar
 
@@ -193,7 +193,7 @@ against specified jobs (and Puppet adds a comment to cron jobs it adds),
 but it is at least possible that converting from unmanaged jobs to
 managed jobs might require manual intervention.
 
-##### <a name="provider"></a>`provider`
+##### <a name="-cron--provider"></a>`provider`
 
 The specific backend to use for this `cron` resource. You will seldom need to specify this --- Puppet will usually
 discover the appropriate provider for your platform.

@@ -4,6 +4,180 @@ All notable changes to this project will be documented in this file.
 Each new release typically also includes the latest modulesync defaults.
 These should not affect the functionality of the module.
 
+## [v10.1.0](https://github.com/voxpupuli/puppet-php/tree/v10.1.0) (2023-11-22)
+
+[Full Changelog](https://github.com/voxpupuli/puppet-php/compare/v10.0.0...v10.1.0)
+
+**Implemented enhancements:**
+
+- metadata.json: allow puppet/zypprepo 5.x [\#702](https://github.com/voxpupuli/puppet-php/pull/702) ([kenyon](https://github.com/kenyon))
+
+**Closed issues:**
+
+- Dependency conflict between puppet-php and puppet-zypprepo [\#701](https://github.com/voxpupuli/puppet-php/issues/701)
+
+## [v10.0.0](https://github.com/voxpupuli/puppet-php/tree/v10.0.0) (2023-09-22)
+
+[Full Changelog](https://github.com/voxpupuli/puppet-php/compare/v9.0.0...v10.0.0)
+
+**Breaking changes:**
+
+- switch to stdlib namespaced functions, require stdlib 9.x [\#699](https://github.com/voxpupuli/puppet-php/pull/699) ([tuxmea](https://github.com/tuxmea))
+
+**Closed issues:**
+
+- \(Old?\) Documentation is not available [\#577](https://github.com/voxpupuli/puppet-php/issues/577)
+
+**Merged pull requests:**
+
+- README: fix links, fix typos, remove outdated info [\#698](https://github.com/voxpupuli/puppet-php/pull/698) ([kenyon](https://github.com/kenyon))
+- remove YARD docs [\#697](https://github.com/voxpupuli/puppet-php/pull/697) ([kenyon](https://github.com/kenyon))
+
+## [v9.0.0](https://github.com/voxpupuli/puppet-php/tree/v9.0.0) (2023-08-08)
+
+[Full Changelog](https://github.com/voxpupuli/puppet-php/compare/v8.2.0...v9.0.0)
+
+**Breaking changes:**
+
+- Drop Puppet 6 support [\#683](https://github.com/voxpupuli/puppet-php/pull/683) ([bastelfreak](https://github.com/bastelfreak))
+
+**Implemented enhancements:**
+
+- Add Puppet 8 support [\#692](https://github.com/voxpupuli/puppet-php/pull/692) ([bastelfreak](https://github.com/bastelfreak))
+- puppetlabs/stdlib: Allow 9.x [\#691](https://github.com/voxpupuli/puppet-php/pull/691) ([bastelfreak](https://github.com/bastelfreak))
+- Add class parameter `fpm_log_dir_mode` to customize the file permission of log directory [\#675](https://github.com/voxpupuli/puppet-php/pull/675) ([Q-Storm](https://github.com/Q-Storm))
+- Add ZendPHP support [\#671](https://github.com/voxpupuli/puppet-php/pull/671) ([jbh](https://github.com/jbh))
+
+**Closed issues:**
+
+- Use Stable composer install instead of latest [\#583](https://github.com/voxpupuli/puppet-php/issues/583)
+
+**Merged pull requests:**
+
+- puppetlabs/inifile: Allow 6.x [\#693](https://github.com/voxpupuli/puppet-php/pull/693) ([smortex](https://github.com/smortex))
+- Add option to disable management of rundir [\#674](https://github.com/voxpupuli/puppet-php/pull/674) ([tmanninger](https://github.com/tmanninger))
+
+## [v8.2.0](https://github.com/voxpupuli/puppet-php/tree/v8.2.0) (2023-01-27)
+
+[Full Changelog](https://github.com/voxpupuli/puppet-php/compare/v8.1.1...v8.2.0)
+
+**Implemented enhancements:**
+
+- Add Ubuntu 22.04 support [\#672](https://github.com/voxpupuli/puppet-php/pull/672) ([martialblog](https://github.com/martialblog))
+- Allow up-to-date dependencies [\#667](https://github.com/voxpupuli/puppet-php/pull/667) ([smortex](https://github.com/smortex))
+- Support other versions of remi repo on redhat [\#495](https://github.com/voxpupuli/puppet-php/pull/495) ([edestecd](https://github.com/edestecd))
+
+**Fixed bugs:**
+
+- fpm: fix FreeBSD support [\#673](https://github.com/voxpupuli/puppet-php/pull/673) ([fraenki](https://github.com/fraenki))
+
+**Merged pull requests:**
+
+- Fix broken MIT license [\#678](https://github.com/voxpupuli/puppet-php/pull/678) ([bastelfreak](https://github.com/bastelfreak))
+
+## [v8.1.1](https://github.com/voxpupuli/puppet-php/tree/v8.1.1) (2022-08-03)
+
+[Full Changelog](https://github.com/voxpupuli/puppet-php/compare/v8.1.0...v8.1.1)
+
+**Fixed bugs:**
+
+- Why does dotdeb APT wheezy 5.6 repo get installed on Debian 9? [\#458](https://github.com/voxpupuli/puppet-php/issues/458)
+- \(\#458\) Remove dotdeb and sury repos overuse on Debian [\#659](https://github.com/voxpupuli/puppet-php/pull/659) ([OlegPS](https://github.com/OlegPS))
+
+**Closed issues:**
+
+- Howto solve package name conflict between apt and pecl [\#579](https://github.com/voxpupuli/puppet-php/issues/579)
+
+## [v8.1.0](https://github.com/voxpupuli/puppet-php/tree/v8.1.0) (2022-07-03)
+
+[Full Changelog](https://github.com/voxpupuli/puppet-php/compare/v8.0.3...v8.1.0)
+
+**Implemented enhancements:**
+
+- Allow unsupported environments [\#662](https://github.com/voxpupuli/puppet-php/pull/662) ([jkroepke](https://github.com/jkroepke))
+
+**Fixed bugs:**
+
+- php-fpm: Reload service with systemd if available [\#664](https://github.com/voxpupuli/puppet-php/pull/664) ([bastelfreak](https://github.com/bastelfreak))
+- Arch Linux: Fix package names and set correct php-fpm user \(root -\> http\) [\#663](https://github.com/voxpupuli/puppet-php/pull/663) ([jkroepke](https://github.com/jkroepke))
+
+## [v8.0.3](https://github.com/voxpupuli/puppet-php/tree/v8.0.3) (2022-03-21)
+
+[Full Changelog](https://github.com/voxpupuli/puppet-php/compare/v8.0.2...v8.0.3)
+
+**Fixed bugs:**
+
+- Fix forcing a php::setting to be absent by setting its value to undef [\#647](https://github.com/voxpupuli/puppet-php/pull/647) ([jadestorm](https://github.com/jadestorm))
+
+**Closed issues:**
+
+- Unable to remove extension configuration settings [\#653](https://github.com/voxpupuli/puppet-php/issues/653)
+- update supported os matrix [\#617](https://github.com/voxpupuli/puppet-php/issues/617)
+
+## [v8.0.2](https://github.com/voxpupuli/puppet-php/tree/v8.0.2) (2021-09-06)
+
+[Full Changelog](https://github.com/voxpupuli/puppet-php/compare/v8.0.1...v8.0.2)
+
+**Fixed bugs:**
+
+- Allow 0 for pm\_start\_servers [\#642](https://github.com/voxpupuli/puppet-php/pull/642) ([jkroepke](https://github.com/jkroepke))
+
+## [v8.0.1](https://github.com/voxpupuli/puppet-php/tree/v8.0.1) (2021-08-27)
+
+[Full Changelog](https://github.com/voxpupuli/puppet-php/compare/v8.0.0...v8.0.1)
+
+**Fixed bugs:**
+
+- Allow empty string for setting value [\#640](https://github.com/voxpupuli/puppet-php/pull/640) ([smortex](https://github.com/smortex))
+
+**Closed issues:**
+
+- String\[1\] forbids empty php::settings value [\#639](https://github.com/voxpupuli/puppet-php/issues/639)
+
+## [v8.0.0](https://github.com/voxpupuli/puppet-php/tree/v8.0.0) (2021-08-26)
+
+[Full Changelog](https://github.com/voxpupuli/puppet-php/compare/v7.1.0...v8.0.0)
+
+**Breaking changes:**
+
+- Drop EOL FreeBSD 9 and 10 from metadata.json [\#591](https://github.com/voxpupuli/puppet-php/issues/591)
+- Drop Debian 9/Ubuntu 16.04 support [\#636](https://github.com/voxpupuli/puppet-php/pull/636) ([root-expert](https://github.com/root-expert))
+- Drop support for Puppet 5 \(EOL\) [\#631](https://github.com/voxpupuli/puppet-php/pull/631) ([smortex](https://github.com/smortex))
+- Drop support for RedHat 6 / CentOS 6 \(EOL\) [\#630](https://github.com/voxpupuli/puppet-php/pull/630) ([smortex](https://github.com/smortex))
+- Drop EOL Debian 7/8 & Ubuntu 12/14 [\#592](https://github.com/voxpupuli/puppet-php/pull/592) ([bastelfreak](https://github.com/bastelfreak))
+
+**Implemented enhancements:**
+
+- Add/Fix data types of all parameters [\#634](https://github.com/voxpupuli/puppet-php/pull/634) ([smortex](https://github.com/smortex))
+- Add support for Debian 11 [\#633](https://github.com/voxpupuli/puppet-php/pull/633) ([smortex](https://github.com/smortex))
+- Add support for Puppet 7 [\#632](https://github.com/voxpupuli/puppet-php/pull/632) ([smortex](https://github.com/smortex))
+- Add PHP 8 Support [\#627](https://github.com/voxpupuli/puppet-php/pull/627) ([bratucornel](https://github.com/bratucornel))
+- puppet/archive: allow 5.x [\#620](https://github.com/voxpupuli/puppet-php/pull/620) ([bastelfreak](https://github.com/bastelfreak))
+- php::globals: support Ubuntu 20.04 that ships php 7.4 [\#599](https://github.com/voxpupuli/puppet-php/pull/599) ([simondeziel](https://github.com/simondeziel))
+- php-fpm: Make service reload/restart configurable [\#598](https://github.com/voxpupuli/puppet-php/pull/598) ([bastelfreak](https://github.com/bastelfreak))
+- Add apparmor\_hat support to php::fpm::pool [\#524](https://github.com/voxpupuli/puppet-php/pull/524) ([simondeziel](https://github.com/simondeziel))
+
+**Closed issues:**
+
+- remove puppet 5 support, introduce puppet 7 support [\#616](https://github.com/voxpupuli/puppet-php/issues/616)
+- php reloading on each run [\#613](https://github.com/voxpupuli/puppet-php/issues/613)
+- Is it possible to ensure the fpm service from hiera? [\#609](https://github.com/voxpupuli/puppet-php/issues/609)
+- Restart service 'php-fpm' if socket owner / group changes [\#596](https://github.com/voxpupuli/puppet-php/issues/596)
+- Support for Ondřej Surýs PPA on Ubuntu 18.04 [\#586](https://github.com/voxpupuli/puppet-php/issues/586)
+- Unused variable 'log\_group\_final' [\#568](https://github.com/voxpupuli/puppet-php/issues/568)
+- New Release 7.0.0+ ? [\#562](https://github.com/voxpupuli/puppet-php/issues/562)
+- undesired service restart due to missing /var/run/php-fpm dir [\#501](https://github.com/voxpupuli/puppet-php/issues/501)
+- New Release after Ubuntu 18.04 support is added? [\#442](https://github.com/voxpupuli/puppet-php/issues/442)
+- Deprecate mayflower/php in favor for voxpupuli/php [\#348](https://github.com/voxpupuli/puppet-php/issues/348)
+
+**Merged pull requests:**
+
+- Allow up-to-date dependencies [\#635](https://github.com/voxpupuli/puppet-php/pull/635) ([smortex](https://github.com/smortex))
+- Update dependencies [\#629](https://github.com/voxpupuli/puppet-php/pull/629) ([saz](https://github.com/saz))
+- Remove duplicate mysqlnd from example in README [\#574](https://github.com/voxpupuli/puppet-php/pull/574) ([saz](https://github.com/saz))
+- remove www pool from defaults [\#572](https://github.com/voxpupuli/puppet-php/pull/572) ([bovy89](https://github.com/bovy89))
+- Cleanup fpm config class [\#570](https://github.com/voxpupuli/puppet-php/pull/570) ([paescuj](https://github.com/paescuj))
+
 ## [v7.1.0](https://github.com/voxpupuli/puppet-php/tree/v7.1.0) (2020-05-05)
 
 [Full Changelog](https://github.com/voxpupuli/puppet-php/compare/v7.0.0...v7.1.0)

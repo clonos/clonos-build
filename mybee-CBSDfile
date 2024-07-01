@@ -2,12 +2,12 @@ quiet=0
 
 jail_mybee1()
 {
-	. /etc/rc.conf          # mybbasever
-	ver="${mybbasever}"
+	ver="empty"
+	applytpl=0
+	pkg_bootstrap="0"
+	runasap="0"
 	baserw=1
 	astart=0
 	ip4_addr="DHCP"
 	host_hostname="${jname}.my.domain"
-	pkg_bootstrap=1
-	runasap=1
 }

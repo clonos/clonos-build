@@ -43,14 +43,14 @@ class mysql::backup::mysqldump (
 
   unless $facts['os']['family'] == 'FreeBSD' {
     if $backupcompress and $compression_command == 'bzcat -zc' {
-      ensure_packages(['bzip2'])
+      stdlib::ensure_packages(['bzip2'])
       Package['bzip2'] -> File['mysqlbackup.sh']
     }
   }
 
   mysql_user { "${backupuser}@localhost":
     ensure        => $ensure,
-    password_hash => mysql::password($backuppassword),
+    password_hash => Deferred('mysql::password', [$backuppassword]),
     require       => Class['mysql::server::root_password'],
   }
 
@@ -70,9 +70,9 @@ class mysql::backup::mysqldump (
 
   if $install_cron {
     if $facts['os']['family'] == 'RedHat' {
-      ensure_packages('cronie')
+      stdlib::ensure_packages('cronie')
     } elsif $facts['os']['family'] != 'FreeBSD' {
-      ensure_packages('cron')
+      stdlib::ensure_packages('cron')
     }
   }
 

@@ -57,61 +57,52 @@ class roundcube::install inherits roundcube {
       }
       $require_archive = Archive[$archive]
     }
-    'package': {
-      package { $roundcube::package_name:
-        ensure => present,
-        name   => $roundcube::package_name,
-      }
-    }
     default: {
-      fail("Unsupported \$archive_provider '${roundcube::archive_provider}'. Should be 'camptocamp', 'nanliu' (aka 'puppet') or 'package'.")
+      fail("Unsupported \$archive_provider '${roundcube::archive_provider}'. Should be 'camptocamp' or 'nanliu' (aka 'puppet').")
     }
   }
 
-  if ($roundcube::archive_provider != package) {
-
-    file { ["${target}/logs", "${target}/temp"]:
-      ensure  => directory,
-      owner   => $roundcube::process,
-      group   => $roundcube::process,
-      mode    => '0640',
-      require => $require_archive,
-    }
-
-    file { "${target}/installer":
-      ensure  => absent,
-      purge   => true,
-      recurse => true,
-      force   => true,
-      backup  => false,
-      require => $require_archive,
-    }
-
-    file { "${target}/composer.json":
-      ensure  => file,
-      source  => "${target}/composer.json-dist",
-      replace => false,
-      owner   => 'root',
-      group   => 0,
-      mode    => '0644',
-      require => $require_archive,
-    }
-
-    -> augeas { "${target}/composer.json__prefer-stable":
-      lens    => 'Json.lns',
-      incl    => "${target}/composer.json",
-      changes => [
-        "set dict/entry[. = 'prefer-stable'] prefer-stable",
-        "set dict/entry[. = 'prefer-stable']/const true",
-      ],
-    }
-
-    -> exec { $composer_install_cmd:
-      unless      => "${composer_install_cmd} --dry-run 2>&1 | grep -q -F 'Nothing to install'",
-      cwd         => $target,
-      path        => $roundcube::exec_paths,
-      environment => $roundcube::composer_exec_environment,
-    }
+  file { ["${target}/logs", "${target}/temp"]:
+    ensure  => directory,
+    owner   => $roundcube::process,
+    group   => $roundcube::process,
+    mode    => '0640',
+    require => $require_archive,
   }
 
+  file { "${target}/installer":
+    ensure  => absent,
+    purge   => true,
+    recurse => true,
+    force   => true,
+    backup  => false,
+    require => $require_archive,
+  }
+
+  file { "${target}/composer.json":
+    ensure  => file,
+    source  => "${target}/composer.json-dist",
+    replace => false,
+    owner   => 'root',
+    group   => 0,
+    mode    => '0644',
+    require => $require_archive,
+  }
+
+  -> augeas { "${target}/composer.json__prefer-stable":
+    lens    => 'Json.lns',
+    incl    => "${target}/composer.json",
+    changes => [
+      "set dict/entry[. = 'prefer-stable'] prefer-stable",
+      "set dict/entry[. = 'prefer-stable']/const true",
+    ],
+  }
+
+  -> exec { $composer_install_cmd:
+    unless      => "${composer_install_cmd} --dry-run 2>&1 | grep -q -F 'Nothing to install'",
+    cwd         => $target,
+    user        => $roundcube::composer_user,
+    path        => $roundcube::exec_paths,
+    environment => $roundcube::composer_exec_environment,
+  }
 }

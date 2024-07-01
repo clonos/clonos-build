@@ -12,7 +12,8 @@
 # @param psql_path Specifies the OS user for running psql. Default value: The default user for the module, usually 'postgres'.
 # @param port Specifies the port to access the server. Default value: The default user for the module, usually '5432'.
 # @param connect_settings Specifies a hash of environment variables used when connecting to a remote server.
-# @param psql_path Specifies the path to the psql command.
+# @param instance The name of the Postgresql database instance.
+# @param group Specifies the user group to which the privileges will be granted.
 define postgresql::server::default_privileges (
   String $role,
   String $db,
@@ -25,23 +26,19 @@ define postgresql::server::default_privileges (
     /(?i:^TYPES$)/,
     /(?i:^SCHEMAS$)/
   ] $object_type,
-  String $schema                      = 'public',
-  String $psql_db                     = $postgresql::server::default_database,
-  String $psql_user                   = $postgresql::server::user,
-  Integer $port                       = $postgresql::server::port,
-  Hash $connect_settings              = $postgresql::server::default_connect_settings,
-  Enum['present', 'absent'] $ensure   = 'present',
-  String $group                       = $postgresql::server::group,
-  String $psql_path                   = $postgresql::server::psql_path,
-  Optional[String] $target_role       = undef,
+  String                    $schema            = 'public',
+  String                    $psql_db           = $postgresql::server::default_database,
+  String                    $psql_user         = $postgresql::server::user,
+  Stdlib::Port              $port              = $postgresql::server::port,
+  Hash                      $connect_settings  = $postgresql::server::default_connect_settings,
+  Enum['present', 'absent'] $ensure            = 'present',
+  String                    $group             = $postgresql::server::group,
+  Stdlib::Absolutepath      $psql_path         = $postgresql::server::psql_path,
+  Optional[String]          $target_role       = undef,
+  String[1]                 $instance          = 'main',
 ) {
-  # If possible use the version of the remote database, otherwise
-  # fallback to our local DB version
-  if $connect_settings != undef and has_key( $connect_settings, 'DBVERSION') {
-    $version = $connect_settings['DBVERSION']
-  } else {
-    $version = $postgresql::server::_version
-  }
+  $version = pick($connect_settings['DBVERSION'],postgresql::default('version'))
+  $port_override = pick($connect_settings['PGPORT'], $port)
 
   if (versioncmp($version, '9.6') == -1) {
     fail 'Default_privileges is only useable with PostgreSQL >= 9.6'
@@ -59,18 +56,7 @@ define postgresql::server::default_privileges (
     }
   }
 
-  #
-  # Port, order of precedence: $port parameter, $connect_settings[PGPORT], $postgresql::server::port
-  #
-  if $port != undef {
-    $port_override = $port
-  } elsif $connect_settings != undef and has_key( $connect_settings, 'PGPORT') {
-    $port_override = undef
-  } else {
-    $port_override = $postgresql::server::port
-  }
-
-  if $target_role != undef {
+  if $target_role {
     $_target_role = " FOR ROLE ${target_role}"
     $_check_target_role = "/${target_role}"
   } else {
@@ -159,8 +145,8 @@ define postgresql::server::default_privileges (
   }
 
   $_unless = $ensure ? {
-    'absent' => "SELECT 1 WHERE NOT EXISTS (SELECT * FROM pg_default_acl AS da LEFT JOIN pg_namespace AS n ON da.defaclnamespace = n.oid WHERE '%s=%s%s' = ANY (defaclacl)%s and defaclobjtype = '%s')",
-    default  => "SELECT 1 WHERE EXISTS (SELECT * FROM pg_default_acl AS da LEFT JOIN pg_namespace AS n ON da.defaclnamespace = n.oid WHERE '%s=%s%s' = ANY (defaclacl)%s and defaclobjtype = '%s')"
+    'absent' => "SELECT 1 WHERE NOT EXISTS (SELECT * FROM pg_default_acl AS da LEFT JOIN pg_namespace AS n ON da.defaclnamespace = n.oid WHERE '%s=%s%s' = ANY (defaclacl)%s and defaclobjtype = '%s')", # lint:ignore:140chars
+    default  => "SELECT 1 WHERE EXISTS (SELECT * FROM pg_default_acl AS da LEFT JOIN pg_namespace AS n ON da.defaclnamespace = n.oid WHERE '%s=%s%s' = ANY (defaclacl)%s and defaclobjtype = '%s')", # lint:ignore:140chars
   }
 
   $unless_cmd = sprintf($_unless, $role, $_check_privilege, $_check_target_role, $_check_schema, $_check_type)
@@ -176,13 +162,14 @@ define postgresql::server::default_privileges (
     psql_path        => $psql_path,
     unless           => $unless_cmd,
     environment      => 'PGOPTIONS=--client-min-messages=error',
+    instance         => $instance,
   }
 
-  if($role != undef and defined(Postgresql::Server::Role[$role])) {
+  if defined(Postgresql::Server::Role[$role]) {
     Postgresql::Server::Role[$role] -> Postgresql_psql["default_privileges:${name}"]
   }
 
-  if($db != undef and defined(Postgresql::Server::Database[$db])) {
+  if defined(Postgresql::Server::Database[$db]) {
     Postgresql::Server::Database[$db] -> Postgresql_psql["default_privileges:${name}"]
   }
 }

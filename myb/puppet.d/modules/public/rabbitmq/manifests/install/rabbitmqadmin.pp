@@ -27,13 +27,19 @@ class rabbitmq::install::rabbitmqadmin {
 
     $default_user = $rabbitmq::default_user
     $default_pass = $rabbitmq::default_pass
-    $management_ip_address = $rabbitmq::management_ip_address
     $archive_options = $rabbitmq::archive_options
+
+    # This should be consistent with rabbitmq::config
+    if $rabbitmq::management_ip_address {
+      $management_ip_address = $rabbitmq::management_ip_address
+    } else {
+      $management_ip_address = $rabbitmq::node_ip_address
+    }
 
     if !($management_ip_address) {
       # Pull from localhost if we don't have an explicit bind address
       $sanitized_ip = '127.0.0.1'
-    } elsif $management_ip_address =~ Stdlib::Compat::Ipv6 {
+    } elsif $management_ip_address =~ Stdlib::IP::Address::V6::Nosubnet {
       $sanitized_ip = join(enclose_ipv6(any2array($management_ip_address)), ',')
     } else {
       $sanitized_ip = $management_ip_address

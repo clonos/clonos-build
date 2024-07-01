@@ -1,12 +1,36 @@
+# This file is being maintained by Puppet. Do not edit.
+
 # NTP servers
-<% $chrony::servers.each |$server| { -%>
-server <%= $server.flatten.join(' ') %>
+<% $servers.keys.sort.each |$server| { -%>
+<%   if $servers[$server].empty { -%>
+server <%= $server %>
+<%   } else { -%>
+server <%= $server %> <%= $servers[$server].join(' ') %>
+<%   } -%>
 <% } -%>
-<% $chrony::pools.each |$pool| { -%>
-pool <%= $pool.flatten.join(' ') %>
+<% $pools.keys.sort.each |$pool| { -%>
+<%   if $pools[$pool].empty { -%>
+pool <%= $pool %>
+<%   } else { -%>
+pool <%= $pool %> <%= $pools[$pool].join(' ') %>
+<%   } -%>
 <% } -%>
-<% $chrony::peers.each |$peer| { -%>
-peer <%= $peer.flatten.join(' ') %>
+<% $peers.keys.sort.each |$peer| { -%>
+<%   if $peers[$peer].empty { -%>
+peer <%= $peer %>
+<%   } else { -%>
+peer <%= $peer %> <%= $peers[$peer].join(' ') %>
+<%   } -%>
+<% } -%>
+<% if $chrony::sourcedir { -%>
+
+# The sourcedir directive is identical to the confdir directive, except the configuration files have the .sources suffix, they can only specify NTP sources.
+sourcedir <%= $chrony::sourcedir %>
+<% } -%>
+<% if $chrony::confdir { -%>
+
+# The confdir directive includes configuration files with the .conf suffix from a directory.
+confdir <%= $chrony::confdir %>
 <% } -%>
 <% if $chrony::stratumweight { -%>
 
@@ -28,6 +52,13 @@ rtcsync
 # if the adjustment is larger than <%= $chrony::makestep_seconds %> seconds.
 makestep <%= $chrony::makestep_seconds %> <%= $chrony::makestep_updates %>
 <% } -%>
+<% unless $chrony::denyqueryhosts.empty { -%>
+
+# Deny client access.
+<%   $chrony::denyqueryhosts.each |$denied| { -%>
+deny <%= $denied %>
+<%   } -%>
+<% } -%>
 <% unless $chrony::queryhosts.empty { -%>
 
 # Allow client access.
@@ -47,6 +78,22 @@ bindcmdaddress <%= $addr %>
 <% $chrony::cmdacl.each |$acl| { -%>
 <%= $acl %>
 <% } -%>
+<% unless $chrony::bindaddress.empty { -%>
+
+# Bind to a specific address
+<%  $chrony::bindaddress.each |$addr| { -%>
+bindaddress <%= $addr %>
+<%   } -%>
+<% } -%>
+<% unless $chrony::acquisitionport.empty { -%>
+acquisitionport <%= $chrony::acquisitionport %>
+<% } -%>
+<% if $chrony::initstepslew { -%>
+
+# Allow chronyd to make a rapid measurement of the system clock error at boot time,
+# and to correct the system clock by stepping before normal operation begins.
+initstepslew <%= $chrony::initstepslew %>
+<% } -%>
 <% if $chrony::port { -%>
 
 # http://chrony.tuxfamily.org/manual.html#port-directive
@@ -57,7 +104,17 @@ port <%= $chrony::port %>
 # Serve time even if not synchronized to any NTP server.
 local stratum <%= $chrony::local_stratum %>
 <% } -%>
-<% if $chrony::config_keys { -%>
+<% if $chrony::minsamples { -%>
+
+# https://chrony.tuxfamily.org/doc/3.4/chrony.conf.html#minsamples
+minsamples <%= $chrony::minsamples %>
+<% } -%>
+<% if $chrony::minsources { -%>
+
+# https://chrony.tuxfamily.org/doc/3.4/chrony.conf.html#minsources
+minsources <%= $chrony::minsources %>
+<% } -%>
+<% unless empty($chrony::config_keys) { -%>
 
 keyfile <%= $chrony::config_keys %>
 <% } -%>
@@ -66,6 +123,9 @@ keyfile <%= $chrony::config_keys %>
 # Save the measurement history for the servers to files on exit.
 dumponexit
 dumpdir <%= $chrony::dumpdir %>
+<% } -%>
+<% if $chrony::ntpsigndsocket { -%>
+ntpsigndsocket <%= $chrony::ntpsigndsocket %>
 <% } -%>
 <% unless $chrony::clientlog { -%>
 
@@ -80,15 +140,18 @@ noclientlog
 clientloglimit <%= $chrony::clientloglimit %>
 <% } -%>
 
-# Send a message to syslog if a clock adjustment is larger than 0.5 seconds.
-logchange 0.5
+# Send a message to syslog if a clock adjustment is larger than the specified threshold
+logchange <%= $chrony::logchange %>
 <% if $chrony::mailonchange { -%>
 
-# Send mail  if chronyd applied a correction exceeding given threshold.
+# Send mail if chronyd applied a correction exceeding given threshold.
 mailonchange <%= $chrony::mailonchange %> <%= $chrony::threshold %>
 <% } -%>
 
 logdir /var/log/chrony
+<% if $chrony::logbanner { -%>
+logbanner <%= $chrony::logbanner %>
+<% } -%>
 <% if $chrony::log_options { -%>
 log <%= $chrony::log_options %>
 <% } -%>
@@ -103,6 +166,9 @@ refclock <%= $driver.flatten.join(' ') %>
 # Lock chrony to RAM.
 lock_all
 <% } -%>
+<% if $chrony::sched_priority { -%>
+sched_priority <%= $chrony::sched_priority %>
+<% } -%>
 <% if $chrony::leapsecmode { -%>
 
 # https://chrony.tuxfamily.org/doc/3.4/chrony.conf.html#leapsecmode
@@ -113,10 +179,60 @@ leapsecmode <%= $chrony::leapsecmode %>
 # https://chrony.tuxfamily.org/doc/3.4/chrony.conf.html#leapsectz
 leapsectz <%= $chrony::leapsectz %>
 <% } -%>
+<% if $chrony::maxdistance { -%>
+
+# https://chrony.tuxfamily.org/doc/3.4/chrony.conf.html#maxdistance
+maxdistance <%= $chrony::maxdistance %>
+<% } -%>
+<% if $chrony::maxupdateskew { -%>
+
+# https://chrony.tuxfamily.org/doc/3.4/chrony.conf.html#maxupdateskew
+maxupdateskew <%= $chrony::maxupdateskew %>
+<% } -%>
 <% if $chrony::maxslewrate { -%>
 
 # https://chrony.tuxfamily.org/doc/3.4/chrony.conf.html#maxslewrate
 maxslewrate <%= $chrony::maxslewrate %>
+<% } -%>
+<% if $chrony::ntsserverkey { -%>
+
+# https://chrony.tuxfamily.org/doc/4.0/chrony.conf.html#ntsserverkey
+ntsserverkey <%= $chrony::ntsserverkey %>
+<% } -%>
+<% if $chrony::ntsservercert { -%>
+
+# https://chrony.tuxfamily.org/doc/4.0/chrony.conf.html#ntsservercert
+ntsservercert <%= $chrony::ntsservercert %>
+<% } -%>
+<% if $chrony::ntsport { -%>
+
+# https://chrony.tuxfamily.org/doc/4.0/chrony.conf.html#ntsport
+ntsport <%= $chrony::ntsport %>
+<% } -%>
+<% if $chrony::maxntsconnections { -%>
+
+# https://chrony.tuxfamily.org/doc/4.0/chrony.conf.html#maxntsconnections
+maxntsconnections <%= $chrony::maxntsconnections %>
+<% } -%>
+<% if $chrony::ntsprocesses { -%>
+
+# https://chrony.tuxfamily.org/doc/4.0/chrony.conf.html#ntsprocesses
+ntsprocesses <%= $chrony::ntsprocesses %>
+<% } -%>
+<% if $chrony::ntsdumpdir { -%>
+
+# https://chrony.tuxfamily.org/doc/4.0/chrony.conf.html#ntsdumpdir
+ntsdumpdir <%= $chrony::ntsdumpdir %>
+<% } -%>
+<% if $chrony::ntsntpserver { -%>
+
+# https://chrony.tuxfamily.org/doc/4.0/chrony.conf.html#ntsntpserver
+ntsntpserver <%= $chrony::ntsntpserver %>
+<% } -%>
+<% if $chrony::ntsrotate { -%>
+
+# https://chrony.tuxfamily.org/doc/4.0/chrony.conf.html#ntsrotate
+ntsrotate <%= $chrony::ntsrotate %>
 <% } -%>
 <% if $chrony::smoothtime { -%>
 

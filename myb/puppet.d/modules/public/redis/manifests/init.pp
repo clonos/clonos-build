@@ -116,6 +116,10 @@
 #   Which events to notify Pub/Sub clients about events happening
 # @param notify_service
 #   You may disable service reloads when config files change
+# @param output_buffer_limit_slave
+#   Value of client-output-buffer-limit-slave in redis config
+# @param output_buffer_limit_pubsub
+#   Value of client-output-buffer-limit-pubsub in redis config
 # @param package_ensure
 #   Default action for package.
 # @param package_name
@@ -128,10 +132,28 @@
 #   Whether protected mode is enabled or not.  Only applicable when no bind is set.
 # @param ppa_repo
 #   Specify upstream (Ubuntu) PPA entry.
+# @param redis_apt_repo
+#   If you want to use the redis apt repository.
+# @param apt_location
+#   Specify the URL of the apt repository.
+# @param apt_repos
+#  Specify the repository to use for apt. Defaults to 'main'.
+# @param apt_release
+#   Specify the os codename.
+# @param apt_key_id
+#   Specify the PGP key id to use for apt.
+# @param apt_key_server
+#   Specify the PGP key server to use for apt.
+# @param apt_key_options
+#   Passes additional options to `apt-key adv --keyserver-options`.
 # @param rdbcompression
 #   Enable/disable compression of string objects using LZF when dumping.
 # @param rename_commands
 #   A list of Redis commands to rename or disable for security reasons
+# @param repl_announce_ip
+#   The specific IP or hostname a replica will report to its master
+# @param repl_announce_port
+#   The specific port a replica will report to its master
 # @param repl_backlog_size
 #   The replication backlog size
 # @param repl_backlog_ttl
@@ -182,6 +204,8 @@
 #      but to INFO and SLAVEOF.
 # @param slaveof
 #   Use slaveof to make a Redis instance a copy of another Redis server.
+# @param replicaof
+#   Use replicaof to make a Redis instance a copy of another Redis server.
 # @param slowlog_log_slower_than
 #   Tells Redis what is the execution time, in microseconds, to exceed in order
 #   for the command to get logged.
@@ -302,7 +326,12 @@
 # @param rdb_save_incremental_fsync
 #   When redis saves RDB file, if the following option is enabled
 #   the file will be fsync-ed every 32 MB of data generated.
-
+# @param dnf_module_stream
+#   Manage the DNF module and set the version. This only makes sense on distributions
+#   that use DNF package manager, such as EL8 or Fedora.
+# @param manage_service_file
+#   Determine if the systemd service file should be managed
+#
 class redis (
   Boolean $activerehashing                                       = true,
   Boolean $aof_load_truncated                                    = true,
@@ -343,7 +372,7 @@ class redis (
   Boolean $manage_service_file                                   = false,
   Boolean $manage_package                                        = true,
   Boolean $manage_repo                                           = false,
-  Optional[Variant[String[1], Sensitive[String[1]]]] $masterauth = undef,
+  Optional[Variant[String[1], Sensitive[String[1]], Deferred]] $masterauth = undef,
   Integer[1] $maxclients                                         = 10000,
   $maxmemory                                                     = undef,
   Optional[Redis::MemoryPolicy] $maxmemory_policy                = undef,
@@ -361,14 +390,23 @@ class redis (
   Stdlib::Port $port                                             = 6379,
   Boolean $protected_mode                                        = true,
   Optional[String] $ppa_repo                                     = undef,
+  Boolean $redis_apt_repo                                        = false,
+  Stdlib::HTTPSUrl $apt_location                                 = 'https://packages.redis.io/deb/',
+  String[1] $apt_repos                                           = 'main',
+  Optional[String] $apt_release                                  = undef,
+  String[1] $apt_key_id                                          = '54318FA4052D1E61A6B6F7BB5F4349D6BF53AA0C',
+  String[1] $apt_key_server                                      = 'hkp://keyserver.ubuntu.com/',
+  Optional[String] $apt_key_options                              = undef,
   Boolean $rdbcompression                                        = true,
   Hash[String,String] $rename_commands                           = {},
+  Optional[Stdlib::Host] $repl_announce_ip                       = undef,
+  Optional[Stdlib::Port] $repl_announce_port                     = undef,
   String[1] $repl_backlog_size                                   = '1mb',
   Integer[0] $repl_backlog_ttl                                   = 3600,
   Boolean $repl_disable_tcp_nodelay                              = false,
   Integer[1] $repl_ping_slave_period                             = 10,
   Integer[1] $repl_timeout                                       = 60,
-  Optional[String] $requirepass                                  = undef,
+  Optional[Variant[String, Deferred]] $requirepass               = undef,
   Boolean $save_db_to_disk                                       = true,
   Hash $save_db_to_disk_interval                                 = { '900' => '1', '300' => '10', '60' => '10000' },
   Boolean $service_enable                                        = true,
@@ -384,6 +422,7 @@ class redis (
   Boolean $slave_read_only                                       = true,
   Boolean $slave_serve_stale_data                                = true,
   Optional[String[1]] $slaveof                                   = undef,
+  Optional[String[1]] $replicaof                                 = undef,
   Integer[-1] $slowlog_log_slower_than                           = 10000,
   Integer[0] $slowlog_max_len                                    = 1024,
   Boolean $stop_writes_on_bgsave_error                           = true,
@@ -433,6 +472,7 @@ class redis (
   Integer[1] $active_defrag_max_scan_fields                      = 1000,
   Optional[Boolean] $jemalloc_bg_thread                          = undef,
   Optional[Boolean] $rdb_save_incremental_fsync                  = undef,
+  Optional[String[1]] $dnf_module_stream                         = undef,
 ) inherits redis::params {
   contain redis::preinstall
   contain redis::install

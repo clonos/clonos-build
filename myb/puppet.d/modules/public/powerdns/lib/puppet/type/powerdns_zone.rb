@@ -1,3 +1,5 @@
+require 'puppet/parameter/boolean'
+
 Puppet::Type.newtype(:powerdns_zone) do
   @doc = 'ensure a zone exists. The zone is managed using the
          resource powerdns_zone_private'
@@ -35,7 +37,7 @@ Puppet::Type.newtype(:powerdns_zone) do
   newparam(:show_diff, boolean: true, parent: Puppet::Parameter::Boolean) do
     desc "Whether to display differences when the zone changes, defaulting to
         false. Since zones can be huge, use this only for debugging"
-    defaultto :false # rubocop:disable Lint/BooleanSymbol
+    defaultto :false
   end
 
   newparam(:manage_records, boolean: true, parent: Puppet::Parameter::Boolean) do
@@ -44,7 +46,7 @@ Puppet::Type.newtype(:powerdns_zone) do
          If set to false, ensurance of zone creation is done only and the administration of zone records needs to be done through
          web Interface or any other preferred method.
          '
-    defaultto :true # rubocop:disable Lint/BooleanSymbol
+    defaultto :true
   end
 
   newparam(:soa_ttl) do
@@ -119,20 +121,18 @@ Puppet::Type.newtype(:powerdns_zone) do
 
   def records
     # Collect records that target this zone.
-    @records ||= catalog.resources.map do |resource|
+    @records ||= catalog.resources.map { |resource|
       next unless resource.is_a?(Puppet::Type.type(:powerdns_record))
 
       resource if resource[:target_zone] == title
-    end.compact
+    }.compact
   end
 
-  # rubocop:disable Metrics/AbcSize
   def should_content
     # collect and sort all records for content
     content = [].push(soa_record)
 
     records.each do |r|
-      # rubocop:disable Style/StringConcatenation
       if r[:rname] == '.'
         content.push([r[:target_zone], r[:rttl], r[:rclass], r[:rtype], r[:rcontent]].join("\t"))
       else
@@ -145,8 +145,6 @@ Puppet::Type.newtype(:powerdns_zone) do
   end
   # rubocop:enable Metrics/AbcSize
 
-  # rubocop:disable Metrics/MethodLength
-  # rubocop:disable Metrics/AbcSize
   def generate
     # create the powerdns_zone_private resource as a copy of this resource
     # without content
@@ -186,7 +184,6 @@ Puppet::Type.newtype(:powerdns_zone) do
     ['pdns']
   end
 
-  # rubocop:disable Lint/EmptyBlock
   # autorequire the powerdns_records
   autorequire(:powerdns_record) do
   end

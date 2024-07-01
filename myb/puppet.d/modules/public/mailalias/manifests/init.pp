@@ -1,7 +1,7 @@
 # manage mail aliases
 class mailalias {
 
-  case $::osfamily {
+  case $facts['os']['family'] {
     'FreeBSD': {
       $rootmail_file = '/var/mail/root'
     }

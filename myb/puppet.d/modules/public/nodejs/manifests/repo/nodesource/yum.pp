@@ -16,8 +16,13 @@ class nodejs::repo::nodesource::yum {
     default => '0',
   }
 
+  $yum_failovermethod = (versioncmp($facts['os']['release']['major'], '8') >= 0 and $priority == 'absent') ? {
+    true    => 'absent',
+    default => 'priority',
+  }
+
   if ($ensure == 'present') {
-    if $facts['os']['release']['major'] == '8' {
+    if versioncmp($facts['os']['release']['major'], '8') >= 0 {
       file { 'dnf_module':
         ensure => file,
         path   => '/etc/dnf/modules.d/nodejs.module',
@@ -32,7 +37,7 @@ class nodejs::repo::nodesource::yum {
       descr          => $descr,
       baseurl        => $baseurl,
       enabled        => '1',
-      failovermethod => 'priority',
+      failovermethod => $yum_failovermethod,
       gpgkey         => 'file:///etc/pki/rpm-gpg/NODESOURCE-GPG-SIGNING-KEY-EL',
       gpgcheck       => '1',
       priority       => $priority,
@@ -46,7 +51,7 @@ class nodejs::repo::nodesource::yum {
       descr          => $source_descr,
       baseurl        => $source_baseurl,
       enabled        => $yum_source_enabled,
-      failovermethod => 'priority',
+      failovermethod => $yum_failovermethod,
       gpgkey         => 'file:///etc/pki/rpm-gpg/NODESOURCE-GPG-SIGNING-KEY-EL',
       gpgcheck       => '1',
       priority       => $priority,
@@ -66,7 +71,6 @@ class nodejs::repo::nodesource::yum {
   }
 
   else {
-
     yumrepo { 'nodesource':
       ensure => 'absent',
     }
@@ -75,7 +79,7 @@ class nodejs::repo::nodesource::yum {
       ensure => 'absent',
     }
 
-    if $facts['os']['release']['major'] == '8' {
+    if versioncmp($facts['os']['release']['major'], '8') >= 0 {
       file { 'dnf_module':
         ensure => absent,
         path   => '/etc/dnf/modules.d/nodejs.module',

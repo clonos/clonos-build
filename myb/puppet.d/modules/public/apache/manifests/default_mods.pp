@@ -1,27 +1,27 @@
+# @summary
+#   Installs and congfigures default mods for Apache
+#
+# @api private
 class apache::default_mods (
-  $all            = true,
-  $mods           = undef,
-  $apache_version = $::apache::apache_version,
-  $use_systemd    = $::apache::use_systemd,
+  Boolean $all                                         = true,
+  Optional[Variant[Array[String[1]], String[1]]] $mods = undef,
+  Boolean $use_systemd                                 = $apache::use_systemd,
 ) {
   # These are modules required to run the default configuration.
   # They are not configurable at this time, so we just include
   # them to make sure it works.
-  case $::osfamily {
-    'redhat': {
+  case $facts['os']['family'] {
+    'RedHat': {
       ::apache::mod { 'log_config': }
-      if versioncmp($apache_version, '2.4') >= 0 {
-        # Lets fork it
-        # Do not try to load mod_systemd on RHEL/CentOS 6 SCL.
-        if ( !($::osfamily == 'redhat' and versioncmp($::operatingsystemrelease, '7.0') == -1) and !($::operatingsystem == 'Amazon') ) {
-          if ($use_systemd) {
-            ::apache::mod { 'systemd': }
-          }
-        }
-        ::apache::mod { 'unixd': }
+      if $facts['os']['name'] != 'Amazon' and $use_systemd {
+        ::apache::mod { 'systemd': }
       }
+      if ($facts['os']['name'] == 'Amazon' and $facts['os']['release']['full'] == '2') {
+        ::apache::mod { 'systemd': }
+      }
+      ::apache::mod { 'unixd': }
     }
-    'freebsd': {
+    'FreeBSD': {
       ::apache::mod { 'log_config': }
       ::apache::mod { 'unixd': }
     }
@@ -30,34 +30,31 @@ class apache::default_mods (
     }
     default: {}
   }
-  case $::osfamily {
-    'gentoo': {}
+  case $facts['os']['family'] {
+    'Gentoo': {}
     default: {
       ::apache::mod { 'authz_host': }
     }
   }
   # The rest of the modules only get loaded if we want all modules enabled
   if $all {
-    case $::osfamily {
-      'debian': {
-        include ::apache::mod::authn_core
-        include ::apache::mod::reqtimeout
-        if versioncmp($apache_version, '2.4') < 0 {
-          ::apache::mod { 'authn_alias': }
-        }
+    case $facts['os']['family'] {
+      'Debian': {
+        include apache::mod::authn_core
+        include apache::mod::reqtimeout
       }
-      'redhat': {
-        include ::apache::mod::actions
-        include ::apache::mod::authn_core
-        include ::apache::mod::cache
-        include ::apache::mod::ext_filter
-        include ::apache::mod::mime
-        include ::apache::mod::mime_magic
-        include ::apache::mod::rewrite
-        include ::apache::mod::speling
-        include ::apache::mod::suexec
-        include ::apache::mod::version
-        include ::apache::mod::vhost_alias
+      'RedHat': {
+        include apache::mod::actions
+        include apache::mod::authn_core
+        include apache::mod::cache
+        include apache::mod::ext_filter
+        include apache::mod::mime
+        include apache::mod::mime_magic
+        include apache::mod::rewrite
+        include apache::mod::speling
+        include apache::mod::suexec
+        include apache::mod::version
+        include apache::mod::vhost_alias
         ::apache::mod { 'auth_digest': }
         ::apache::mod { 'authn_anon': }
         ::apache::mod { 'authn_dbm': }
@@ -68,27 +65,22 @@ class apache::default_mods (
         ::apache::mod { 'logio': }
         ::apache::mod { 'substitute': }
         ::apache::mod { 'usertrack': }
-
-        if versioncmp($apache_version, '2.4') < 0 {
-          ::apache::mod { 'authn_alias': }
-          ::apache::mod { 'authn_default': }
-        }
       }
-      'freebsd': {
-        include ::apache::mod::actions
-        include ::apache::mod::authn_core
-        include ::apache::mod::cache
-        include ::apache::mod::disk_cache
-        include ::apache::mod::headers
-        include ::apache::mod::info
-        include ::apache::mod::mime_magic
-        include ::apache::mod::reqtimeout
-        include ::apache::mod::rewrite
-        include ::apache::mod::userdir
-        include ::apache::mod::version
-        include ::apache::mod::vhost_alias
-        include ::apache::mod::speling
-        include ::apache::mod::filter
+      'FreeBSD': {
+        include apache::mod::actions
+        include apache::mod::authn_core
+        include apache::mod::cache
+        include apache::mod::disk_cache
+        include apache::mod::filter
+        include apache::mod::headers
+        include apache::mod::info
+        include apache::mod::mime_magic
+        include apache::mod::reqtimeout
+        include apache::mod::rewrite
+        include apache::mod::speling
+        include apache::mod::userdir
+        include apache::mod::version
+        include apache::mod::vhost_alias
 
         ::apache::mod { 'asis': }
         ::apache::mod { 'auth_digest': }
@@ -102,7 +94,7 @@ class apache::default_mods (
         ::apache::mod { 'dumpio': }
         ::apache::mod { 'expires': }
         ::apache::mod { 'file_cache': }
-        ::apache::mod { 'imagemap':}
+        ::apache::mod { 'imagemap': }
         ::apache::mod { 'include': }
         ::apache::mod { 'logio': }
         ::apache::mod { 'request': }
@@ -111,69 +103,55 @@ class apache::default_mods (
       }
       default: {}
     }
-    case $::apache::mpm_module {
+    case $apache::mpm_module {
       'prefork': {
-        include ::apache::mod::cgi
+        include apache::mod::cgi
       }
       'worker': {
-        include ::apache::mod::cgid
+        include apache::mod::cgid
       }
       default: {
         # do nothing
       }
     }
-    include ::apache::mod::alias
-    include ::apache::mod::authn_file
-    include ::apache::mod::autoindex
-    include ::apache::mod::dav
-    include ::apache::mod::dav_fs
-    include ::apache::mod::deflate
-    include ::apache::mod::dir
-    include ::apache::mod::mime
-    include ::apache::mod::negotiation
-    include ::apache::mod::setenvif
-    ::apache::mod { 'auth_basic': }
+    include apache::mod::alias
+    include apache::mod::authn_file
+    include apache::mod::autoindex
+    include apache::mod::dav
+    include apache::mod::dav_fs
+    include apache::mod::deflate
+    include apache::mod::dir
+    include apache::mod::mime
+    include apache::mod::negotiation
+    include apache::mod::setenvif
+    include apache::mod::auth_basic
+    include apache::mod::log_forensic
 
-    if versioncmp($apache_version, '2.4') >= 0 {
-      # filter is needed by mod_deflate
-      include ::apache::mod::filter
+    # filter is needed by mod_deflate
+    include apache::mod::filter
 
-      # authz_core is needed for 'Require' directive
-      ::apache::mod { 'authz_core':
-        id => 'authz_core_module',
-      }
+    # authz_core is needed for 'Require' directive
+    include apache::mod::authz_core
 
-      # lots of stuff seems to break without access_compat
-      ::apache::mod { 'access_compat': }
-    } else {
-      include ::apache::mod::authz_default
-    }
+    # lots of stuff seems to break without access_compat
+    ::apache::mod { 'access_compat': }
 
-    include ::apache::mod::authz_user
-
-    ::apache::mod { 'authz_groupfile': }
-    include ::apache::mod::env
+    include apache::mod::authz_user
+    include apache::mod::authz_groupfile
+    include apache::mod::env
   } elsif $mods {
     ::apache::default_mods::load { $mods: }
 
-    if versioncmp($apache_version, '2.4') >= 0 {
-      # authz_core is needed for 'Require' directive
-      ::apache::mod { 'authz_core':
-        id => 'authz_core_module',
-      }
+    # authz_core is needed for 'Require' directive
+    include apache::mod::authz_core
 
-      # filter is needed by mod_deflate
-      include ::apache::mod::filter
-    }
+    # filter is needed by mod_deflate
+    include apache::mod::filter
   } else {
-    if versioncmp($apache_version, '2.4') >= 0 {
-      # authz_core is needed for 'Require' directive
-      ::apache::mod { 'authz_core':
-        id => 'authz_core_module',
-      }
+    # authz_core is needed for 'Require' directive
+    include apache::mod::authz_core
 
-      # filter is needed by mod_deflate
-      include ::apache::mod::filter
-    }
+    # filter is needed by mod_deflate
+    include apache::mod::filter
   }
 }

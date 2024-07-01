@@ -428,7 +428,7 @@ if [ "${myb_manage_nginx}" != "NO" ]; then
 					;;
 			*)
 					rm -rf /usr/local/etc/nginx
-					mv /usr/local/myb/nginx /usr/local/etc/
+					cp -a /usr/local/myb/nginx /usr/local/etc/
 					;;
 		esac
 	fi
@@ -564,7 +564,7 @@ EOF
 	esac
 
 	chmod 0440 /usr/local/etc/sudoers.d/10_wheelgroup
-	/usr/local/bin/rsync -avz /usr/local/myb/jail-skel/ /
+	/usr/local/bin/rsync -avz /usr/local/myb/skel/ /
 fi
 
 # k8s

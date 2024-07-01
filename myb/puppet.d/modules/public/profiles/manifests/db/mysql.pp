@@ -34,7 +34,7 @@ class profiles::db::mysql (
   class { '::mysql::server':
     *                => $globals,
     config_file      => $config_file,
-    includedir       => $includedir,
+#    includedir       => $includedir,
     override_options => deep_merge($_options, $options),
   }
 

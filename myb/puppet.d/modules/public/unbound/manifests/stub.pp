@@ -9,6 +9,9 @@
 #   array or a single value. To use a nondefault port for DNS communication
 #   append  '@' with the port number.
 #
+# [*nameservers*]
+#   (optional) Name of stub zone nameserver. Is itself resolved before it is used.
+#
 # [*insecure*]
 #   (optional) Defaults to false. Sets domain name to be insecure, DNSSEC chain
 #   of trust is ignored towards the domain name.  So a trust anchor  above the
@@ -29,37 +32,34 @@
 #   (optional) Name of the unbound config file
 #
 define unbound::stub (
-  $address,
-  $insecure    = false,
-  $type        = 'transparent',
-  $config_file = $unbound::params::config_file,
+  Variant[Array[Unbound::Address], Unbound::Address] $address,
+  Array[Stdlib::Host]                                 $nameservers = [],
+  # lint:ignore:quoted_booleans
+  Variant[Boolean, Enum['true', 'false']]            $insecure    = false,
+  Variant[Boolean, Enum['true', 'false']]            $no_cache    = false,
+  # lint:endignore
+  Unbound::Local_zone_type                           $type        = 'transparent',
+  Optional[Stdlib::Unixpath]                         $config_file = undef,
 ) {
-
-  if ! $address {
-    fail('unbound::stub: address(es) must be specified.')
-  }
-
-  validate_unbound_addr($address)
-
-  include ::unbound::params
-
+  include unbound
+  $_config_file = pick($config_file, $unbound::config_file)
   concat::fragment { "unbound-stub-${name}":
     order   => '15',
-    target  => $config_file,
+    target  => $_config_file,
     content => template('unbound/stub.erb'),
   }
 
   if str2bool($insecure) == true {
     concat::fragment { "unbound-stub-${name}-insecure":
       order   => '01',
-      target  => $config_file,
+      target  => $_config_file,
       content => "  domain-insecure: \"${name}\"\n",
     }
   }
 
   concat::fragment { "unbound-stub-${name}-local-zone":
     order   => '02',
-    target  => $config_file,
+    target  => $_config_file,
     content => "  local-zone: \"${name}\" ${type} \n",
   }
 }

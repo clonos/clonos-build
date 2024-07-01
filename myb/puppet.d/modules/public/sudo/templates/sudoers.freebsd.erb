@@ -67,7 +67,7 @@
 # Defaults env_keep += "XMODIFIERS GTK_IM_MODULE QT_IM_MODULE QT_IM_SWITCHER"
 ##
 ## Uncomment to use a hard-coded PATH instead of the user's to find commands
-# Defaults secure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/puppetlabs/bin"
+# Defaults secure_path="<%= @secure_path %>"
 ##
 ## Uncomment to send mail if the user does not enter the correct password.
 # Defaults mail_badpass
@@ -99,10 +99,12 @@ Defaults!<%= command %> !log_output
 root ALL=(ALL) ALL
 
 ## Uncomment to allow members of group wheel to execute any command
-# %wheel ALL=(ALL) ALL
+<%- if @wheel_config != 'password' %># <% end -%>
+%wheel ALL=(ALL) ALL
 
 ## Same thing without a password
-# %wheel ALL=(ALL) NOPASSWD: ALL
+<%- if @wheel_config != 'nopassword' %># <% end -%>
+%wheel ALL=(ALL) NOPASSWD: ALL
 
 ## Uncomment to allow members of group sudo to execute any command
 # %sudo ALL=(ALL) ALL

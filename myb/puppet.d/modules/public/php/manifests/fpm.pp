@@ -53,24 +53,30 @@
 #   Whether to purge pool config files not created
 #   by this module
 #
+# [*reload_fpm_on_config_changes*]
+#   by default, we reload the service on changes.
+#   But certain options, like socket owner, will only be applied during a restart.
+#   If set to false, a restart will be executed instead of a reload.
+#   This default will be changed in a future release.
+#
 class php::fpm (
-  String $ensure                = $php::ensure,
-  $user                         = $php::fpm_user,
-  $group                        = $php::fpm_group,
-  $service_ensure               = $php::fpm_service_ensure,
-  $service_enable               = $php::fpm_service_enable,
-  $service_name                 = $php::fpm_service_name,
-  $service_provider             = $php::fpm_service_provider,
-  String $package               = $php::real_fpm_package,
-  Stdlib::Absolutepath $inifile = $php::fpm_inifile,
-  Hash $settings                = $php::real_settings,
-  $global_pool_settings         = $php::real_fpm_global_pool_settings,
-  Hash $pools                   = $php::real_fpm_pools,
-  $log_owner                    = $php::log_owner,
-  $log_group                    = $php::log_group,
-  Boolean $pool_purge           = $php::pool_purge,
+  Optional[String] $ensure              = $php::ensure,
+  String[1] $user                       = $php::fpm_user,
+  String[1] $group                      = $php::fpm_group,
+  Enum['running', 'stopped'] $service_ensure = $php::fpm_service_ensure,
+  Boolean $service_enable               = $php::fpm_service_enable,
+  String[1] $service_name               = $php::fpm_service_name,
+  Optional[String[1]] $service_provider = $php::fpm_service_provider,
+  String $package                       = $php::real_fpm_package,
+  Stdlib::Absolutepath $inifile         = $php::fpm_inifile,
+  Hash $settings                        = $php::real_settings,
+  Hash $global_pool_settings            = $php::real_fpm_global_pool_settings,
+  Hash $pools                           = $php::real_fpm_pools,
+  String[1] $log_owner                  = $php::log_owner,
+  String[1] $log_group                  = $php::log_group,
+  Boolean $pool_purge                   = $php::pool_purge,
+  Boolean $reload_fpm_on_config_changes = $php::reload_fpm_on_config_changes,
 ) {
-
   if ! defined(Class['php']) {
     warning('php::fpm is private')
   }
@@ -108,21 +114,4 @@ class php::fpm (
   $real_global_pool_settings = $global_pool_settings
   $real_pools = $pools
   create_resources(::php::fpm::pool, $real_pools, $real_global_pool_settings)
-
-  # Create an override to use a reload signal as trusty and utopic's
-  # upstart version supports this
-  if ($facts['os']['name'] == 'Ubuntu'
-      and versioncmp($facts['os']['release']['full'], '14') >= 0
-      and versioncmp($facts['os']['release']['full'], '16') < 0) {
-    if ($service_enable) {
-      $fpm_override = 'reload signal USR2'
-    }
-    else {
-      $fpm_override = "reload signal USR2\nmanual"
-    }
-    file { "/etc/init/${php::fpm::service::service_name}.override":
-      content => $fpm_override,
-      before  => Package[$real_package],
-    }
-  }
 }

@@ -1,10 +1,10 @@
 require 'json'
 require 'net/http'
 require 'uri'
-require File.expand_path(File.join(File.dirname(__FILE__), "..", "..", "..", "puppet_x", "consul", "acl_base.rb"))
+require File.expand_path(File.join(File.dirname(__FILE__), '..', '..', '..', 'puppet_x', 'consul', 'acl_base.rb'))
 
 Puppet::Type.type(:consul_policy).provide(
-    :default
+  :default
 ) do
   mk_resource_methods
 
@@ -15,9 +15,9 @@ Puppet::Type.type(:consul_policy).provide(
       all_policies = list_policies(resource[:acl_api_token], resource[:hostname], resource[:port], resource[:protocol], resource[:api_tries])
 
       if resource[:id] == ''
-        existing_policy = all_policies.select{|policy| policy.name == name}
+        existing_policy = all_policies.select { |policy| policy.name == name }
       else
-        existing_policy = all_policies.select{|policy| policy.id == resource[:id]}
+        existing_policy = all_policies.select { |policy| policy.id == resource[:id] }
 
         if existing_policy.empty?
           Puppet.warning("Unable to find any existing Consul ACL policy by specified ID=#{resource[:id]}")
@@ -43,7 +43,7 @@ Puppet::Type.type(:consul_policy).provide(
     encoded = []
 
     rules.each do |rule|
-      if ['acl', 'operator'].include?(rule['resource'])
+      if %w[acl operator keyring].include?(rule['resource'])
         encoded.push("#{rule['resource']} = \"#{rule['disposition']}\"")
       else
         encoded.push("#{rule['resource']} \"#{rule['segment']}\" {\n  policy = \"#{rule['disposition']}\"\n}")
@@ -55,9 +55,7 @@ Puppet::Type.type(:consul_policy).provide(
 
   def self.list_policies(acl_api_token, hostname, port, protocol, tries)
     @all_policies ||= nil
-    if @all_policies
-      return @all_policies
-    end
+    return @all_policies if @all_policies
 
     @client ||= ConsulACLPolicyClient.new(hostname, port, protocol, acl_api_token)
     @all_policies = @client.get_all_policies(tries)
@@ -74,13 +72,12 @@ Puppet::Type.type(:consul_policy).provide(
 
     if existing_policy
       @property_hash = {
-          :id          => existing_policy.id,
-          :description => existing_policy.description
+        id: existing_policy.id,
+        description: existing_policy.description,
+        datacenters: existing_policy.datacenters
       }
 
-      if rules_encoded == existing_policy.rules
-        @property_hash[:rules] = resource[:rules]
-      end
+      @property_hash[:rules] = resource[:rules] if rules_encoded == existing_policy.rules
     end
   end
 
@@ -107,14 +104,15 @@ Puppet::Type.type(:consul_policy).provide(
     end
 
     unless @existing_policy
-      policy = ConsulPolicy.new(nil, @resource[:name], @resource[:description], @rules_encoded)
+      policy = ConsulPolicy.new(nil, @resource[:name], @resource[:description], @resource[:datacenters], @rules_encoded)
       @client.create_policy(policy, @resource[:api_tries])
       @resource[:id] = policy.id
       Puppet.notice("Created Consul ACL policy #{policy.name} with ID #{policy.id}")
     end
 
-    if @existing_policy && (@existing_policy.description != @resource[:description] || @existing_policy.rules != @rules_encoded)
+    if @existing_policy && (@existing_policy.description != @resource[:description] || @existing_policy.datacenters != @resource[:datacenters] || @existing_policy.rules != @rules_encoded)
       @existing_policy.description = @resource[:description]
+      @existing_policy.datacenters = @resource[:datacenters]
       @existing_policy.rules = @rules_encoded
 
       @client.update_policy(@existing_policy)
@@ -129,13 +127,14 @@ Puppet::Type.type(:consul_policy).provide(
 end
 
 class ConsulPolicy
-  attr_reader :id, :name, :description, :rules
-  attr_writer :id, :rules, :description
+  attr_accessor :id, :description, :datacenters, :rules
+  attr_reader :name
 
-  def initialize(id, name, description, rules)
+  def initialize(id, name, description, datacenters, rules)
     @id = id
     @name = name
     @description = description
+    @datacenters = datacenters
     @rules = rules
   end
 end
@@ -150,9 +149,9 @@ class ConsulACLPolicyClient < PuppetX::Consul::ACLBase::BaseClient
     end
 
     collection = []
-    response.each {|item|
-      collection.push(ConsulPolicy.new(item['ID'], item['Name'], item['Description'], nil))
-    }
+    response.each do |item|
+      collection.push(ConsulPolicy.new(item['ID'], item['Name'], item['Description'], item['Datacenters'], nil))
+    end
 
     collection
   end
@@ -193,6 +192,7 @@ class ConsulACLPolicyClient < PuppetX::Consul::ACLBase::BaseClient
     body = {}
     body.store('Name', policy.name)
     body.store('Description', policy.description)
+    body.store('Datacenters', policy.datacenters)
     body.store('Rules', policy.rules)
 
     body

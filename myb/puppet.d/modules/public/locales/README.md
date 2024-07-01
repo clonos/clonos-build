@@ -1,4 +1,6 @@
-# puppet-locales [![Build Status](https://secure.travis-ci.org/saz/puppet-locales.png)](https://travis-ci.org/saz/puppet-locales)
+# locales module for Puppet
+
+[![Build Status](https://github.com/saz/puppet-locales/workflows/CI/badge.svg)](https://github.com/saz/puppet-locales/actions?query=workflow%3ACI)
 
 Manage locales via Puppet
 
@@ -17,7 +19,7 @@ By default, en and de locales will be generated.
 Configure a bunch of locales.
 
 ```
-  class { 'locales': 
+  class { 'locales':
     locales   => ['en_US.UTF-8 UTF-8', 'fr_CH.UTF-8 UTF-8'],
   }
 ```

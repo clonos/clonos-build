@@ -232,7 +232,6 @@ cp -a /usr/local/myb/puppet.d /usr/local/cbsd/modules/
 [ ! -d /var/log/cbsdmq ] && mkdir -p /var/log/cbsdmq
 
 ## Upgrade area
-
 echo "=== Initial ${OSNAME} setup ==="
 
 hostname=$( /usr/sbin/sysrc -n hostname 2>/dev/null | awk '{printf $1}' )
@@ -343,15 +342,15 @@ export workdir=/usr/jails
  ttyd_user="root" \
  OSNAME="${OSNAME}"
 
-
 # ttyd
 cp -a /usr/local/myb/etc/pam.d/login /etc/pam.d/login
 [ ! -d /etc/rc.d/rc.conf.d ] && mkdir -p /etc/rc.d/rc.conf.d
 cp -a /usr/local/myb/usr/local/etc/rc.d/ttyd /usr/local/etc/rc.d/ttyd
 
 # re-run ttyd if necessary
-/usr/sbin/service ttyd status >/dev/null 2>&1 || /usr/sbin/service ttyd restart
-
+if [ ${myb_firstboot} -eq 0 ]; then
+	/usr/sbin/service ttyd status >/dev/null 2>&1 || /usr/sbin/service ttyd restart
+fi
 
 if [ "${myb_manage_nginx}" != "NO" ]; then
 	/usr/sbin/sysrc nginx_enable="YES"
@@ -365,6 +364,7 @@ if [ ${myb_firstboot} -eq 1 ]; then
 		echo "extra users does not exist, enable SSH root login by default"
 		/usr/sbin/sysrc -qf /etc/rc.conf sshd_flags="-oUseDNS=no -oPermitRootLogin=yes -oPort=22" > /dev/null 2>&1
 	fi
+	/usr/sbin/service sshd restart >/dev/null 2>&1
 fi
 
 
@@ -564,6 +564,8 @@ EOF
 	esac
 
 	chmod 0440 /usr/local/etc/sudoers.d/10_wheelgroup
+
+	# delete?
 	/usr/local/bin/rsync -avz /usr/local/myb/skel/ /
 fi
 
@@ -600,15 +602,15 @@ fi
 
 /usr/sbin/sysrc -qf /etc/rc.conf myb_firstboot="0" > /dev/null 2>&1
 
-sysrc cbsd_statsd_hoster_enable=YES
-sysrc cbsd_statsd_jail_enable=YES
-sysrc cbsd_statsd_bhyve_enable=YES
-service cbsd-statsd-hoster restart
-service cbsd-statsd-jail restart
-service cbsd-statsd-bhyve restart
 
 # ClonOS
 if [ "${OSNAME}" = "ClonOS" ]; then
+	sysrc cbsd_statsd_hoster_enable=YES \
+		cbsd_statsd_jail_enable=YES \
+		cbsd_statsd_bhyve_enable=YES
+	service cbsd-statsd-hoster restart
+	service cbsd-statsd-jail restart
+	service cbsd-statsd-bhyve restart
 
 	cp -a /usr/local/etc/php-fpm.d/www-php-fpm.conf.clonos.sample /usr/local/etc/php-fpm.d/www.conf
 	cp -a /usr/local/etc/php.ini.clonos.sample /usr/local/etc/php.ini
@@ -654,90 +656,84 @@ if [ "${OSNAME}" = "ClonOS" ]; then
 fi
 
 if [ "${myb_manage_loaderconf}" != "NO" ]; then
-        ### LOADER.CONF - todo: external helper + dynamic drv finder
-		sysrc -qf /boot/loader.conf module_path="/boot/kernel;/boot/modules;/boot/dtb;/boot/dtb/overlays"
-        sysrc -qf /boot/loader.conf loader_menu_title="Welcome to ${OSNAME} Project"
+	### LOADER.CONF - todo: external helper + dynamic drv finder
+	sysrc -qf /boot/loader.conf module_path="/boot/kernel;/boot/modules;/boot/dtb;/boot/dtb/overlays" \
+		loader_menu_title="Welcome to ${OSNAME} Project" \
+		aesni_load="YES" \
+		ipfw_load="YES" \
+		cpuctl_load="YES" \
+		pf_load="YES" \
+		vmm_load="YES" \
+		ipfw_nat_load="YES" \
+		libalias_load="YES" \
+		sem_load="YES" \
+		coretemp_load="YES" \
+		cc_htcp_load="YES" \
+		impi_load="YES" \
+		accf_data_load="YES" \
+		accf_dns_load="YES" \
+		accf_http_load="YES" \
+		crypto_load="YES" \
+		if_bnxt_load="YES" \
+		if_qlnxe_load="YES" \
+		fib_dxr_load="YES" \
+		cpu_microcode_load="YES" \
+		cpu_microcode_name="/boot/firmware/intel-ucode.bin"
 
-	#vfs.zfs.arc_max = "512M"
-	sysrc -qf /boot/loader.conf aesni_load="YES"
-	sysrc -qf /boot/loader.conf ipfw_load="YES"
-	sysrc -qf /boot/loader.conf net.inet.ip.fw.default_to_accept=1
-	sysrc -qf /boot/loader.conf cpuctl_load="YES"
-	sysrc -qf /boot/loader.conf pf_load="YES"
-	sysrc -qf /boot/loader.conf vmm_load="YES"
-	sysrc -qf /boot/loader.conf kern.racct.enable=1
-	sysrc -qf /boot/loader.conf ipfw_nat_load="YES"
-	sysrc -qf /boot/loader.conf libalias_load="YES"
-	sysrc -qf /boot/loader.conf sem_load="YES"
-	sysrc -qf /boot/loader.conf coretemp_load="YES"
-	sysrc -qf /boot/loader.conf cc_htcp_load="YES"
 	#aio_load="YES"
+	#vfs.zfs.arc_max = "512M"
 
 	# sysrc: hw.cxgbe.fcoecaps_allowed: name contains characters not allowed in shell (dot)
-	#sysrc -qf /boot/loader.conf kern.ipc.semmnu=120
-	#sysrc -qf /boot/loader.conf kern.ipc.semume=40
-	#sysrc -qf /boot/loader.conf kern.ipc.semmns=240
-	#sysrc -qf /boot/loader.conf kern.ipc.semmni=40
-	#sysrc -qf /boot/loader.conf kern.ipc.shmmaxpgs=65536
+	# kern.ipc.semmnu=120
+	# kern.ipc.semume=40
+	# kern.ipc.semmns=240
+	# kern.ipc.semmni=40
+	# kern.ipc.shmmaxpgs=65536
 
-	#sysrc -qf /boot/loader.conf net.inet.tcp.syncache.hashsize=1024
-	#sysrc -qf /boot/loader.conf net.inet.tcp.syncache.bucketlimit=512
-	#sysrc -qf /boot/loader.conf net.inet.tcp.syncache.cachelimit=65536
-	#sysrc -qf /boot/loader.conf net.inet.tcp.hostcache.hashsize=16384
-	#sysrc -qf /boot/loader.conf net.inet.tcp.hostcache.bucketlimit=100
-	#sysrc -qf /boot/loader.conf net.inet.tcp.hostcache.cachelimit=65536
+	# net.inet.tcp.syncache.hashsize=1024
+	# net.inet.tcp.syncache.bucketlimit=512
+	# net.inet.tcp.syncache.cachelimit=65536
+	# net.inet.tcp.hostcache.hashsize=16384
+	# net.inet.tcp.hostcache.bucketlimit=100
+	# net.inet.tcp.hostcache.cachelimit=65536
 
-	#sysrc -qf /boot/loader.conf kern.nbuf=128000
-	#sysrc -qf /boot/loader.conf net.inet.tcp.tcbhashsize=524288
-	#sysrc -qf /boot/loader.conf net.inet.tcp.hostcache.bucketlimit=120
-	#sysrc -qf /boot/loader.conf net.inet.tcp.tcbhashsize=131072
-	sysrc -qf /boot/loader.conf impi_load="YES"
-	sysrc -qf /boot/loader.conf accf_data_load="YES"
-	sysrc -qf /boot/loader.conf accf_dns_load="YES"
-	sysrc -qf /boot/loader.conf accf_http_load="YES"
+	# kern.nbuf=128000
+	# net.inet.tcp.tcbhashsize=524288
+	# net.inet.tcp.hostcache.bucketlimit=120
+	# net.inet.tcp.tcbhashsize=131072
 
-	#sysrc -qf /boot/loader.conf vm.pmap.pti="0"
-	#sysrc -qf /boot/loader.conf hw.ibrs_disable="1"
-	sysrc -qf /boot/loader.conf crypto_load="YES"
-
-	sysrc -qf /boot/loader.conf if_bnxt_load="YES"
-	sysrc -qf /boot/loader.conf if_qlnxe_load="YES"
+	# vm.pmap.pti="0"
+	# hw.ibrs_disable="1"
 
 	### Use next-gen MRSAS drivers in place of MFI for device supporting it
 	# This solves lot of [mfi] COMMAND 0x... TIMEOUT AFTER ## SECONDS
-	#sysrc -qf /boot/loader.conf hw.mfi.mrsas_enable="1"
+	# hw.mfi.mrsas_enable="1"
 
 	### Tune some global values ###
-	#sysrc -qf /boot/loader.conf hw.usb.no_pf="1"        # Disable USB packet filtering
+	# hw.usb.no_pf="1"        # Disable USB packet filtering
 
 	# Load The DPDK Longest Prefix Match (LPM) modules
-	#sysrc -qf /boot/loader.conf dpdk_lpm4_load="YES"
-	#sysrc -qf /boot/loader.conf dpdk_lpm6_load="YES"
+	# dpdk_lpm4_load="YES"
+	# dpdk_lpm6_load="YES"
 
-	# Load DXR: IPv4 lookup algo
-	sysrc -qf /boot/loader.conf fib_dxr_load="YES"
-
-	# Loading newest Intel microcode
-	sysrc -qf /boot/loader.conf cpu_microcode_load="YES"
-	sysrc -qf /boot/loader.conf cpu_microcode_name="/boot/firmware/intel-ucode.bin"
 
 	### Intel NIC tuning ###
 	# https://bsdrp.net/documentation/technical_docs/performance#nic_drivers_tuning
 	# Don't limit the maximum of number of received packets to process at a time
-	#sysrc -qf /boot/loader.conf hw.igb.rx_process_limit="-1"
-	#sysrc -qf /boot/loader.conf hw.em.rx_process_limit="-1"
-	#sysrc -qf /boot/loader.conf hw.ix.rx_process_limit="-1"
+	# hw.igb.rx_process_limit="-1"
+	# hw.em.rx_process_limit="-1"
+	# hw.ix.rx_process_limit="-1"
 	# Allow unsupported SFP
-	#sysrc -qf /boot/loader.conf hw.ix.unsupported_sfp="1"
-	#sysrc -qf /boot/loader.conf hw.ix.allow_unsupported_sfp="1"
+	# hw.ix.unsupported_sfp="1"
+	# hw.ix.allow_unsupported_sfp="1"
 
 	### Chelsio NIC tuning ###
 	# Prevent to reserve ASIC ressources unused on a router/firewall,
 	# improve performance when we will reach 10Mpps or more
-	#sysrc -qf /boot/loader.conf hw.cxgbe.toecaps_allowed="0"
-	#sysrc -qf /boot/loader.conf hw.cxgbe.rdmacaps_allowed="0"
-	#sysrc -qf /boot/loader.conf hw.cxgbe.iscsicaps_allowed="0"
-	#sysrc -qf /boot/loader.conf hw.cxgbe.fcoecaps_allowed="0"
+	# hw.cxgbe.toecaps_allowed="0"
+	# hw.cxgbe.rdmacaps_allowed="0"
+	# hw.cxgbe.iscsicaps_allowed="0"
+	# hw.cxgbe.fcoecaps_allowed="0"
 
 	# Under network heavy usage, network critical traffic (mainly
 	# non-RSS traffic like ARP, LACP) could be droped and flaping LACP links.
@@ -752,12 +748,21 @@ if [ "${myb_manage_loaderconf}" != "NO" ]; then
 	# Increase interface send queue length
 	# lagg user: This value should be at minimum the sum of txd buffer of each NIC in the lagg
 	# hw.ix.txd: 2048 by default, then use x4 here (lagg with 4 members)
-	#sysrc -qf /boot/loader.conf net.link.ifqmaxlen="16384"
+	# net.link.ifqmaxlen="16384"
 
 	# Avoid message netisr_register: epair requested queue limit 688128 capped to net.isr.maxqlimit 1024
-	#sysrc -qf /boot/loader.conf net.isr.maxqlimit="1000000"
-	#sysrc -qf /boot/loader.conf net.isr.maxthreads="-1"
+	# net.isr.maxqlimit="1000000"
+	# net.isr.maxthreads="-1"
 	####
+	grep -q net.inet.ip.fw.default_to_accept /boot/loader.conf
+	if [ $? -ne 0 ]; then
+		echo "net.inet.ip.fw.default_to_accept=1" >> /boot/loader.conf
+	fi
+
+	grep -q kern.racct.enable /boot/loader.conf
+	if [ $? -ne 0 ]; then
+		echo "kern.racct.enable=1" >> /boot/loader.conf
+	fi
 fi
 
 # legacy firstboot instasll
@@ -768,8 +773,7 @@ if [ ${myb_firstboot} -eq 1 ]; then
 	${OSNAME} setup complete, reboot host!
 EOF
 sync
-/sbin/reboot
-
+#/sbin/reboot
 else
 	echo "Restart API, Router, Beanstalkd"
 	/usr/sbin/service cbsd-mq-api stop

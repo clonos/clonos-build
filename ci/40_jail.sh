@@ -33,7 +33,7 @@ hash -r
 /usr/local/myb/mybinst.sh
 EOF
 
-for i in /usr/local/sbin/nginx /usr/local/myb/myb/version /usr/local/bin/cbsd /usr/local/bin/cbsd-mq-api /usr/local/bin/cbsd-mq-router /usr/local/bin/curl /usr/local/bin/jq /usr/local/bin/genisoimage /usr/local/bin/beanstalkd /usr/local/bin/bash /usr/local/sbin/dmidecode /usr/local/bin/ttyd /usr/local/bin/spacevm-perf-fio-run; do
+for i in /usr/local/sbin/nginx /usr/local/myb/version /usr/local/bin/cbsd /usr/local/bin/cbsd-mq-api /usr/local/bin/cbsd-mq-router /usr/local/bin/curl /usr/local/bin/jq /usr/local/bin/genisoimage /usr/local/bin/beanstalkd /usr/local/bin/bash /usr/local/sbin/dmidecode /usr/local/bin/ttyd /usr/local/bin/spacevm-perf-fio-run; do
 	if [ ! -r "/usr/jails/jails-data/mybee1-data${i}" ]; then
 		echo "error: No such ${i}"
 		exit 1

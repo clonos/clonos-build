@@ -6,7 +6,6 @@ progdir=$( realpath ${progdir} )
 progdir=$( dirname ${progdir} )
 . ${progdir}/cmd.subr
 . ${progdir}/brand.conf
-
 dstdir=$( ${MKTEMP_CMD} -d )
 
 cd /usr/ports

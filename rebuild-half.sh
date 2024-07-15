@@ -139,10 +139,10 @@ ${CAT_CMD} >> ${progdir}/cmd.subr <<EOF
 fi
 EOF
 
-set -o errexit
-
+set -e
 . ${progdir}/cmd.subr
 . ${progdir}/system.subr
+set +e
 
 FULL_ST_TIME=$( ${DATE_CMD} +%s )
 

@@ -1,0 +1,11 @@
+# Managed By MBFSBOOT firmware builder
+/sbin/ifconfig igb0 up
+/sbin/ifconfig igb1 up
+# Link UP
+#sleep 4
+#daemon -f /usr/local/sbin/dhclient -6 -P igb0 -v
+#/sbin/ifconfig igb0 inet6 2a05:3580:d811:800::2/56
+#/sbin/route -6 add default fe80::62db:15ff:feb6:c7a6%igb0
+# local
+#/sbin/ifconfig igb1 inet6 2a05:3580:d811:802::1/64
+/bin/sh /root/desk.sh

@@ -10,4 +10,5 @@ jail_mybee1()
 	astart=0
 	ip4_addr="DHCP"
 	host_hostname="${jname}.my.domain"
+	etcupdate_init=0
 }

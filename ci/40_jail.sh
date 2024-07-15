@@ -9,49 +9,89 @@ progdir=$( dirname ${progdir} )
 . ${progdir}/cmd.subr
 . ${progdir}/brand.conf
 
-${CP_CMD} /root/clonos-build/skel/usr/local/etc/pkg/repos/MyBee-latest.conf /usr/local/etc/pkg/repos/MyBee-latest.conf
+#${CP_CMD} -a ${progdir}/skel/usr/local/etc/pkg/repos/MyBee-latest.conf /usr/local/etc/pkg/repos/MyBee-latest.conf
 
 cbsd destroy cbsdfile=${progdir}/mybee-CBSDfile || true
 cbsd destroy cbsdfile=${progdir}/micro-CBSDfile || true
 
 cbsd up cbsdfile=${progdir}/mybee-CBSDfile
+cbsd jset ver=14.1 jname=${jname}
 
-${MKDIR_CMD} /usr/jails/jails-data/mybee1-data/dev /usr/jails/jails-data/mybee1-data/tmp
+${MKDIR_CMD} ~cbsd/jails-data/${jname}-data/dev ~cbsd/jails-data/${jname}-data/tmp
+${CHMOD_CMD} 0777 ~cbsd/jails-data/${jname}-data/tmp
+${CHMOD_CMD} u+t ~cbsd/jails-data/${jname}-data/tmp
+${MOUNT_CMD} -t devfs devfs ~cbsd/jails-data/${jname}-data/dev
 
-${CHMOD_CMD} 0777 /usr/jails/jails-data/mybee1-data/tmp
-${CHMOD_CMD} u+t /usr/jails/jails-data/mybee1-data/tmp
+PKG_BASE="FreeBSD-runtime"
 
-${MOUNT_CMD} -t devfs devfs /usr/jails/jails-data/mybee1-data/dev
+if [ -r "${progdir}/profiles/${OSNAME}/basejail.conf" ]; then
+	echo "GET PKG FROM: ${progdir}/profiles/${OSNAME}/basejail.conf"
+	. "${progdir}/profiles/${OSNAME}/basejail.conf"
+else
+	echo "no such PKG_BASE profiles: ${progdir}/profiles/${OSNAME}/basejail.conf"
+fi
 
-env ASSUME_ALWAYS_YES=yes SIGNATURE_TYPE=none IGNORE_OSVERSION=yes pkg -r /usr/jails/jails-data/mybee1-data install -r MyBee-latest FreeBSD-acpi FreeBSD-utilities FreeBSD-bhyve FreeBSD-bootloader FreeBSD-bsdinstall FreeBSD-caroot FreeBSD-certctl FreeBSD-certctl-man FreeBSD-clibs FreeBSD-console-tools FreeBSD-csh FreeBSD-devd FreeBSD-devmatch FreeBSD-dhclient FreeBSD-efi-tools FreeBSD-elftoolchain FreeBSD-fetch FreeBSD-geom FreeBSD-inetd FreeBSD-ipfw FreeBSD-iscsi FreeBSD-jail FreeBSD-lib9p FreeBSD-libarchive FreeBSD-libbegemot FreeBSD-libblocksruntime FreeBSD-libbsm FreeBSD-libbz2 FreeBSD-libcasper FreeBSD-libdwarf FreeBSD-libevent1 FreeBSD-libexecinfo FreeBSD-libldns FreeBSD-liblzma FreeBSD-libmagic FreeBSD-libpathconv FreeBSD-libsqlite3 FreeBSD-libstdbuf FreeBSD-libstdthreads FreeBSD-libthread_db FreeBSD-libucl FreeBSD-libvmmapi FreeBSD-lld FreeBSD-locales FreeBSD-mlx-tools FreeBSD-mtree FreeBSD-natd FreeBSD-newsyslog FreeBSD-nfs FreeBSD-nvme-tools FreeBSD-openssl FreeBSD-periodic FreeBSD-pf FreeBSD-rc FreeBSD-resolvconf FreeBSD-runtime FreeBSD-ssh FreeBSD-syscons FreeBSD-syslogd FreeBSD-ufs FreeBSD-netmap FreeBSD-vi FreeBSD-zfs FreeBSD-zoneinfo FreeBSD-openssl-lib FreeBSD-kerberos-lib FreeBSD-tcpd FreeBSD-kernel-cbsd.cbsd pkg
-cbsd jstart jname=mybee1
+env ASSUME_ALWAYS_YES=yes SIGNATURE_TYPE=none IGNORE_OSVERSION=yes pkg -C /root/clonos-build/etc/pkg/pkg.conf update -f -r MyBee-latest
+env ASSUME_ALWAYS_YES=yes SIGNATURE_TYPE=none IGNORE_OSVERSION=yes pkg -C /root/clonos-build/etc/pkg/pkg.conf -r ~cbsd/jails-data/${jname}-data install -r MyBee-latest ${PKG_BASE}
+cbsd jstart jname=${jname}
 
-cbsd jexec jname=mybee1 /bin/sh <<EOF
-pkg install -y myb nginx cbsd cbsd-mq-router cbsd-mq-api curl jq cdrkit-genisoimage ca_root_nss beanstalkd bash dmidecode hw-probe rsync smartmontools sudo tmux mc ttyd fio spacevm-sendfio
-hash -r
-/usr/local/cbsd/sudoexec/initenv /usr/local/cbsd/share/initenv.conf
-/usr/local/myb/mybinst.sh
+[ ! -d ~cbsd/jails-data/${jname}-data/usr/local/etc/pkg/repos ] && ${MKDIR_CMD} -p ~cbsd/jails-data/${jname}-data/usr/local/etc/pkg/repos
+${CAT_CMD} > ~cbsd/jails-data/${jname}-data/usr/local/etc/pkg/repos/FreeBSD.conf <<EOF
+FreeBSD: {
+  url: "pkg+https://pkg.FreeBSD.org/\${ABI}/quarterly",
+  mirror_type: "srv",
+  signature_type: "fingerprints",
+  fingerprints: "/usr/share/keys/pkg",
+  enabled: yes
+}
 EOF
 
-for i in /usr/local/sbin/nginx /usr/local/myb/version /usr/local/bin/cbsd /usr/local/bin/cbsd-mq-api /usr/local/bin/cbsd-mq-router /usr/local/bin/curl /usr/local/bin/jq /usr/local/bin/genisoimage /usr/local/bin/beanstalkd /usr/local/bin/bash /usr/local/sbin/dmidecode /usr/local/bin/ttyd /usr/local/bin/spacevm-perf-fio-run; do
-	if [ ! -r "/usr/jails/jails-data/mybee1-data${i}" ]; then
-		echo "error: No such ${i}"
-		exit 1
-	fi
-done
+#cbsd jexec jname=${jname} /bin/sh <<EOF
+#pkg update -f
+#pkg install -y myb nginx cbsd cbsd-mq-router cbsd-mq-api curl jq cdrkit-genisoimage ca_root_nss beanstalkd bash dmidecode hw-probe rsync smartmontools sudo tmux mc ttyd fio spacevm-sendfio
+#pkg install -y cbsd
+#hash -r
+#/usr/local/cbsd/sudoexec/initenv /usr/local/cbsd/share/initenv.conf
+#/usr/local/myb/mybinst.sh
+#EOF
 
-cbsd jstop jname=mybee1
+#env ASSUME_ALWAYS_YES=yes SIGNATURE_TYPE=none IGNORE_OSVERSION=yes pkg update -f
+#env ASSUME_ALWAYS_YES=yes SIGNATURE_TYPE=none IGNORE_OSVERSION=yes pkg -r ~cbsd/jails-data/${jname}-data install cbsd nginx rsync smartmontools sudo tmux mc dual-dhclient
+cbsd jexec jname=${jname} /bin/sh <<EOF
+pkg update -f
+pkg install -y nginx rsync smartmontools sudo tmux mc
+# dual-dhclient-daemon
+pkg clean -ya
+EOF
 
-${RM_CMD} -f /usr/jails/jails-data/mybee1-data/var/cache/pkg/*
-${RM_CMD} -rf /usr/jails/jails-data/mybee1-data/tmp/*
-${RM_CMD} -rf /usr/jails/jails-data/mybee1-data/var/run/*
+#for i in /usr/local/sbin/nginx /usr/local/myb/version /usr/local/bin/cbsd /usr/local/bin/cbsd-mq-api /usr/local/bin/cbsd-mq-router /usr/local/bin/curl /usr/local/bin/jq /usr/local/bin/genisoimage /usr/local/bin/beanstalkd /usr/local/bin/bash /usr/local/sbin/dmidecode /usr/local/bin/ttyd /usr/local/bin/spacevm-perf-fio-run; do
+#	if [ ! -r "~cbsd/jails-data/${jname}-data${i}" ]; then
+#		echo "error: No such ${i}"
+#		exit 1
+#	fi
+#done
 
-${FIND_CMD} /usr/jails/jails-data/mybee1-data/ -type f -name \*.pkgsave -delete
 
-${RSYNC_CMD} -avz /root/clonos-build/skel/ /usr/jails/jails-data/mybee1-data/
+${RM_CMD} -f ~cbsd/jails-data/${jname}-data/var/cache/pkg/*
+${RM_CMD} -rf ~cbsd/jails-data/${jname}-data/tmp/*
+${RM_CMD} -rf ~cbsd/jails-data/${jname}-data/var/run/*
+${FIND_CMD} ~cbsd/jails-data/${jname}-data/ -type f -name \*.pkgsave -delete
+${RSYNC_CMD} -avz /root/clonos-build/skel/ ~cbsd/jails-data/${jname}-data/
 
-[ ! -d /usr/jails/jails-data/mybee1-data/root/bin ] && ${MKDIR_CMD} -p /usr/jails/jails-data/mybee1-data/root/bin
-${RSYNC_CMD} -avz /usr/jails/jails-data/mybee1-data/usr/local/myb/bin/ /usr/jails/jails-data/mybee1-data/root/bin/ || true
+[ ! -d ~cbsd/jails-data/${jname}-data/root/bin ] && ${MKDIR_CMD} -p ~cbsd/jails-data/${jname}-data/root/bin
+${RSYNC_CMD} -avz ~cbsd/jails-data/${jname}-data/usr/local/myb/bin/ ~cbsd/jails-data/${jname}-data/root/bin/ || true
+
+### HOME
+echo "OK: ${progdir}/profiles/${OSNAME}/skel"
+[ -d "${progdir}/profiles/${OSNAME}/skel" ] && ${RSYNC_CMD} -avz ${progdir}/profiles/${OSNAME}/skel/ ~cbsd/jails-data/${jname}-data/
+
+cbsd jexec jname=${jname} /bin/sh <<EOF
+pkg add /root/*.pkg
+pkg clean -ya
+rm -f /root/*.pkg
+EOF
+
+cbsd jstop jname=${jname}
 
 case "${OSNAME}" in
 	ClonOS)
@@ -65,20 +105,155 @@ case "${OSNAME}" in
 esac
 
 # set brand
-sysrc -qf /usr/jails/jails-data/mybee1-data/etc/rc.conf \
+sysrc -qf ~cbsd/jails-data/${jname}-data/etc/rc.conf \
 	producturl="${producturl}" \
 	bugreporturl="${bugreporturl}" > /dev/null 2>&1
 
-[ ! -d /usr/jails/jails-data/mybee1-data/boot ] && ${MKDIR_CMD} /usr/jails/jails-data/mybee1-data/boot
+[ ! -d ~cbsd/jails-data/${jname}-data/boot ] && ${MKDIR_CMD} ~cbsd/jails-data/${jname}-data/boot
 
-${CAT_CMD} >> /usr/jails/jails-data/mybee1-data/boot/loader.conf <<EOF
+${CAT_CMD} >> ~cbsd/jails-data/${jname}-data/boot/loader.conf <<EOF
 module_path="/boot/kernel;/boot/modules;/boot/dtb;/boot/dtb/overlays"
 loader_menu_title="Welcome to ${OSNAME} Project"
 cryptodev_load="YES"
 EOF
 
-cd /usr/jails/jails-data/mybee1-data/
+## for firmware
+${CAT_CMD} >> ~cbsd/jails-system/${jname}/loader.conf <<EOF
+module_path="/boot/kernel;/boot/modules;/boot/dtb;/boot/dtb/overlays"
+loader_menu_title="Welcome to ${OSNAME} Project"
 
-env  XZ_OPT="-9 -T8" tar -cJf /root/base.txz .
+accf_data_load="YES"
+accf_dns_load="YES"
+accf_http_load="YES"
+aesni_load="YES"
+autoboot_delay="10"
+cc_htcp_load="YES"
+coretemp_load="YES"
+cpu_microcode_load="YES"
+cpu_microcode_name="/boot/firmware/intel-ucode.bin"
+cpuctl_load="YES"
+cryptodev_load="YES"
+debug.acpi.disabled="thermal"
+fib_dxr_load="YES
+hw.efi.poweroff="0"
+hw.em.rx_process_limit="-1"
+hw.ibrs_disable="1"
+hw.igb.rx_process_limit="-1"
+hw.ix.rx_process_limit="-1"
+hw.mfi.mrsas_enable="1"
+hw.usb.no_pf="1"
+hw.usb.no_shutdown_wait="1"
+hw.vmm.amdvi.enable=1
+if_bnxt_load="YES"
+if_qlnxe_load="YES"
+impi_load="YES"
+ipfw_load="YES"
+ipfw_nat_load="YES"
+kern.geom.label.disk_ident.enable="0"
+kern.geom.label.gptid.enable="0"
+kern.racct.enable="1"
+libalias_load="YES"
+net.inet.ip.fw.default_to_accept="1"
+net.isr.maxqlimit="1000000"
+net.link.ifqmaxlen="16384"
+opensolaris_load="YES"
+pf_load="YES"
+#pptdevs="1/0/0"
+sem_load="YES"
+vm.pmap.pti="0"
+vmm_load="YES"
+zfs_load="YES"
+EOF
+
+
+
+## ROOTFS IMG:
+cbsd sysrc jname=${jname} \
+	sshd_flags="-oUseDNS=no -oPermitRootLogin=without-password -oPort=22222"
+	root_rw_mount="YES" \
+	sshd_enable="YES" \
+	rc_startmsgs="YES"
+
+#        ifconfig_DEFAULT="inet ${myip} up" \
+#        defaultrouter="${mygw}" \
+
+
+pw -R ${cbsd_workdir}/jails-data/${jname}-data usermod root -s /bin/csh
+echo "cbsd" | pw -R ${cbsd_workdir}/jails-data/${jname}-data usermod "root" -h 0
+
+#cp -a /root/bhyve-mydesk/init-part.sh ${cbsd_workdir}/jails-data/${jname}-data/root/
+#cp -a /root/bhyve-mydesk/base.txz ${cbsd_workdir}/jails-data/${jname}-data/root/
+
+find  ${cbsd_workdir}/jails-data/${jname}-data/ -type f -name \*.a -delete
+find  ${cbsd_workdir}/jails-data/${jname}-data/ -type f -name \*.o -delete
+chflags -R noschg ~cbsd/jails-data/${jname}-data
+rm -rf ~cbsd/jails-data/${jname}-data/usr/lib32
+rm -rf ~cbsd/jails-data/${jname}-data/usr/tests
+rm -rf ~cbsd/jails-data/${jname}-data/usr/include
+rm -rf ~cbsd/jails-data/${jname}-data/usr/share/man
+rm -rf ~cbsd/jails-data/${jname}-data/usr/share/doc
+rm -rf ~cbsd/jails-data/${jname}-data/usr/share/nls
+rm -rf ~cbsd/jails-data/${jname}-data/usr/share/games
+rm -rf ~cbsd/jails-data/${jname}-data/usr/share/examples
+
+rm -f ~cbsd/jails-data/${jname}-data/usr/libexec/atf-check
+rm -f ~cbsd/jails-data/${jname}-data/usr/libexec/kcm
+rm -f ~cbsd/jails-data/${jname}-data/usr/libexec/dma
+rm -f ~cbsd/jails-data/${jname}-data/usr/libexec/smrsh
+rm -f ~cbsd/jails-data/${jname}-data/usr/libexec/tftp-proxy
+rm -f ~cbsd/jails-data/${jname}-data/usr/libexec/mail.local
+rm -f ~cbsd/jails-data/${jname}-data/usr/libexec/ftpd
+rm -f ~cbsd/jails-data/${jname}-data/usr/libexec/flua
+
+rm -f ~cbsd/jails-data/${jname}-data/usr/bin/cpp
+rm -f ~cbsd/jails-data/${jname}-data/usr/bin/clang-cpp
+rm -f ~cbsd/jails-data/${jname}-data/usr/bin/clang++
+rm -f ~cbsd/jails-data/${jname}-data/usr/bin/clang
+rm -f ~cbsd/jails-data/${jname}-data/usr/bin/cc
+rm -f ~cbsd/jails-data/${jname}-data/usr/bin/c++
+rm -f ~cbsd/jails-data/${jname}-data/usr/bin/lldb
+rm -f ~cbsd/jails-data/${jname}-data/usr/bin/ld.lld
+rm -f ~cbsd/jails-data/${jname}-data/usr/bin/lldb-server
+rm -f ~cbsd/jails-data/${jname}-data/usr/bin/objdump
+rm -f ~cbsd/jails-data/${jname}-data/usr/bin/llvm-objdump
+rm -f ~cbsd/jails-data/${jname}-data/usr/bin/llvm-nm
+rm -f ~cbsd/jails-data/${jname}-data/usr/bin/llvm-ranlib
+rm -f ~cbsd/jails-data/${jname}-data/usr/bin/llvm-ar
+rm -f ~cbsd/jails-data/${jname}-data/usr/bin/llvm-readobj
+rm -f ~cbsd/jails-data/${jname}-data/usr/bin/llvm-readelf
+rm -f ~cbsd/jails-data/${jname}-data/usr/bin/llvm-profdata
+rm -f ~cbsd/jails-data/${jname}-data/usr/bin/llvm-symbolizer
+rm -f ~cbsd/jails-data/${jname}-data/usr/bin/llvm-addr2line
+rm -f ~cbsd/jails-data/${jname}-data/usr/bin/llvm-cov
+rm -f ~cbsd/jails-data/${jname}-data/usr/bin/gcov
+rm -f ~cbsd/jails-data/${jname}-data/usr/bin/llvm-strip
+rm -f ~cbsd/jails-data/${jname}-data/usr/bin/llvm-objcopy
+rm -f ~cbsd/jails-data/${jname}-data/usr/bin/llvm-size
+rm -f ~cbsd/jails-data/${jname}-data/usr/bin/kyua
+
+rm -f ~cbsd/jails-data/${jname}-data/usr/lib/libpmc.so.5
+
+rm -f ~cbsd/jails-data/${jname}-data/usr/sbin/cxgbetool
+rm -f ~cbsd/jails-data/${jname}-data/usr/sbin/iasl
+rm -f ~cbsd/jails-data/${jname}-data/usr/sbin/tcpdump
+rm -f ~cbsd/jails-data/${jname}-data/usr/sbin/wpa_supplicant
+rm -f ~cbsd/jails-data/${jname}-data/usr/sbin/ntpd
+
+rm -f ~cbsd/jails-data/${jname}-data/bin/tcsh
+rm -rf ~cbsd/jails-data/${jname}-data/usr/lib/debug
+
+echo "Convert ${jname} to bhyve image into /tmp..."
+## convert to bhyve
+
+cbsd jail2iso jname=${jname} dstdir=/tmp media=mfs freesize=2m ver=14.1 efi=1
+# mfs_struct_only=1
+
+#cp -a ~cbsd/basejail/FreeBSD-kernel_CBSD_amd64_15.0/boot/kernel/kernel.gz 
+#echo "cbsd jail2iso name=CBSD jname=${jname} dstdir=/tmp media=mfs freesize=2m ver=${my_ver} efi=1 mfs_struct_only=1"
+#cbsd jail2iso name=CBSD jname=${jname} dstdir=/tmp media=mfs freesize=2m ver=${my_ver} efi=1 mfs_struct_only=1
+#ret=$?
+
+#cd ~cbsd/jails-data/${jname}-data/
+#env XZ_OPT="-9 -T8" tar -cJf /root/base.txz .
 
 #cbsd up cbsdfile=${progdir}/micro-CBSDfile ver="${mybbasever}"

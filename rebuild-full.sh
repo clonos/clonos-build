@@ -8,7 +8,8 @@ export PATH="/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin"
 ### + /root/myb-build/skel/usr/local/etc/mybee/version
 
 # Brand, used in sysinstall/bsdconfig...
-export OSNAME="MyBee"
+export OSNAME="FreeBSD"
+#export OSNAME="MyBee"
 #export OSNAME="ClonOS"
 
 cd /
@@ -61,7 +62,6 @@ date
 dd
 df
 find
-fio
 grep
 git
 head
@@ -98,9 +98,12 @@ fi
 
 case "${OS}" in
 	Linux|SpaceVM)
-		MAIN_CMD="${MAIN_CMD} lsblk"
+		MAIN_CMD="${MAIN_CMD} lsblk fio"
 		;;
-	FreeBSD|Liman)
+	Liman)
+		MAIN_CMD="${MAIN_CMD} camcontrol diskinfo fio"
+		;;
+	FreeBSD)
 		MAIN_CMD="${MAIN_CMD} camcontrol diskinfo"
 		;;
 esac
@@ -139,15 +142,16 @@ ${CAT_CMD} >> ${progdir}/cmd.subr <<EOF
 fi
 EOF
 
-set -o errexit
-
+set -e
 . ${progdir}/cmd.subr
 . ${progdir}/system.subr
+set +e
+
 
 FULL_ST_TIME=$( ${DATE_CMD} +%s )
 
 #### PREPARE
-#if [ 1 -gt 2 ]; then
+if [ 1 -gt 2 ]; then
 # first init
 
 cbsd module mode=install cpr || true
@@ -186,6 +190,8 @@ if [ -d /root/myb-build/ports/cbsd ]; then
 	[ -d /usr/ports/sysutils/cbsd ] && ${RM_CMD} -rf /usr/ports/sysutils/cbsd
 	${CP_CMD} -a /root/myb-build/ports/cbsd /usr/ports/sysutils/
 fi
+
+[ ! -d /root/myb-build/myb-extras ] && ${MKDIR_CMD} /root/myb-build/myb-extras
 
 case "${OSNAME}" in
 	ClonOS)
@@ -249,7 +255,7 @@ cbsd module mode=install puppet
 ${CP_CMD} -a /usr/local/cbsd/modules/puppet.d /root/myb-build/myb-extras/
 ${RM_CMD} -rf /root/myb-build/myb-extras/puppet.d/.git || true
 
-#fi		## PREPARE
+fi		## PREPARE
 
 # !!!
 # not for half:
@@ -258,47 +264,47 @@ set -o errexit
 #if [ 1 -gt 2 ]; then
 
 ## cleanup
-st_time=$( ${DATE_CMD} +%s )
-/root/myb-build/ci/00_cleanup.sh
-time_stats "${N1_COLOR}cleanup done"
-end_time=$( ${DATE_CMD} +%s )
-diff_time=$(( end_time - st_time ))
-put_prometheus_file_metrics "rebuild-full" "cleanup" ${diff_time}
+#st_time=$( ${DATE_CMD} +%s )
+#/root/myb-build/ci/00_cleanup.sh
+#time_stats "${N1_COLOR}cleanup done"
+#end_time=$( ${DATE_CMD} +%s )
+#diff_time=$(( end_time - st_time ))
+#put_prometheus_file_metrics "rebuild-full" "cleanup" ${diff_time}
 
 ## srcup
-st_time=$( ${DATE_CMD} +%s )
-/root/myb-build/ci/00_srcup.sh
-time_stats "${N1_COLOR}srcup done"
-end_time=$( ${DATE_CMD} +%s )
-diff_time=$(( end_time - st_time ))
-put_prometheus_file_metrics "rebuild-full" "srcup" ${diff_time}
+#st_time=$( ${DATE_CMD} +%s )
+#/root/myb-build/ci/00_srcup.sh
+#time_stats "${N1_COLOR}srcup done"
+#end_time=$( ${DATE_CMD} +%s )
+#diff_time=$(( end_time - st_time ))
+#put_prometheus_file_metrics "rebuild-full" "srcup" ${diff_time}
 
 # not needed anymore?
 #/root/myb-build/ci/10_patch-src.sh
 
 # world
-st_time=$( ${DATE_CMD} +%s )
-/root/myb-build/ci/20_world.sh
-time_stats "${N1_COLOR}world done"
-end_time=$( ${DATE_CMD} +%s )
-diff_time=$(( end_time - st_time ))
-put_prometheus_file_metrics "rebuild-full" "world" ${diff_time}
+#st_time=$( ${DATE_CMD} +%s )
+#/root/myb-build/ci/20_world.sh
+#time_stats "${N1_COLOR}world done"
+#end_time=$( ${DATE_CMD} +%s )
+#diff_time=$(( end_time - st_time ))
+#put_prometheus_file_metrics "rebuild-full" "world" ${diff_time}
 
 # basepkg
-st_time=$( ${DATE_CMD} +%s )
-/root/myb-build/ci/25_base-pkg.sh
-time_stats "${N1_COLOR}base-pkg done"
-end_time=$( ${DATE_CMD} +%s )
-fiff_time=$(( end_time - st_time ))
-put_prometheus_file_metrics "rebuild-full" "basepkg" ${diff_time}
+#st_time=$( ${DATE_CMD} +%s )
+#/root/myb-build/ci/25_base-pkg.sh
+#time_stats "${N1_COLOR}base-pkg done"
+#end_time=$( ${DATE_CMD} +%s )
+#fiff_time=$(( end_time - st_time ))
+#put_prometheus_file_metrics "rebuild-full" "basepkg" ${diff_time}
 
 # cpr
-st_time=$( ${DATE_CMD} +%s )
-/root/myb-build/ci/30_cpr.sh
-time_stats "${N1_COLOR}cpr done"
-end_time=$( ${DATE_CMD} +%s )
-diff_time=$(( end_time - st_time ))
-put_prometheus_file_metrics "rebuild-full" "cpr" ${diff_time}
+#st_time=$( ${DATE_CMD} +%s )
+#/root/myb-build/ci/30_cpr.sh
+#time_stats "${N1_COLOR}cpr done"
+#end_time=$( ${DATE_CMD} +%s )
+#diff_time=$(( end_time - st_time ))
+#put_prometheus_file_metrics "rebuild-full" "cpr" ${diff_time}
 
 # cpr-micro
 #st_time=$( ${DATE_CMD} +%s )
@@ -309,12 +315,12 @@ put_prometheus_file_metrics "rebuild-full" "cpr" ${diff_time}
 #put_prometheus_file_metrics "rebuild-full" "cprmicro" ${diff_time}
 
 # update-repo
-st_time=$( ${DATE_CMD} +%s )
-/root/myb-build/ci/35_update_repo.sh
-time_stats "${N1_COLOR}update_repo done"
-end_time=$( ${DATE_CMD} +%s )
-diff_time=$(( end_time - st_time ))
-put_prometheus_file_metrics "rebuild-full" "updaterepo" ${diff_time}
+#st_time=$( ${DATE_CMD} +%s )
+#/root/myb-build/ci/35_update_repo.sh
+#time_stats "${N1_COLOR}update_repo done"
+#end_time=$( ${DATE_CMD} +%s )
+#diff_time=$(( end_time - st_time ))
+#put_prometheus_file_metrics "rebuild-full" "updaterepo" ${diff_time}
 
 ### HALF-build
 #fi

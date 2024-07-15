@@ -11,6 +11,7 @@ jail_micro1()
 	host_hostname="${jname}.my.domain"
 	pkg_bootstrap=0
 	runasap=0
+	etcupdate_init=0
 }
 
 postcreate_micro1()

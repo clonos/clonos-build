@@ -31,8 +31,10 @@ else
 	echo "no such PKG_BASE profiles: ${progdir}/profiles/${OSNAME}/basejail.conf"
 fi
 
-env ASSUME_ALWAYS_YES=yes SIGNATURE_TYPE=none IGNORE_OSVERSION=yes pkg -C /root/clonos-build/etc/pkg/pkg.conf update -f -r MyBee-latest
-env ASSUME_ALWAYS_YES=yes SIGNATURE_TYPE=none IGNORE_OSVERSION=yes pkg -C /root/clonos-build/etc/pkg/pkg.conf -r ~cbsd/jails-data/${jname}-data install -r MyBee-latest ${PKG_BASE}
+#env ASSUME_ALWAYS_YES=yes SIGNATURE_TYPE=none IGNORE_OSVERSION=yes pkg -C /root/clonos-build/etc/pkg/pkg.conf update -f -r MyBee-latest
+#env ASSUME_ALWAYS_YES=yes SIGNATURE_TYPE=none IGNORE_OSVERSION=yes pkg -C /root/clonos-build/etc/pkg/pkg.conf -r ~cbsd/jails-data/${jname}-data install -r MyBee-latest ${PKG_BASE}
+make -C /usr/src installworld DESTDIR="/usr/jail2/jails-data/${jname}-data"
+make -C /usr/src distribution DESTDIR="/usr/jail2/jails-data/${jname}-data"
 cbsd jstart jname=${jname}
 
 [ ! -d ~cbsd/jails-data/${jname}-data/usr/local/etc/pkg/repos ] && ${MKDIR_CMD} -p ~cbsd/jails-data/${jname}-data/usr/local/etc/pkg/repos
@@ -245,7 +247,8 @@ rm -rf ~cbsd/jails-data/${jname}-data/usr/lib/debug
 echo "Convert ${jname} to bhyve image into /tmp..."
 ## convert to bhyve
 
-cbsd jail2iso jname=${jname} dstdir=/tmp media=mfs freesize=2m ver=14.1 efi=1
+#cbsd jail2iso jname=${jname} dstdir=/tmp media=mfs freesize=2m ver=14.1 efi=1
+cbsd jail2iso jname=${jname} dstdir=/tmp media=bhyve freesize=2m ver=14.1 efi=1
 # mfs_struct_only=1
 
 #cp -a ~cbsd/basejail/FreeBSD-kernel_CBSD_amd64_15.0/boot/kernel/kernel.gz 

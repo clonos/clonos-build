@@ -1,4 +1,5 @@
 # Managed By MBFSBOOT firmware builder
+/sbin/ifconfig lo0 up
 /sbin/ifconfig igb0 up
 /sbin/ifconfig igb1 up
 # Link UP
@@ -8,4 +9,5 @@
 #/sbin/route -6 add default fe80::62db:15ff:feb6:c7a6%igb0
 # local
 #/sbin/ifconfig igb1 inet6 2a05:3580:d811:802::1/64
-/bin/sh /root/desk.sh
+echo "/bin/sh /root/desk.sh"
+#/bin/sh /root/desk.sh

@@ -9,13 +9,16 @@ progdir=$( dirname ${progdir} )
 . ${progdir}/cmd.subr
 . ${progdir}/brand.conf
 
+tmpver=$( ${UNAME_CMD} -r )
+ver=${tmpver%%-*}
+unset tmpver
 #${CP_CMD} -a ${progdir}/skel/usr/local/etc/pkg/repos/MyBee-latest.conf /usr/local/etc/pkg/repos/MyBee-latest.conf
 
 cbsd destroy cbsdfile=${progdir}/mybee-CBSDfile || true
 cbsd destroy cbsdfile=${progdir}/micro-CBSDfile || true
 
 cbsd up cbsdfile=${progdir}/mybee-CBSDfile
-cbsd jset ver=14.1 jname=${jname}
+cbsd jset ver=${ver} jname=${jname}
 
 ${MKDIR_CMD} ~cbsd/jails-data/${jname}-data/dev ~cbsd/jails-data/${jname}-data/tmp
 ${CHMOD_CMD} 0777 ~cbsd/jails-data/${jname}-data/tmp
@@ -247,8 +250,8 @@ rm -rf ~cbsd/jails-data/${jname}-data/usr/lib/debug
 echo "Convert ${jname} to bhyve image into /tmp..."
 ## convert to bhyve
 
-#cbsd jail2iso jname=${jname} dstdir=/tmp media=mfs freesize=2m ver=14.1 efi=1
-cbsd jail2iso jname=${jname} dstdir=/tmp media=bhyve freesize=2m ver=14.1 efi=1
+#cbsd jail2iso jname=${jname} dstdir=/tmp media=mfs freesize=2m ver=${ver} efi=1
+cbsd jail2iso jname=${jname} dstdir=/tmp media=bhyve freesize=2m ver=${ver} efi=1
 # mfs_struct_only=1
 
 #cp -a ~cbsd/basejail/FreeBSD-kernel_CBSD_amd64_15.0/boot/kernel/kernel.gz 

@@ -36,8 +36,10 @@ fi
 
 #env ASSUME_ALWAYS_YES=yes SIGNATURE_TYPE=none IGNORE_OSVERSION=yes pkg -C /root/clonos-build/etc/pkg/pkg.conf update -f -r MyBee-latest
 #env ASSUME_ALWAYS_YES=yes SIGNATURE_TYPE=none IGNORE_OSVERSION=yes pkg -C /root/clonos-build/etc/pkg/pkg.conf -r ~cbsd/jails-data/${jname}-data install -r MyBee-latest ${PKG_BASE}
-make -C /usr/src installworld DESTDIR="/usr/jail2/jails-data/${jname}-data"
-make -C /usr/src distribution DESTDIR="/usr/jail2/jails-data/${jname}-data"
+_rpath=$( realpath ~cbsd/jails-data/${jname}-data )
+make -C /usr/src installworld DESTDIR="${_rpath}"
+make -C /usr/src distribution DESTDIR="${_rpath}"
+
 cbsd jstart jname=${jname}
 
 [ ! -d ~cbsd/jails-data/${jname}-data/usr/local/etc/pkg/repos ] && ${MKDIR_CMD} -p ~cbsd/jails-data/${jname}-data/usr/local/etc/pkg/repos

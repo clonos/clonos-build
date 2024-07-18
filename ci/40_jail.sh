@@ -34,11 +34,11 @@ else
 	echo "no such PKG_BASE profiles: ${progdir}/profiles/${OSNAME}/basejail.conf"
 fi
 
-#env ASSUME_ALWAYS_YES=yes SIGNATURE_TYPE=none IGNORE_OSVERSION=yes pkg -C /root/clonos-build/etc/pkg/pkg.conf update -f -r MyBee-latest
-#env ASSUME_ALWAYS_YES=yes SIGNATURE_TYPE=none IGNORE_OSVERSION=yes pkg -C /root/clonos-build/etc/pkg/pkg.conf -r ~cbsd/jails-data/${jname}-data install -r MyBee-latest ${PKG_BASE}
-_rpath=$( realpath ~cbsd/jails-data/${jname}-data )
-make -C /usr/src installworld DESTDIR="${_rpath}"
-make -C /usr/src distribution DESTDIR="${_rpath}"
+env ASSUME_ALWAYS_YES=yes SIGNATURE_TYPE=none IGNORE_OSVERSION=yes pkg -C /root/clonos-build/etc/pkg/pkg.conf update -f -r MyBee-latest
+env ASSUME_ALWAYS_YES=yes SIGNATURE_TYPE=none IGNORE_OSVERSION=yes pkg -C /root/clonos-build/etc/pkg/pkg.conf -r ~cbsd/jails-data/${jname}-data install -r MyBee-latest ${PKG_BASE}
+#_rpath=$( realpath ~cbsd/jails-data/${jname}-data )
+#make -C /usr/src installworld DESTDIR="${_rpath}"
+#make -C /usr/src distribution DESTDIR="${_rpath}"
 
 cbsd jstart jname=${jname}
 

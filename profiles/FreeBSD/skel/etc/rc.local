@@ -1,7 +1,10 @@
 # Managed By MBFSBOOT firmware builder
-/sbin/ifconfig lo0 up
-/sbin/ifconfig igb0 up
-/sbin/ifconfig igb1 up
+#/sbin/ifconfig lo0 up
+#/sbin/ifconfig igb0 up
+#/sbin/ifconfig igb1 up
+for i in $( /sbin/ifconfig -l ); do
+	/sbin/ifconfig ${i} up
+done
 # Link UP
 sleep 4
 #daemon -f /usr/local/sbin/dhclient -6 -P igb0 -v

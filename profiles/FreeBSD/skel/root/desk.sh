@@ -2,13 +2,13 @@
 
 mydesk_reroot()
 {
-	_source="/dev/ada1"
-	/usr/sbin/zdb -l ${_source} | /usr/bin/grep pool_guid
+#	_source="/dev/ada1"
+#	/usr/sbin/zdb -l ${_source} | /usr/bin/grep pool_guid
 
-	_pool_guid=$( /usr/sbin/zdb -l ${_source} | /usr/bin/grep "pool_guid:" | /usr/bin/awk '{printf $2}' )
+#	_pool_guid=$( /usr/sbin/zdb -l ${_source} | /usr/bin/grep "pool_guid:" | /usr/bin/awk '{printf $2}' )
 
-	echo "to test:"
-	echo "/sbin/zpool import -f -R /mnt ${_pool_guid}"
+#	echo "to test:"
+#	echo "/sbin/zpool import -f -R /mnt ${_pool_guid}"
 
 	# root replacenment: need to kill all services
 	#/sbin/zpool import -f getdesk

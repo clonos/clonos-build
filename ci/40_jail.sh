@@ -253,8 +253,9 @@ echo "Convert ${jname} to bhyve image into /tmp..."
 ## convert to bhyve
 
 #cbsd jail2iso jname=${jname} dstdir=/tmp media=mfs freesize=2m ver=${ver} efi=1
-cbsd jail2iso jname=${jname} dstdir=/tmp media=bhyve freesize=2m ver=${ver} efi=1
-# mfs_struct_only=1
+#cbsd jail2iso jname=${jname} dstdir=/tmp media=bhyve freesize=2m ver=${ver} efi=1
+
+cbsd jail2iso jname=${jname} dstdir=/tmp media=mfs freesize=2m ver=${ver} efi=1 mfs_struct_only=1
 
 #cp -a ~cbsd/basejail/FreeBSD-kernel_CBSD_amd64_15.0/boot/kernel/kernel.gz 
 #echo "cbsd jail2iso name=CBSD jname=${jname} dstdir=/tmp media=mfs freesize=2m ver=${my_ver} efi=1 mfs_struct_only=1"

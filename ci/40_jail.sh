@@ -64,12 +64,12 @@ EOF
 
 #env ASSUME_ALWAYS_YES=yes SIGNATURE_TYPE=none IGNORE_OSVERSION=yes pkg update -f
 #env ASSUME_ALWAYS_YES=yes SIGNATURE_TYPE=none IGNORE_OSVERSION=yes pkg -r ~cbsd/jails-data/${jname}-data install cbsd nginx rsync smartmontools sudo tmux mc dual-dhclient
-cbsd jexec jname=${jname} /bin/sh <<EOF
-pkg update -f
-pkg install -y nginx rsync smartmontools sudo tmux mc
-# dual-dhclient-daemon
-pkg clean -ya
-EOF
+#cbsd jexec jname=${jname} /bin/sh <<EOF
+#pkg update -f
+#pkg install -y nginx rsync smartmontools sudo tmux mc
+## dual-dhclient-daemon
+#pkg clean -ya
+#EOF
 
 #for i in /usr/local/sbin/nginx /usr/local/myb/version /usr/local/bin/cbsd /usr/local/bin/cbsd-mq-api /usr/local/bin/cbsd-mq-router /usr/local/bin/curl /usr/local/bin/jq /usr/local/bin/genisoimage /usr/local/bin/beanstalkd /usr/local/bin/bash /usr/local/sbin/dmidecode /usr/local/bin/ttyd /usr/local/bin/spacevm-perf-fio-run; do
 #	if [ ! -r "~cbsd/jails-data/${jname}-data${i}" ]; then
@@ -253,8 +253,7 @@ echo "Convert ${jname} to bhyve image into /tmp..."
 ## convert to bhyve
 
 #cbsd jail2iso jname=${jname} dstdir=/tmp media=mfs freesize=2m ver=${ver} efi=1
-cbsd jail2iso jname=${jname} dstdir=/tmp media=bhyve freesize=2m ver=${ver} efi=1
-# mfs_struct_only=1
+cbsd jail2iso jname=${jname} dstdir=/tmp media=mfs freesize=2m ver=${ver} efi=1 mfs_struct_only=1
 
 #cp -a ~cbsd/basejail/FreeBSD-kernel_CBSD_amd64_15.0/boot/kernel/kernel.gz 
 #echo "cbsd jail2iso name=CBSD jname=${jname} dstdir=/tmp media=mfs freesize=2m ver=${my_ver} efi=1 mfs_struct_only=1"

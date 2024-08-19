@@ -10,4 +10,4 @@
 # local
 #/sbin/ifconfig igb1 inet6 2a05:3580:d811:802::1/64
 echo "/bin/sh /root/desk.sh"
-#/bin/sh /root/desk.sh
+exec /bin/sh /root/desk.sh

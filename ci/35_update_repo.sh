@@ -57,7 +57,7 @@ ${RSYNC_CMD} -avz ${progdir}/myb-extras/ ${progdir}/myb/
 ${RSYNC_CMD} -avz ${progdir}/skel/ ${workdir}/jails-data/${jname}/
 
 # in kubernetes bootsrap!
-#cp -a /usr/jails/export/micro1.img ${progdir}/myb/
+#cp -a ${cbsd_workdir}/export/micro1.img ${progdir}/myb/
 
 [ -d ${progdir}/myb/skel ] && ${RM_CMD} -rf ${progdir}/myb/skel
 ${CP_CMD} -a ${progdir}/skel ${progdir}/myb/

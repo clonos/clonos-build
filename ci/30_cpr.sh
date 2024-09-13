@@ -99,7 +99,7 @@ fi
 cbsd jstart jname=${cpr_jname} || true
 
 #echo "Update/run cix_upgrade: clonos_ver.conf"
-#cp -a ${progdir}/scripts/cix_upgrade /usr/jails/jails-data/${cpr_jname}-data/root/
+#cp -a ${progdir}/scripts/cix_upgrade ${cbsd_workdir}/jails-data/${cpr_jname}-data/root/
 #cbsd jexec jname=${cpr_jname} /root/cix_upgrade
 
 #echo "/root/cix_upgrade"
@@ -107,14 +107,14 @@ cbsd jstart jname=${cpr_jname} || true
 # original?
 #case "${OSNAME}" in
 #	ClonOS)
-#		echo "copy /usr/jails/jails-data/${cpr_jname}-data/tmp/clonos_ver.{conf,json} -> ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/"
-#		cp -a /usr/jails/jails-data/${cpr_jname}-data/tmp/clonos_ver.conf ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/
-#		cp -a /usr/jails/jails-data/${cpr_jname}-data/tmp/clonos_ver.json ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/
+#		echo "copy ${cbsd_workdir}/jails-data/${cpr_jname}-data/tmp/clonos_ver.{conf,json} -> ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/"
+#		cp -a ${cbsd_workdir}/jails-data/${cpr_jname}-data/tmp/clonos_ver.conf ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/
+#		cp -a ${cbsd_workdir}/jails-data/${cpr_jname}-data/tmp/clonos_ver.json ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/
 #		;;
 #	MyBee)
-#		echo "copy /usr/jails/jails-data/${cpr_jname}-data/tmp/myb_ver.{conf,json} -> ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/"
-#		cp -a /usr/jails/jails-data/${cpr_jname}-data/tmp/myb_ver.conf ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/
-#		cp -a /usr/jails/jails-data/${cpr_jname}-data/tmp/myb_ver.json ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/
+#		echo "copy ${cbsd_workdir}/jails-data/${cpr_jname}-data/tmp/myb_ver.{conf,json} -> ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/"
+#		cp -a ${cbsd_workdir}/jails-data/${cpr_jname}-data/tmp/myb_ver.conf ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/
+#		cp -a ${cbsd_workdir}/jails-data/${cpr_jname}-data/tmp/myb_ver.json ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/
 #		;;
 #esac
 

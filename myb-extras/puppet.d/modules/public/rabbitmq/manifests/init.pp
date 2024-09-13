@@ -170,7 +170,7 @@
 #   set explicitly if using clustering. If you run Pacemaker and you don't want to use RabbitMQ buildin cluster, you can set config_cluster
 #   to 'False' and set 'erlang_cookie'.
 # @param file_limit
-#   Set rabbitmq file ulimit. Defaults to 16384. Only available on systems with `$::osfamily == 'Debian'` or `$::osfamily == 'RedHat'`.
+#   Set rabbitmq file ulimit. Defaults to 16384. Only available on Linux
 # @param oom_score_adj
 #   Set rabbitmq-server process OOM score. Defaults to 0.
 # @param heartbeat
@@ -226,6 +226,8 @@
 #   RPM package GPG key to import. Uses source method. Should be a URL for Debian/RedHat OS family, or a file name for
 #   RedHat OS family. Set to https://github.com/rabbitmq/signing-keys/releases/download/2.0/rabbitmq-release-signing-key.asc
 #   for Debian/RedHat OS Family by default.
+# @param package_source
+# @param package_provider
 # @param repo_gpg_key
 #   RPM package GPG key to import. Uses source method. Should be a URL for Debian/RedHat OS family, or a file name for
 #   RedHat OS family. Set to https://packagecloud.io/rabbitmq/rabbitmq-server/gpgkey for Debian/RedHat OS Family by
@@ -241,6 +243,8 @@
 #   Defaults to false (use system packages). This does not ensure that soft dependencies (like EPEL on RHEL systems) are present.
 #   It also does not solve the erlang dependency.  See https://www.rabbitmq.com/which-erlang.html for a good breakdown of the
 #   different ways of handling the erlang deps.  See also https://github.com/voxpupuli/puppet-rabbitmq/issues/788
+# @param require_epel
+#   If this parameter is set, On CentOS / RHEL 7 systems, require the "puppet/epel" module
 # @param service_ensure
 #   The state of the service.
 # @param service_manage
@@ -280,6 +284,7 @@
 #   SSL management cert. If unset set to ssl_cert for backwards compatibility.
 # @param ssl_management_key
 #   SSL management key. If unset set to ssl_key for backwards compatibility.
+# @param ssl_management_fail_if_no_peer_cert
 # @param ssl_port
 #   SSL port for RabbitMQ
 # @param ssl_reuse_sessions
@@ -351,7 +356,7 @@ class rabbitmq (
   Hash $cluster                                                                                    = $rabbitmq::cluster,
   Enum['ram', 'disc'] $cluster_node_type                                                           = 'disc',
   Array $cluster_nodes                                                                             = [],
-  String $config                                                                                   = 'rabbitmq/rabbitmq.config.erb',
+  String $config                                                                                   = 'rabbitmq/rabbitmq.config.epp',
   Boolean $config_cluster                                                                          = false,
   Stdlib::Absolutepath $config_path                                                                = '/etc/rabbitmq/rabbitmq.config',
   Boolean $config_ranch                                                                            = true,
@@ -361,7 +366,7 @@ class rabbitmq (
   String $default_user                                                                             = 'guest',
   String $default_pass                                                                             = 'guest',
   Boolean $delete_guest_user                                                                       = false,
-  String $env_config                                                                               = 'rabbitmq/rabbitmq-env.conf.erb',
+  String $env_config                                                                               = 'rabbitmq/rabbitmq-env.conf.epp',
   Stdlib::Absolutepath $env_config_path                                                            = '/etc/rabbitmq/rabbitmq-env.conf',
   Optional[String] $erlang_cookie                                                                  = undef,
   Optional[String] $interface                                                                      = undef,
@@ -450,6 +455,7 @@ class rabbitmq (
   Array $archive_options                                                                           = [],
   Array $loopback_users                                                                            = ['guest'],
   Boolean $service_restart                                                                         = true,
+  Boolean $require_epel                                                                            = true,
 ) {
   if $ssl_only and ! $ssl {
     fail('$ssl_only => true requires that $ssl => true')
@@ -489,6 +495,8 @@ class rabbitmq (
     }
   }
 
+  # when repos_ensure is true, we configure externel repos
+  # CentOS 7 doesn't contain rabbitmq. It's only in EPEL.
   if $repos_ensure {
     case $facts['os']['family'] {
       'RedHat': {
@@ -502,6 +510,13 @@ class rabbitmq (
       default: {
       }
     }
+  } elsif ($facts['os']['family'] == 'RedHat' and $facts['os']['release']['major'] == '7') and $require_epel {
+    # On later CentOS / RHEL systems, this is not useful since EPEL doesn't
+    # have the rabbitmq-server package anyway.
+    #
+    # Once support for 7 is dropped, we should remove this code and the
+    # parameter
+    require epel
   }
 
   contain rabbitmq::install

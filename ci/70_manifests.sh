@@ -36,7 +36,7 @@ fi
 #rsync -avz ${progdir}/skel/ ${workdir}/jails-data/${jname}/
 
 # in kubernetes bootsrap!
-#cp -a /usr/jails/export/micro1.img ${progdir}/myb/
+#cp -a ${cbsd_workdir}/export/micro1.img ${progdir}/myb/
 
 #[ -d ${progdir}/myb/skel ] && rm -rf ${progdir}/myb/skel
 #cp -a ${progdir}/skel ${progdir}/myb/

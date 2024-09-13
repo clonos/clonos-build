@@ -1,8 +1,7 @@
 # rabbitmq
 
 [![License](https://img.shields.io/github/license/voxpupuli/puppet-rabbitmq.svg)](https://github.com/voxpupuli/puppet-rabbitmq/blob/master/LICENSE)
-[![Build Status](https://travis-ci.org/voxpupuli/puppet-rabbitmq.svg?branch=master)](https://travis-ci.org/voxpupuli/puppet-rabbitmq)
-[![Code Coverage](https://coveralls.io/repos/github/voxpupuli/puppet-rabbitmq/badge.svg?branch=master)](https://coveralls.io/github/voxpupuli/puppet-rabbitmq)
+[![Build Status](https://github.com/voxpupuli/puppet-rabbitmq/actions/workflows/ci.yml/badge.svg)](https://github.com/voxpupuli/puppet-rabbitmq/actions)
 [![Puppet Forge](https://img.shields.io/puppetforge/v/puppet/rabbitmq.svg)](https://forge.puppetlabs.com/puppet/rabbitmq)
 [![Puppet Forge - downloads](https://img.shields.io/puppetforge/dt/puppet/rabbitmq.svg)](https://forge.puppetlabs.com/puppet/rabbitmq)
 [![Puppet Forge - endorsement](https://img.shields.io/puppetforge/e/puppet/rabbitmq.svg)](https://forge.puppetlabs.com/puppet/rabbitmq)
@@ -49,6 +48,10 @@ on the main rabbitmq class.
 These are now documented via [Puppet Strings](https://github.com/puppetlabs/puppet-strings)
 
 You can view example usage in [REFERENCE](REFERENCE.md).
+
+**[puppet/epel](https://forge.puppet.com/modules/puppet/epel) is a soft dependency. If you're on CentOS 7 and don't want to require it, set `$require_epel` to `false`**
+
+Version v13.2.0 and older also added an erlang repository on CentOS 7. That isn't used and can be safely removed.
 
 ## Reference
 

@@ -36,6 +36,7 @@ Puppet::Type.newtype(:rabbitmq_parameter) do
   DESC
 
   ensurable do
+    desc 'Whether the resource should be present or absent'
     defaultto(:present)
     newvalue(:present) do
       provider.create
@@ -84,7 +85,7 @@ Puppet::Type.newtype(:rabbitmq_parameter) do
     [self[:name].split('@')[1]]
   end
 
-  def set_parameters(hash) # rubocop:disable Style/AccessorMethodName
+  def set_parameters(hash) # rubocop:disable Naming/AccessorMethodName
     # Hack to ensure :autoconvert is initialized before :value
     self[:autoconvert] = hash[:autoconvert] if hash.key?(:autoconvert)
     super
@@ -105,9 +106,12 @@ Puppet::Type.newtype(:rabbitmq_parameter) do
   def munge_value(value)
     return value if value(:autoconvert) == :false
 
-    value.each do |k, v|
-      value[k] = v.to_i if v =~ %r{\A[-+]?[0-9]+\z}
+    value.transform_values do |v|
+      if v.is_a?(String) && v.match?(%r{\A[-+]?[0-9]+\z})
+        v.to_i
+      else
+        v
+      end
     end
-    value
   end
 end

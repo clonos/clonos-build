@@ -1,4 +1,0 @@
----
-fixes:
-  - Hash domains by name.
-    Improving performances of providers when managing lot of resources in the same domain (users and projects).

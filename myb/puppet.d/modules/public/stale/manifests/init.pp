@@ -1,4 +1,0 @@
-# do nothing
-class stale {
-
-}

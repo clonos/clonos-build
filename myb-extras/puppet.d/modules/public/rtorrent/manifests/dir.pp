@@ -29,6 +29,18 @@ class rtorrent::dir {
     group => "${::rtorrent::user}",
     require => File['/home/web'],
   }
+  file { [ '/home/web/rutorrent/php/share' ]:
+    ensure => directory,
+    owner => "${::rtorrent::user}",
+    group => "${::rtorrent::user}",
+    require => File['/home/web'],
+  }
+  file { [ '/home/web/rutorrent/php/share/torrents' ]:
+    ensure => directory,
+    owner => "${::rtorrent::user}",
+    group => "${::rtorrent::user}",
+    require => File['/home/web/rutorrent/php/share'],
+  }
 
   file { "/home/web/rutorrent/conf/config.php":
     mode => '0664',

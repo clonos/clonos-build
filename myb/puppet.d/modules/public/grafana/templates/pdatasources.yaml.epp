@@ -1,3 +1,0 @@
-# This file is managed by Puppet, any changes will be overwritten
-
-<%= stdlib::to_yaml($grafana::config::pdatasources) -%>

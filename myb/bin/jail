@@ -1,5 +1,0 @@
-#!/bin/sh
-
-/usr/local/bin/cbsd repo action=get sources=base
-/root/bin/checkiso.sh check
-exit 0

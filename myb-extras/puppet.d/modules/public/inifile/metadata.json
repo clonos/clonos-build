@@ -1,12 +1,12 @@
 {
   "name": "puppetlabs-inifile",
-  "version": "6.1.0",
+  "version": "6.1.1",
   "author": "puppetlabs",
   "summary": "Resource types for managing settings in INI files",
   "license": "Apache-2.0",
   "source": "https://github.com/puppetlabs/puppetlabs-inifile",
   "project_page": "https://github.com/puppetlabs/puppetlabs-inifile",
-  "issues_url": "https://tickets.puppetlabs.com/browse/MODULES",
+  "issues_url": "https://github.com/puppetlabs/puppetlabs-inifile/issues",
   "dependencies": [
     {
       "name": "puppetlabs/stdlib",
@@ -105,6 +105,6 @@
     }
   ],
   "template-url": "https://github.com/puppetlabs/pdk-templates.git#main",
-  "template-ref": "heads/main-0-g604a3ec",
-  "pdk-version": "2.7.0"
+  "template-ref": "heads/main-0-g79a2f93",
+  "pdk-version": "3.0.0"
 }

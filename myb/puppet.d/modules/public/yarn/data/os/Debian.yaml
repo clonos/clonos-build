@@ -1,3 +1,0 @@
----
-yarn::manage_repo: true
-yarn::install_method: 'package'

@@ -7,7 +7,7 @@ class rtorrent::params {
   $user = 'www'
   $group = 'www'
 
-  case $::osfamily {
+  case $facts['os']['family'] {
     'RedHat', 'Linux': {
       $config_dir = '/etc/rtorrent'
     }

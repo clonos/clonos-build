@@ -1,7 +1,0 @@
-# List of the allowed cbsd commands
-SECCMD="\
-${SECCMD}
-vncterm \
-vncterm-daemon \
-jvncall \
-"

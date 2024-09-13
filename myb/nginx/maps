@@ -1,2 +1,0 @@
-map $ssl_preread_server_name $name {
-}

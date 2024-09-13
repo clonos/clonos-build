@@ -13,11 +13,18 @@ echo "Build ${OSNAME} base version: ${mybbasever}"
 cbsd srcup ver=${mybbasever}
 # rev=d338712beb1
 
-src_dir_makefile="/usr/jails/src/src_${mybbasever}/src/Makefile"
+src_dir_makefile="${cbsd_workdir}/src/src_${mybbasever}/src/Makefile"
 
 if [ ! -r "${src_dir_makefile}" ]; then
 	echo "no such source: ${src_dir_makefile}"
 	exit 1
 fi
+
+cd ${cbsd_workdir}/src/src_${mybbasever}/src/usr.sbin/bhyve
+patch < /usr/local/cbsd/upgrade/patch/iov-15.0/patch-usr-sbin-bhyve-block_if.h || true
+patch < /usr/local/cbsd/upgrade/patch/iov-15.0/patch-usr-sbin-bhyve-virtio.c || true
+cd /
+# snapshot
+
 
 exit 0

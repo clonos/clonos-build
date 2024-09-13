@@ -291,11 +291,11 @@ sysrc -qf ${workdir}/jails-data/${jname}-data/etc/rc.conf \
 	update_motd="NO"       # update version info in /var/run/motd (or NO)
 	syslogd_oomprotect="NO"
 
-truncate -s0 /usr/jails/jails-data/${jname}-data/var/run/motd
+truncate -s0 ${cbsd_workdir}/jails-data/${jname}-data/var/run/motd
 
-rm -f /usr/jails/jails-data/${jname}-data/etc/devd/hyperv.conf
+rm -f ${cbsd_workdir}/jails-data/${jname}-data/etc/devd/hyperv.conf
 
-cat > /usr/jails/jails-data/${jname}-data/etc/sysctl.conf <<EOF
+cat > ${cbsd_workdir}/jails-data/${jname}-data/etc/sysctl.conf <<EOF
 security.bsd.see_other_uids = 0
 kern.init_shutdown_timeout = 900
 security.bsd.see_other_gids = 0

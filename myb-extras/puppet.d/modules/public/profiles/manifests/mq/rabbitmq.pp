@@ -50,10 +50,10 @@ if $hahost1 != '' {
     target       => '/etc/hosts',
   }
 } else {
-  host { "${::fqdn}":
+  host { $facts['networking']['fqdn']:
     ensure       => 'present',
-    host_aliases => ["${::hostname}"],
-    ip           => "${::ipaddress}",
+    host_aliases => [ $facts['networking']['hostname'] ],
+    ip           => $facts['networking']['ip'],
     target       => '/etc/hosts',
   }
 }
@@ -102,7 +102,7 @@ if $hahost3 != '' {
   # haproxy?
 class { 'haproxy':
   global_options   => {
-    'log'     => "${::ipaddress} local0",
+    'log'     => "$facts['networking']['fqdn'] local0",
     'chroot'  => '/var/lib/haproxy',
     'pidfile' => '/var/run/haproxy.pid',
     'maxconn' => '4000',
@@ -171,7 +171,7 @@ haproxy::backend { 'rabbitmq-backend-ui':
 
 
 haproxy::frontend { 'rabbitmq-backend':
-  ipaddress     => $::ipaddress,
+  ipaddress     => $facts['networking']['fqdn'],
   ports         => '5672',
   mode          => 'tcp',
 #  bind_options  => 'accept-proxy',
@@ -186,7 +186,7 @@ haproxy::frontend { 'rabbitmq-backend':
 }
 
 haproxy::frontend { 'rabbitmq-backend-ui':
-  ipaddress     => $::ipaddress,
+  ipaddress     => $facts['networking']['fqdn'],
   ports         => '15672',
   mode          => 'tcp',
 #  bind_options  => 'accept-proxy',

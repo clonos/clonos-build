@@ -4,7 +4,93 @@ All notable changes to this project will be documented in this file.
 Each new release typically also includes the latest modulesync defaults.
 These should not affect the functionality of the module.
 
-## [v13.2.0](https://github.com/voxpupuli/puppet-rabbitmq/tree/v13.2.0) (2023-12-10)
+## [v13.6.0](https://github.com/voxpupuli/puppet-rabbitmq/tree/v13.6.0) (2024-06-28)
+
+[Full Changelog](https://github.com/voxpupuli/puppet-rabbitmq/compare/v13.5.1...v13.6.0)
+
+**Implemented enhancements:**
+
+- Add support for Debian 11 [\#1010](https://github.com/voxpupuli/puppet-rabbitmq/pull/1010) ([wyardley](https://github.com/wyardley))
+- Add support for FreeBSD 14 [\#1009](https://github.com/voxpupuli/puppet-rabbitmq/pull/1009) ([smortex](https://github.com/smortex))
+
+**Merged pull requests:**
+
+- replace systemd fact with core fact [\#1007](https://github.com/voxpupuli/puppet-rabbitmq/pull/1007) ([bastelfreak](https://github.com/bastelfreak))
+
+## [v13.5.1](https://github.com/voxpupuli/puppet-rabbitmq/tree/v13.5.1) (2024-05-29)
+
+[Full Changelog](https://github.com/voxpupuli/puppet-rabbitmq/compare/v13.5.0...v13.5.1)
+
+**Fixed bugs:**
+
+- Fix indentation for cluster\_nodes [\#1002](https://github.com/voxpupuli/puppet-rabbitmq/pull/1002) ([jplindquist](https://github.com/jplindquist))
+- require puppet/systemd \>= 6.0.0 [\#1001](https://github.com/voxpupuli/puppet-rabbitmq/pull/1001) ([saz](https://github.com/saz))
+
+## [v13.5.0](https://github.com/voxpupuli/puppet-rabbitmq/tree/v13.5.0) (2024-05-23)
+
+[Full Changelog](https://github.com/voxpupuli/puppet-rabbitmq/compare/v13.4.0...v13.5.0)
+
+**Implemented enhancements:**
+
+- Add require\_epel parameter, defaulting to `true` [\#997](https://github.com/voxpupuli/puppet-rabbitmq/pull/997) ([wyardley](https://github.com/wyardley))
+- Add support for policy definition consumer-timeout [\#991](https://github.com/voxpupuli/puppet-rabbitmq/pull/991) ([wyardley](https://github.com/wyardley))
+
+**Fixed bugs:**
+
+- Handle rabbitmq.config when cluster\_nodes is empty [\#993](https://github.com/voxpupuli/puppet-rabbitmq/pull/993) ([nosrio](https://github.com/nosrio))
+
+**Closed issues:**
+
+- Does not find rabbitmqadmin under ubuntu [\#812](https://github.com/voxpupuli/puppet-rabbitmq/issues/812)
+
+**Merged pull requests:**
+
+- Add unit test to handle bug solved on PR \#993 [\#994](https://github.com/voxpupuli/puppet-rabbitmq/pull/994) ([nosrio](https://github.com/nosrio))
+- Use stdlib::ensure\_packages  [\#990](https://github.com/voxpupuli/puppet-rabbitmq/pull/990) ([wyardley](https://github.com/wyardley))
+
+## [v13.4.0](https://github.com/voxpupuli/puppet-rabbitmq/tree/v13.4.0) (2024-05-19)
+
+[Full Changelog](https://github.com/voxpupuli/puppet-rabbitmq/compare/v13.3.0...v13.4.0)
+
+Historically we used the garethr/erlang module as soft dependency on CentOS 7. This also configured the EPEL7 repository.  We have replaced this with an include of the EPEL repo on CentOS 7.
+
+**Implemented enhancements:**
+
+- puppetlabs/apt: Allow 9.x  [\#988](https://github.com/voxpupuli/puppet-rabbitmq/pull/988) ([bastelfreak](https://github.com/bastelfreak))
+- puppetlabs/stdlib: Allow 9.x [\#986](https://github.com/voxpupuli/puppet-rabbitmq/pull/986) ([bastelfreak](https://github.com/bastelfreak))
+- puppet/archive: Allow 7.x [\#952](https://github.com/voxpupuli/puppet-rabbitmq/pull/952) ([bastelfreak](https://github.com/bastelfreak))
+
+**Fixed bugs:**
+
+- metadata.json: re-add Puppet 8 support [\#985](https://github.com/voxpupuli/puppet-rabbitmq/pull/985) ([bastelfreak](https://github.com/bastelfreak))
+- CentOS7: default to EPEL7 as source [\#983](https://github.com/voxpupuli/puppet-rabbitmq/pull/983) ([bastelfreak](https://github.com/bastelfreak))
+
+**Merged pull requests:**
+
+- docs: update readme badges [\#987](https://github.com/voxpupuli/puppet-rabbitmq/pull/987) ([wyardley](https://github.com/wyardley))
+
+## [v13.3.0](https://github.com/voxpupuli/puppet-rabbitmq/tree/v13.3.0) (2024-05-19)
+
+[Full Changelog](https://github.com/voxpupuli/puppet-rabbitmq/compare/v13.2.0...v13.3.0)
+
+**Implemented enhancements:**
+
+- Use epp template to handle sensitive data [\#966](https://github.com/voxpupuli/puppet-rabbitmq/issues/966)
+- systemd: migrate from service\_limits-\>manage\_dropin [\#982](https://github.com/voxpupuli/puppet-rabbitmq/pull/982) ([bastelfreak](https://github.com/bastelfreak))
+- Remove leftovers from Linux systems without systemd [\#981](https://github.com/voxpupuli/puppet-rabbitmq/pull/981) ([bastelfreak](https://github.com/bastelfreak))
+- update puppet-systemd upper bound to 8.0.0 [\#977](https://github.com/voxpupuli/puppet-rabbitmq/pull/977) ([TheMeier](https://github.com/TheMeier))
+- Harden codebase and add documentation stubs [\#974](https://github.com/voxpupuli/puppet-rabbitmq/pull/974) ([zilchms](https://github.com/zilchms))
+
+**Fixed bugs:**
+
+- add a workaround for rabbitmq\_vhost when running with --noop or --tags [\#969](https://github.com/voxpupuli/puppet-rabbitmq/pull/969) ([bugfood](https://github.com/bugfood))
+
+**Merged pull requests:**
+
+- Migrate erb to epp templates [\#978](https://github.com/voxpupuli/puppet-rabbitmq/pull/978) ([nosrio](https://github.com/nosrio))
+- Use a more expressive method of rewriting values [\#975](https://github.com/voxpupuli/puppet-rabbitmq/pull/975) ([ekohl](https://github.com/ekohl))
+
+## [v13.2.0](https://github.com/voxpupuli/puppet-rabbitmq/tree/v13.2.0) (2023-12-11)
 
 [Full Changelog](https://github.com/voxpupuli/puppet-rabbitmq/compare/v13.1.2...v13.2.0)
 
@@ -16,7 +102,7 @@ These should not affect the functionality of the module.
 
 - resources fail to prefetch when rabbitmq is not intended to be installed \(via --noop or --tags\) [\#961](https://github.com/voxpupuli/puppet-rabbitmq/issues/961)
 
-## [v13.1.2](https://github.com/voxpupuli/puppet-rabbitmq/tree/v13.1.2) (2023-11-05)
+## [v13.1.2](https://github.com/voxpupuli/puppet-rabbitmq/tree/v13.1.2) (2023-11-06)
 
 [Full Changelog](https://github.com/voxpupuli/puppet-rabbitmq/compare/v13.1.1...v13.1.2)
 
@@ -314,7 +400,7 @@ Debian 8 is EOL since some months now. Release 10.2.0 will be the last one with 
 **Merged pull requests:**
 
 - docs: Updates autocluster plugin link [\#809](https://github.com/voxpupuli/puppet-rabbitmq/pull/809) ([wyardley](https://github.com/wyardley))
-- Update link to rabbitmq-autocluster [\#808](https://github.com/voxpupuli/puppet-rabbitmq/pull/808) ([makmarius](https://github.com/makmarius))
+- Update link to rabbitmq-autocluster [\#808](https://github.com/voxpupuli/puppet-rabbitmq/pull/808) ([ghost](https://github.com/ghost))
 - Allow `puppetlabs/stdlib` 6.x and `puppet/archive` 4.x [\#803](https://github.com/voxpupuli/puppet-rabbitmq/pull/803) ([alexjfisher](https://github.com/alexjfisher))
 - Remove unused curl\_prefix variable [\#800](https://github.com/voxpupuli/puppet-rabbitmq/pull/800) ([mbaldessari](https://github.com/mbaldessari))
 - Use data-in-modules instead of params.pp [\#797](https://github.com/voxpupuli/puppet-rabbitmq/pull/797) ([dhoppe](https://github.com/dhoppe))
@@ -643,7 +729,7 @@ Debian 8 is EOL since some months now. Release 10.2.0 will be the last one with 
 - \[Bugfix\] convert $ssl\_depth from string to integer [\#539](https://github.com/voxpupuli/puppet-rabbitmq/pull/539) ([bastelfreak](https://github.com/bastelfreak))
 - Extend rabbitmqadmin config template with SSL options. [\#526](https://github.com/voxpupuli/puppet-rabbitmq/pull/526) ([justahero](https://github.com/justahero))
 - \[MODULES-4223\] don't set NODE\_PORT and NODE\_IP\_ADDRESS if ssl\_only [\#524](https://github.com/voxpupuli/puppet-rabbitmq/pull/524) ([JAORMX](https://github.com/JAORMX))
-- \[MODULES-3733\] rabbitmq provider env\_path does not locate ruby gem installed puppet binary [\#517](https://github.com/voxpupuli/puppet-rabbitmq/pull/517) ([lowstorage](https://github.com/lowstorage))
+- \[MODULES-3733\] rabbitmq provider env\_path does not locate ruby gem installed puppet binary [\#517](https://github.com/voxpupuli/puppet-rabbitmq/pull/517) ([growthstock](https://github.com/growthstock))
 
 **Closed issues:**
 

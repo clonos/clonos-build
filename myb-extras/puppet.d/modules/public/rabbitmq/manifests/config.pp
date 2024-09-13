@@ -165,7 +165,7 @@ class rabbitmq::config {
   file { 'rabbitmq.config':
     ensure  => file,
     path    => $config_path,
-    content => template($config),
+    content => epp($config),
     owner   => $rabbitmq_user,
     group   => $rabbitmq_group,
     mode    => '0640',
@@ -174,7 +174,7 @@ class rabbitmq::config {
   file { 'rabbitmq-env.config':
     ensure  => file,
     path    => $env_config_path,
-    content => template($env_config),
+    content => epp($env_config),
     owner   => $rabbitmq_user,
     group   => $rabbitmq_group,
     mode    => '0640',
@@ -190,10 +190,17 @@ class rabbitmq::config {
   }
 
   if $use_config_file_for_plugins {
+    $management_plugin = if ($admin_enable or $management_enable) { 'rabbitmq_management' } else { undef }
+    $stomp_plugin = if $stomp_ensure { 'rabbitmq_stomp' } else { undef }
+    $auth_backend_ldap_plugin = if $ldap_auth { 'rabbitmq_auth_backend_ldap' } else { undef }
+    $shovel_plugin = if $config_shovel { 'rabbitmq_shovel' } else { undef }
+    $shovel_management_plugin = if ($config_shovel and ($admin_enable or $management_enable)) { 'rabbitmq_shovel_management' } else { undef }
+
+    $_plugins = delete_undef_values($plugins + [$management_plugin, $stomp_plugin, $auth_backend_ldap_plugin, $shovel_plugin, $shovel_management_plugin])
     file { 'enabled_plugins':
       ensure  => file,
       path    => '/etc/rabbitmq/enabled_plugins',
-      content => template('rabbitmq/enabled_plugins.erb'),
+      content => epp('rabbitmq/enabled_plugins.epp'),
       owner   => $rabbitmq_user,
       group   => $rabbitmq_group,
       mode    => '0640',
@@ -205,7 +212,7 @@ class rabbitmq::config {
     file { 'rabbitmqadmin.conf':
       ensure  => file,
       path    => '/etc/rabbitmq/rabbitmqadmin.conf',
-      content => template('rabbitmq/rabbitmqadmin.conf.erb'),
+      content => epp('rabbitmq/rabbitmqadmin.conf.epp'),
       owner   => $rabbitmq_user,
       group   => $rabbitmq_group,
       mode    => '0640',
@@ -213,36 +220,14 @@ class rabbitmq::config {
     }
   }
 
-  case $facts['os']['family'] {
-    'Debian': {
-      file { '/etc/default/rabbitmq-server':
-        ensure  => file,
-        content => template('rabbitmq/default.erb'),
-        mode    => '0644',
-        owner   => '0',
-        group   => '0',
-      }
-    }
-    'RedHat': {
-      file { '/etc/security/limits.d/rabbitmq-server.conf':
-        content => template('rabbitmq/limits.conf'),
-        owner   => '0',
-        group   => '0',
-        mode    => '0644',
-      }
-    }
-    default: {}
-  }
-
-  if $facts['systemd'] { # systemd fact provided by systemd module
-    systemd::service_limits { "${service_name}.service":
+  if $facts['kernel'] == 'Linux' {
+    systemd::manage_dropin { 'service-90-limits.conf':
+      unit                    => "${service_name}.service",
       selinux_ignore_defaults => ($facts['os']['family'] == 'RedHat'),
-      limits                  => {
+      service_entry           => {
         'LimitNOFILE'    => $file_limit,
         'OOMScoreAdjust' => $oom_score_adj,
       },
-      # The service will be notified when config changes
-      restart_service         => false,
     }
   }
 

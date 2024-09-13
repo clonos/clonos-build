@@ -35,24 +35,24 @@ mkdir -p ${progdir}/micro1
 [ ! -d ${progdir}/usr/local/share ] && mkdir -p ${progdir}/micro1/usr/local/share
 
 for i in kubectl helm k9s; do
-	if [ ! -x /usr/jails/jails-data/${cpr_jname}-data/usr/local/bin/${i} ]; then
-		echo "no such: /usr/jails/jails-data/${cpr_jname}-data/usr/local/bin/${i}"
+	if [ ! -x ${cbsd_workdir}/jails-data/${cpr_jname}-data/usr/local/bin/${i} ]; then
+		echo "no such: ${cbsd_workdir}/jails-data/${cpr_jname}-data/usr/local/bin/${i}"
 		exit 1
 	else
 		echo "copy ${i} -> ${progdir}/micro1/usr/local/bin"
-		cp -a /usr/jails/jails-data/${cpr_jname}-data/usr/local/bin/${i} ${progdir}/micro1/usr/local/bin
+		cp -a ${cbsd_workdir}/jails-data/${cpr_jname}-data/usr/local/bin/${i} ${progdir}/micro1/usr/local/bin
 	fi
 done
 
 # CA
-if [ ! -r /usr/jails/jails-data/${cpr_jname}-data/usr/local/share/certs/ca-root-nss.crt ]; then
-	echo "no such: /usr/jails/jails-data/${cpr_jname}-data/usr/local/share/certs/ca-root-nss.crt from ca_root_nss"
+if [ ! -r ${cbsd_workdir}/jails-data/${cpr_jname}-data/usr/local/share/certs/ca-root-nss.crt ]; then
+	echo "no such: ${cbsd_workdir}/jails-data/${cpr_jname}-data/usr/local/share/certs/ca-root-nss.crt from ca_root_nss"
 	exit 1
 fi
 
 echo "copy /etc/ssl -> ${progdir}/micro1/etc/"
 echo "copy /usr/local/share/certs -> ${progdir}/micro1/usr/local/share/"
-cp -a /usr/jails/jails-data/${cpr_jname}-data/etc/ssl ${progdir}/micro1/etc/
-cp -a /usr/jails/jails-data/${cpr_jname}-data/usr/local/share/certs ${progdir}/micro1/usr/local/share/
+cp -a ${cbsd_workdir}/jails-data/${cpr_jname}-data/etc/ssl ${progdir}/micro1/etc/
+cp -a ${cbsd_workdir}/jails-data/${cpr_jname}-data/usr/local/share/certs ${progdir}/micro1/usr/local/share/
 
 exit 0

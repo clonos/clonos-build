@@ -47,13 +47,13 @@ if [ ${myb_firstboot} -eq 1 ]; then
 			;;
 	esac
 
-	if [ "${users_num}" != "${users_num_root}" ]; then
-		SSH_ROOT_ENABLED=0
-		echo "[${users_num}/${users_num_root}] ${OSNAME} default SSH ROOT access: disabled" | tee -a /var/log/mybinst.log
-	else
+#	if [ "${users_num}" != "${users_num_root}" ]; then
+#		SSH_ROOT_ENABLED=0
+#		echo "[${users_num}/${users_num_root}] ${OSNAME} default SSH ROOT access: disabled" | tee -a /var/log/mybinst.log
+#	else
 		SSH_ROOT_ENABLED=1
-		echo "[${users_num}/${users_num_root}] ${OSNAME} default SSH ROOT access: enabled" | tee -a /var/log/mybinst.log
-	fi
+#		echo "[${users_num}/${users_num_root}] ${OSNAME} default SSH ROOT access: enabled" | tee -a /var/log/mybinst.log
+#	fi
 	echo
 
 	if [ "${myb_manage_loaderconf}" != "NO" ]; then

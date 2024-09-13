@@ -48,7 +48,7 @@ hwprobe()
 	[ -n "${hw_probe_enabled}" ] && return 0
 	[ ! -x /usr/local/bin/hw-probe ] && return 0
 
-	${ECHO} "${H1_COLOR}ClonOS first start. Before we start, would you like to send anonymous ( via hw-probe: ${H3_COLOR}https://bsd-hardware.info/${H1_COLOR} ) hardware data (one time, now)? This will allow us to improve hardware support in the future [Y] ?${N2_COLOR}"
+	${ECHO} "${H1_COLOR}${OSNAME} first start. Before we start, would you like to send anonymous ( via hw-probe: ${H3_COLOR}https://bsd-hardware.info/${H1_COLOR} ) hardware data (one time, now)? This will allow us to improve hardware support in the future [Y] ?${N2_COLOR}"
 
 	trap "export SEND_STATS=\"n\"" SIGHUP SIGINT SIGTERM
 	# HUP INT ABRT BUS TERM EXIT
@@ -228,8 +228,8 @@ while : ; do
 		echo "Welcome to ${OSNAME} ${myb_version} console."
 	fi
 	echo
-	echo -e "    Copyright (c) 2013-2023 CBSD Team"
-	echo -e "    Copyright (c) 2019-2023 ${OSNAME} Team"
+	echo -e "    Copyright (c) 2013-2024 CBSD Team"
+	echo -e "    Copyright (c) 2019-2024 ${OSNAME} Team"
 	echo -e "    ${LCYAN}Visit: $producturl for system updates! ${H3_COLOR}(or type 'u'+Enter)${N0_COLOR}"
 	echo
 	case "${API_FQDN}" in

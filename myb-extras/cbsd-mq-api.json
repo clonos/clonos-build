@@ -5,6 +5,7 @@
     "logfile": "/dev/stdout",
     "recomendation": "/usr/local/cbsd/modules/api.d/misc/recomendation.sh",
     "freejname": "/usr/local/cbsd/modules/api.d/misc/freejname.sh",
+    "freeid": "/usr/local/cbsd/modules/api.d/misc/freeid.sh",
     "server_url": "%%SCHEMA%%://%%IP%%",
     "cloud_images_list": "/usr/local/etc/cbsd_api_cloud_images.json",
     "iso_images_list": "/usr/local/etc/cbsd_api_iso_images.json",

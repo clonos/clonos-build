@@ -232,10 +232,8 @@ rm -f ${cbsd_workdir}/jails-data/${jname}-data/usr/bin/kyua
 rm -f ${cbsd_workdir}/jails-data/${jname}-data/usr/lib/libpmc.so.5
 
 rm -f ${cbsd_workdir}/jails-data/${jname}-data/usr/sbin/cxgbetool
-rm -f ${cbsd_workdir}/jails-data/${jname}-data/usr/sbin/iasl
 rm -f ${cbsd_workdir}/jails-data/${jname}-data/usr/sbin/tcpdump
 rm -f ${cbsd_workdir}/jails-data/${jname}-data/usr/sbin/wpa_supplicant
-rm -f ${cbsd_workdir}/jails-data/${jname}-data/usr/sbin/ntpd
 
 rm -f ${cbsd_workdir}/jails-data/${jname}-data/bin/tcsh
 rm -rf ${cbsd_workdir}/jails-data/${jname}-data/usr/lib/debug

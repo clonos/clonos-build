@@ -66,7 +66,7 @@ pre {
       "imgsize": "10g",
       "ram": "1g",
       "cpus": 2,
-      "image": "debian11",
+      "image": "debian12",
       "pubkey": "ssh-ed25519 AAAA..XXX your@localhost"
     }
 

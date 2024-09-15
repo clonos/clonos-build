@@ -61,6 +61,7 @@ pkg install -y myb nginx cbsd cbsd-mq-router cbsd-mq-api curl jq cdrkit-genisoim
 hash -r
 /usr/local/cbsd/sudoexec/initenv /usr/local/cbsd/share/initenv.conf
 /usr/local/myb/mybinst.sh
+/usr/local/bin/cbsd get-profiles src=cloud json=1 > /usr/local/www/public/profiles.html
 EOF
 
 
@@ -165,22 +166,8 @@ vmm_load="YES"
 zfs_load="YES"
 EOF
 
-## ROOTFS IMG:
-cbsd sysrc jname=${jname} \
-	sshd_flags="-oUseDNS=no -oPermitRootLogin=without-password -oPort=22222"
-	root_rw_mount="YES" \
-	sshd_enable="YES" \
-	rc_startmsgs="YES"
-
-#        ifconfig_DEFAULT="inet ${myip} up" \
-#        defaultrouter="${mygw}" \
-
-
 pw -R ${cbsd_workdir}/jails-data/${jname}-data usermod root -s /bin/csh
 echo "cbsd" | pw -R ${cbsd_workdir}/jails-data/${jname}-data usermod "root" -h 0
-
-#cp -a /root/bhyve-mydesk/init-part.sh ${cbsd_workdir}/jails-data/${jname}-data/root/
-#cp -a /root/bhyve-mydesk/base.txz ${cbsd_workdir}/jails-data/${jname}-data/root/
 
 find  ${cbsd_workdir}/jails-data/${jname}-data/ -type f -name \*.a -delete
 find  ${cbsd_workdir}/jails-data/${jname}-data/ -type f -name \*.o -delete
@@ -237,6 +224,8 @@ rm -f ${cbsd_workdir}/jails-data/${jname}-data/usr/sbin/wpa_supplicant
 
 rm -f ${cbsd_workdir}/jails-data/${jname}-data/bin/tcsh
 rm -rf ${cbsd_workdir}/jails-data/${jname}-data/usr/lib/debug
+
+rm -f ${cbsd_workdir}/jails-data/${jname}-data/etc/issue
 
 echo "Convert ${jname} to bhyve image into /tmp..."
 ## convert to bhyve

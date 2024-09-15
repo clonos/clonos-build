@@ -6,11 +6,14 @@ DISTFILES=
 
 MAINTAINER=	olevole@olevole.ru
 COMMENT=	MyBee Meta port
+WWW=		https://myb.convectix.com
 
 LICENSE=	BSD2CLAUSE
 
 NO_BUILD=	yes
 MYB_HOME?=	${PREFIX}/myb
+
+NO_ARCH=	yes
 
 .include <bsd.port.pre.mk>
 

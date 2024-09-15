@@ -59,7 +59,8 @@ if [ "${mod_cbsd_queue_enabled}" = "YES" -a -z "${MOD_CBSD_QUEUE_DISABLED}" ]; t
         fi
 fi
 
-env IGNORE_OSVERSION=yes SIGNATURE_TYPE=none ASSUME_ALWAYS_YES=yes timeout 30 ${PKG_CMD} update -f > ${logfile} 2>&1
+echo "pkg update for repo: MyBee-latest..."
+env IGNORE_OSVERSION=yes SIGNATURE_TYPE=none ASSUME_ALWAYS_YES=yes timeout 30 ${PKG_CMD} update -f -r MyBee-latest > ${logfile} 2>&1
 ret=$?
 
 if [ ${ret} -ne 0 ]; then
@@ -78,7 +79,13 @@ fi
 [ ! -d /var/spool/myb ] && mkdir /var/spool/myb
 echo "last_check_update=\"${cur_time}\"" > /var/spool/myb/state.conf
 
-env IGNORE_OSVERSION=yes SIGNATURE_TYPE=none ${PKG_CMD} upgrade -n -U > /var/spool/myb/last_result.txt
+# -U incompattible with -r ?? report?
+#  pkg upgrade -U -r MyBee-latest   - ok
+#  pkg upgrade -n -r MyBee-latest   - ok
+#  pkg upgrade -U -n   - ok
+#  pkg upgrade -U -n -r MyBee-latest  - NOT OK when multi-repo and other repo unavailable:
+#  pkg: Repository FreeBSD missing. 'pkg update' required
+env IGNORE_OSVERSION=yes SIGNATURE_TYPE=none ${PKG_CMD} -r MyBee-latest upgrade -n > /var/spool/myb/last_result.txt
 
 if [ "${mod_cbsd_queue_enabled}" = "YES" -a -z "${MOD_CBSD_QUEUE_DISABLED}" ]; then
 	if [ -z "${cbsd_queue_backend}" ]; then
@@ -104,10 +111,10 @@ if [ "${mod_cbsd_queue_enabled}" = "YES" -a -z "${MOD_CBSD_QUEUE_DISABLED}" ]; t
 	fi
 fi
 
-env ASSUME_ALWAYS_YES=yes IGNORE_OSVERSION=yes pkg upgrade -U -y
+env ASSUME_ALWAYS_YES=yes IGNORE_OSVERSION=yes pkg upgrade -U -y -r MyBee-latest
 
 # switch to CBSD kernel
-env ASSUME_ALWAYS_YES=yes IGNORE_OSVERSION=yes pkg install -y FreeBSD-kernel-cbsd-14.0p6
+env ASSUME_ALWAYS_YES=yes IGNORE_OSVERSION=yes pkg install -r MyBee-latest -y FreeBSD-kernel-cbsd.cbsd
 
 # todo: check for version changes
 echo
@@ -122,7 +129,6 @@ if [ "${mod_cbsd_queue_enabled}" = "YES" -a -z "${MOD_CBSD_QUEUE_DISABLED}" ]; t
 	fi
 fi
 
-
 /usr/local/myb/mybinst.sh -w ${web}
 ret=$?
 
@@ -136,6 +142,7 @@ fi
 
 # drop cache
 [ -r /tmp/cix_upgrade_latest.conf ] && rm -f /tmp/cix_upgrade_latest.conf
+/usr/local/bin/cbsd get-profiles src=cloud json=1 > /usr/local/www/public/profiles.html
 
 /root/bin/web_upgrade listjson
 

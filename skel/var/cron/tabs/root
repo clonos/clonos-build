@@ -2,3 +2,7 @@
 * * * * * env PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin timeout 59 nice -n 19 /usr/bin/lockf -s -t0 /tmp/auto_ip.sh.lock /root/bin/auto_ip.sh > /dev/null 2>&1
 # certbot
 10 0 * * * env PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin /root/bin/certbot.sh > /dev/null 2>&1
+# telemetry
+* * * * * /usr/bin/lockf -s -t0 /tmp/cpu-stats.lock /root/bin/cpu-stats.sh > /dev/null 2>&1
+#
+* * * * * /usr/bin/lockf -s -t0 /tmp/proc-stats.lock /root/bin/proc-stats.sh > /dev/null 2>&1

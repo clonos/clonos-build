@@ -1,16 +1,19 @@
 #
 PORTNAME=	myb
-PORTVERSION=	24.07.1020
+PORTVERSION=	24.10.1513
 CATEGORIES=	sysutils
 DISTFILES=
 
 MAINTAINER=	olevole@olevole.ru
 COMMENT=	MyBee Meta port
+WWW=		https://myb.convectix.com
 
 LICENSE=	BSD2CLAUSE
 
 NO_BUILD=	yes
 MYB_HOME?=	${PREFIX}/myb
+
+NO_ARCH=	yes
 
 .include <bsd.port.pre.mk>
 

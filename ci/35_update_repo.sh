@@ -16,27 +16,31 @@ progdir=$( dirname ${progdir} )
 . ${progdir}/cmd.subr
 . ${progdir}/brand.conf
 
+
+ver_w_point=$( echo ${mybbasever} | tr -d '.' )
+
 # re-check before upload
 case "${OSNAME}" in
 	MyBee)
-		if [ -z "${MYB_UPLOAD_141}" ]; then
-			echo "no such MYB_UPLOAD_141 string in rc.conf"
+		eval UP_STRING="\$MYB_UPLOAD_${ver_w_point}"
+		if [ -z "${UP_STRING}" ]; then
+			echo "no such MYB_UPLOAD_${ver_w_point} string in rc.conf, e.g.: sysrc -q MYB_UPLOAD_${ver_w_point}=\"rsync://FQDN/xxxx/\""
 			exit 1
 		fi
-		RSYNC_DST="${MYB_UPLOAD_141}"
 		;;
 	ClonOS)
-		if [ -z "${CLONOS_UPLOAD_141}" ]; then
-			echo "no such CLONOS_UPLOAD_141 string in rc.conf"
+		eval UP_STRING="\$CLONOS_UPLOAD_${ver_w_point}"
+		if [ -z "${UP_STRING}" ]; then
+			echo "no such CLONOS_UPLOAD_${ver_w_point} string in rc.conf, e.g.: sysrc -q CLONOS_UPLOAD_${ver_w_point}=\"rsync://FQDN/xxxx/\""
 			exit 1
 		fi
-		RSYNC_DST="${CLONOS_UPLOAD_141}"
 		;;
 	*)
 		echo "invalid brand, who are you?"
 		exit 1
-		;;
 esac
+
+RSYNC_DST="${UP_STRING}"
 
 ver=${mybbasever%%.*}
 

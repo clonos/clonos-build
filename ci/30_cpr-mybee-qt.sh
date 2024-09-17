@@ -65,8 +65,7 @@ llvm15 \
 
 
 echo "cbsd cpr batch=1 makeconf=/root/myb-build/myb_make.conf jname=\"${cpr_jname}\" ver=${mybbasever} pkglist=${progdir}/mybee-qt.list dstdir=${dstdir} package_fetch=\"${PREFETCHED_PACKAGES}\" autoremove=1"
-read p
-cbsd cpr batch=1 makeconf=/root/myb-build/myb_make.conf jname="${cpr_jname}" ver=${mybbasever} pkglist=${progdir}/mybee-qt.list dstdir=${dstdir} package_fetch="${PREFETCHED_PACKAGES}" autoremove=1 pause=1
+cbsd cpr batch=1 makeconf=/root/myb-build/myb_make.conf jname="${cpr_jname}" ver=${mybbasever} pkglist=${progdir}/mybee-qt.list dstdir=${dstdir} package_fetch="${PREFETCHED_PACKAGES}" autoremove=1
 
 ret=$?
 
@@ -98,6 +97,11 @@ cbsd jstart jname=${cpr_jname} || true
 #esac
 
 cbsd jstop jname=${cpr_jname} || true
+
+if [ ! -x "${cbsd_workdir}/jails-data/${cpr_jname}-data/usr/local/bin/mybee-qt" ]; then
+	echo "no such ${cbsd_workdir}/jails-data/${cpr_jname}-data/usr/local/bin/mybee-qt"
+	exit 1
+fi
 
 echo "${MV_CMD} ${dstdir}/* ${progdir}/cbsd/mybee-qt/FreeBSD:${ver}:amd64/latest/"
 read p

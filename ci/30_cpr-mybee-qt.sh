@@ -104,12 +104,10 @@ if [ ! -x "${cbsd_workdir}/jails-data/${cpr_jname}-data/usr/local/bin/mybee-qt" 
 fi
 
 echo "${MV_CMD} ${dstdir}/* ${progdir}/cbsd/mybee-qt/FreeBSD:${ver}:amd64/latest/"
-read p
 ${MV_CMD} ${dstdir}/* ${progdir}/cbsd/mybee-qt/FreeBSD:${ver}:amd64/latest/
 
 # jstop done in 1 seconds
 # mv: rename /tmp/tmp.mRuXt44qrV/Latest to /root/clonos-build/cbsd/mybee-qt/FreeBSD:15:amd64/latest/Latest: Directory not empty
-
 
 ${RM_CMD} -rf ${dstdir}
 if [ ! -h ${progdir}/cbsd/mybee-qt/FreeBSD:${ver}:amd64/latest/pkg.pkg ]; then

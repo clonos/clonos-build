@@ -1,0 +1,3 @@
+The MyBee-QT application is a desktop user interface for managing virtual
+environments via CBSD framefork, can be used locally and/or using remote
+(SSH/RestAPI) servers as well MyBee distribtion/instances.

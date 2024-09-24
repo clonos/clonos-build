@@ -50,71 +50,90 @@ server {
 		#allow <trusted>;
 	}
 
-        # GARM
-        location ~ ^/api/v1/first-run/ {
-                proxy_set_header X-Forwarded-For $remote_addr;
-                proxy_set_header X-Forwarded-Host $http_host;
-                proxy_set_header        Host    $Host;
-                proxy_redirect off;
-                proxy_pass http://127.0.0.1:9997;
-        }
-        location ~ ^/api/v1/auth/ {
-                proxy_set_header X-Forwarded-For $remote_addr;
-                proxy_set_header X-Forwarded-Host $http_host;
-                proxy_set_header        Host    $Host;
-                proxy_redirect off;
-                proxy_pass http://127.0.0.1:9997;
-        }
-        location ~ ^/api/v1/providers {
-                proxy_set_header X-Forwarded-For $remote_addr;
-                proxy_set_header X-Forwarded-Host $http_host;
-                proxy_set_header        Host    $Host;
-                proxy_redirect off;
-                proxy_pass http://127.0.0.1:9997;
-        }
-        location ~ ^/api/v1/repositories {
-                proxy_set_header X-Forwarded-For $remote_addr;
-                proxy_set_header X-Forwarded-Host $http_host;
-                proxy_set_header        Host    $Host;
-                proxy_redirect off;
-                proxy_pass http://127.0.0.1:9997;
-        }
-        location ~ ^/api/v1/instances {
-                proxy_set_header X-Forwarded-For $remote_addr;
-                proxy_set_header X-Forwarded-Host $http_host;
-                proxy_set_header        Host    $Host;
-                proxy_redirect off;
-                proxy_pass http://127.0.0.1:9997;
-        }
-        location ~ ^/api/v1/pools {
-                proxy_set_header X-Forwarded-For $remote_addr;
-                proxy_set_header X-Forwarded-Host $http_host;
-                proxy_set_header        Host    $Host;
-                proxy_redirect off;
-                proxy_pass http://127.0.0.1:9997;
-        }
-        location ~ ^/api/v1/credentials {
-                proxy_set_header X-Forwarded-For $remote_addr;
-                proxy_set_header X-Forwarded-Host $http_host;
-                proxy_set_header        Host    $Host;
-                proxy_redirect off;
-                proxy_pass http://127.0.0.1:9997;
-        }
-        location /webhooks {
-                proxy_set_header X-Forwarded-For $remote_addr;
-                proxy_set_header X-Forwarded-Host $http_host;
-                proxy_set_header        Host    $Host;
-                proxy_redirect off;
-                proxy_pass http://127.0.0.1:9997;
-        }
-        location ~ ^/api/v1/callbacks/status {
-                proxy_set_header X-Forwarded-For $remote_addr;
-                proxy_set_header X-Forwarded-Host $http_host;
-                proxy_set_header        Host    $Host;
-                proxy_redirect off;
-                proxy_pass http://127.0.0.1:9997;
-        }
+	location /metrics {
+		include acl.conf;
+		types { }
+		try_files $uri =404;
+		root /usr/local/www/public;
+	}
 
+	location /shell/ {
+		proxy_pass            http://ttyd_back/;
+		proxy_read_timeout    90s;
+		proxy_connect_timeout 90s;
+		proxy_send_timeout    90s;
+		proxy_http_version    1.1;
+		proxy_set_header      Host $http_host;
+		proxy_set_header      X-Forwarded-Proto $scheme;
+		proxy_set_header      X-Forwarded-For $proxy_add_x_forwarded_for;
+		proxy_set_header      Upgrade $http_upgrade;
+		proxy_set_header      Connection "upgrade";
+	}
+
+	# GARM
+	location ~ ^/api/v1/first-run/ {
+		proxy_set_header X-Forwarded-For $remote_addr;
+		proxy_set_header X-Forwarded-Host $http_host;
+		proxy_set_header        Host    $Host;
+		proxy_redirect off;
+		proxy_pass http://127.0.0.1:9997;
+	}
+	location ~ ^/api/v1/auth/ {
+		proxy_set_header X-Forwarded-For $remote_addr;
+		proxy_set_header X-Forwarded-Host $http_host;
+		proxy_set_header        Host    $Host;
+		proxy_redirect off;
+		proxy_pass http://127.0.0.1:9997;
+	}
+	location ~ ^/api/v1/providers {
+		proxy_set_header X-Forwarded-For $remote_addr;
+		proxy_set_header X-Forwarded-Host $http_host;
+		proxy_set_header        Host    $Host;
+		proxy_redirect off;
+		proxy_pass http://127.0.0.1:9997;
+	}
+	location ~ ^/api/v1/repositories {
+		proxy_set_header X-Forwarded-For $remote_addr;
+		proxy_set_header X-Forwarded-Host $http_host;
+		proxy_set_header        Host    $Host;
+		proxy_redirect off;
+		proxy_pass http://127.0.0.1:9997;
+	}
+	location ~ ^/api/v1/instances {
+		proxy_set_header X-Forwarded-For $remote_addr;
+		proxy_set_header X-Forwarded-Host $http_host;
+		proxy_set_header        Host    $Host;
+		proxy_redirect off;
+		proxy_pass http://127.0.0.1:9997;
+	}
+	location ~ ^/api/v1/pools {
+		proxy_set_header X-Forwarded-For $remote_addr;
+		proxy_set_header X-Forwarded-Host $http_host;
+		proxy_set_header        Host    $Host;
+		proxy_redirect off;
+		proxy_pass http://127.0.0.1:9997;
+	}
+	location ~ ^/api/v1/credentials {
+		proxy_set_header X-Forwarded-For $remote_addr;
+		proxy_set_header X-Forwarded-Host $http_host;
+		proxy_set_header        Host    $Host;
+		proxy_redirect off;
+		proxy_pass http://127.0.0.1:9997;
+	}
+	location /webhooks {
+		proxy_set_header X-Forwarded-For $remote_addr;
+		proxy_set_header X-Forwarded-Host $http_host;
+		proxy_set_header        Host    $Host;
+		proxy_redirect off;
+		proxy_pass http://127.0.0.1:9997;
+	}
+	location ~ ^/api/v1/callbacks/status {
+		proxy_set_header X-Forwarded-For $remote_addr;
+		proxy_set_header X-Forwarded-Host $http_host;
+		proxy_set_header        Host    $Host;
+		proxy_redirect off;
+		proxy_pass http://127.0.0.1:9997;
+	}
 
 	location ~ ^/api/v[1-9]\d*/ {
 		include acl.conf;

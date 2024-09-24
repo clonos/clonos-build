@@ -422,6 +422,7 @@ EOF
 {
   "id": "${host_hostname}",
   "type": "vm",
+  "emulator": "bhyve",
   "is_power_on": true,
   "created": "${create_time}",
   "cpus": ${cpus},
@@ -556,6 +557,7 @@ host_hostname="${host_hostname}"
 gid="${jname}"
 hostname="${hostname}"
 type="vm"
+emulator="bhyve"
 is_power_on="true"
 created="${create_time}"
 cpus="${cpus}"

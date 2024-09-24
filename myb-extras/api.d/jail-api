@@ -274,6 +274,7 @@ create_env()
 {
   "instanceid": "${host_hostname}",
   "type": "container",
+  "emulator": "jail",
   "is_power_on": true,
   "created": "${create_time}",
   "cpus": ${cpus},
@@ -300,6 +301,7 @@ gid="${jname}"
 hostname="${hostname}"
 ver="${ver}"
 type="container"
+emulator="jail"
 is_power_on="true"
 created="${create_time}"
 cpus="${cpus}"

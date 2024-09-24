@@ -15,7 +15,6 @@ export OSNAME="MyBee"
 #export OSNAME="ClonOS"
 
 cd /
-#if [ 1 -gt 2 ]; then
 
 # Init CMD Macros
 UNAME_CMD=$( which uname )
@@ -263,7 +262,7 @@ fi		## PREPARE
 # not for half:
 set -o errexit
 
-if [ 3 -gt 2 ]; then
+if [ 1 -gt 2 ]; then
 
 ## cleanup
 st_time=$( ${DATE_CMD} +%s )
@@ -307,6 +306,8 @@ time_stats "${N1_COLOR}cpr done"
 end_time=$( ${DATE_CMD} +%s )
 diff_time=$(( end_time - st_time ))
 put_prometheus_file_metrics "rebuild-full" "cpr" ${diff_time}
+fi
+
 
 # cpr-micro
 #st_time=$( ${DATE_CMD} +%s )
@@ -327,7 +328,7 @@ put_prometheus_file_metrics "rebuild-full" "updaterepo" ${diff_time}
 ### HALF-build
 #fi
 # half build
-fi
+#fi
 # jail
 st_time=$( ${DATE_CMD} +%s )
 /root/myb-build/ci/40_jail.sh

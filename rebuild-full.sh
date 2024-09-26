@@ -152,7 +152,7 @@ set +e
 FULL_ST_TIME=$( ${DATE_CMD} +%s )
 
 #### PREPARE
-if [ 1 -gt 2 ]; then
+if [ 3 -gt 2 ]; then
 # first init
 
 cbsd module mode=install cpr || true
@@ -262,7 +262,7 @@ fi		## PREPARE
 # not for half:
 set -o errexit
 
-if [ 1 -gt 2 ]; then
+if [ 3 -gt 2 ]; then
 
 ## cleanup
 st_time=$( ${DATE_CMD} +%s )

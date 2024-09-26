@@ -22,7 +22,7 @@
     "freebsd15_zfs",
     "freefire14_ufs",
     "freepbx",
-    "ghostbsd22",
+    "ghostbsd24",
     "homeass",
     "jail",
     "kali2022",
@@ -41,6 +41,7 @@
     "ubuntu22",
     "ubuntu22_vdi",
     "ubuntu24",
+    "ubuntu24_vdi",
     "xigmanas"
   ]
 }

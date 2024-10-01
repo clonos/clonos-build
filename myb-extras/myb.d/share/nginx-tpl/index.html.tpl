@@ -91,7 +91,6 @@ pre {
      <span id="contactus" style="display: none;">
      # Сheck out <a target="_blank" href="https://github.com/myb-project/guide">MyB Handbook</a> before start.
 
-     # Get GUI QT6-based client: <a href="https://github.com/myb-project/mybee-qt"><strong>MyBee-QT</strong></a>
      # Get <strong>nubectl</strong>, MyBee thin client for <a href="/nubectl/freebsd/nubectl">FreeBSD</a>, <a href="/nubectl/linux/nubectl">Linux, <a href="/nubectl/darwin/nubectl">MacOS/Darwin</a>, <a href="/nubectl/windows/nubectl">Windows</a>
      # Reach us <a target="_blank" href="https://t.me/mybgroup">on Telegram</a>
      # Reach us <a target="_blank" href="https://twitter.com/">on Twitter</a>

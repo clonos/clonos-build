@@ -19,13 +19,13 @@ get_recomendation()
 	[ -z "${api_env_name}" ] && api_env_name="env"
 
 	if [ -z "${next_uid}" ]; then
-		sysrc -qf ${_conf} next_uid="1" > /dev/null 2>&1
+		/usr/local/cbsd/misc/cbsdsysrc -qf ${_conf} next_uid="1" > /dev/null 2>&1
 		echo -n "${api_env_name}1"
 		exit 0
 	fi
 
 	next_uid=$(( next_uid + 1 ))
-	sysrc -qf ${_conf} next_uid="${next_uid}" > /dev/null 2>&1
+	/usr/local/cbsd/misc/cbsdsysrc -qf ${_conf} next_uid="${next_uid}" > /dev/null 2>&1
 	echo -n "${api_env_name}${next_uid}"
 	exit 0
 }

@@ -69,7 +69,7 @@ hwprobe()
 		esac
 	fi
 
-	${SYSRC_CMD} -qf /etc/rc.conf hw_probe_enabled="1" > /dev/null 2>&1
+	/usr/local/cbsd/misc/cbsdsysrc -qf /etc/rc.conf hw_probe_enabled="1" > /dev/null 2>&1
 
 	[ ${_send} -ne 1 ] && return 0
 
@@ -95,10 +95,10 @@ change_sshflags()
 {
 	case "${myb_ssh_root_ssh}" in
 		[Ee][Nn]*)
-			${SYSRC_CMD} -qf /etc/rc.conf sshd_flags="-oUseDNS=no -oPermitRootLogin=no -oPort=22" > /dev/null 2>&1
+			/usr/local/cbsd/misc/cbsdsysrc -qf /etc/rc.conf sshd_flags="-oUseDNS=no -oPermitRootLogin=no -oPort=22" > /dev/null 2>&1
 			;;
 		[Dd][Ii]*)
-			${SYSRC_CMD} -qf /etc/rc.conf sshd_flags="-oUseDNS=no -oPermitRootLogin=yes -oPort=22" > /dev/null 2>&1
+			/usr/local/cbsd/misc/cbsdsysrc -qf /etc/rc.conf sshd_flags="-oUseDNS=no -oPermitRootLogin=yes -oPort=22" > /dev/null 2>&1
 			;;
 		*)
 			return 0
@@ -146,15 +146,15 @@ while : ; do
 
 	if [ -z "${PUB_WL}" ]; then
 		PUB_WL="disabled"
-		${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock ${SYSRC_CMD} -qf /etc/rc.conf PUB_WL="${PUB_WL}" > /dev/null 2>&1
+		${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock /usr/local/cbsd/misc/cbsdsysrc -qf /etc/rc.conf PUB_WL="${PUB_WL}" > /dev/null 2>&1
 	fi
 	if [ -z "${IP_WL}" ]; then
 		IP_WL="disabled"
-		${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock ${SYSRC_CMD} -qf /etc/rc.conf IP_WL="${IP_WL}" > /dev/null 2>&1
+		${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock /usr/local/cbsd/misc/cbsdsysrc -qf /etc/rc.conf IP_WL="${IP_WL}" > /dev/null 2>&1
 	fi
 	if [ -z "${API_FQDN}" ]; then
 		API_FQDN="disabled"
-		${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock ${SYSRC_CMD} -qf /etc/rc.conf API_FQDN="${IP_FQDN}" > /dev/null 2>&1
+		${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock /usr/local/cbsd/misc/cbsdsysrc -qf /etc/rc.conf API_FQDN="${IP_FQDN}" > /dev/null 2>&1
 	fi
 
 	case ${PUB_WL} in
@@ -218,8 +218,8 @@ while : ; do
 		PROXY_ARGS="${H2_COLOR}${SOCKS5_PROXY}${N0_COLOR}"
 	fi
 
-	${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock ${SYSRC_CMD} -qf /etc/rc.conf ip4="${ip4}" > /dev/null
-	${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock ${SYSRC_CMD} -qf /etc/rc.conf ip6="${ip6}" > /dev/null
+	${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock /usr/local/cbsd/misc/cbsdsysrc -qf /etc/rc.conf ip4="${ip4}" > /dev/null
+	${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock /usr/local/cbsd/misc/cbsdsysrc -qf /etc/rc.conf ip6="${ip6}" > /dev/null
 
 	echo
 	if [ -n "${myb_build}" ]; then
@@ -325,7 +325,7 @@ while : ; do
 				enabled)
 					if getyesno "Turn ACL OFF? ('n' or '0' - leave as enabled) "; then
 						IP_WL="disabled"
-						${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock ${SYSRC_CMD} -qf /etc/rc.conf IP_WL="${IP_WL}" > /dev/null 2>&1
+						${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock /usr/local/cbsd/misc/cbsdsysrc -qf /etc/rc.conf IP_WL="${IP_WL}" > /dev/null 2>&1
 						_editfile=0
 						cbsd myb_ip_whitelist mode=off
 					fi
@@ -333,7 +333,7 @@ while : ; do
 				disabled)
 					if getyesno "Turn ACL ON? ('n' or '0' - leave as disabled) "; then
 						IP_WL="enabled"
-						${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock ${SYSRC_CMD} -qf /etc/rc.conf IP_WL="${IP_WL}" > /dev/null 2>&1
+						${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock /usr/local/cbsd/misc/cbsdsysrc -qf /etc/rc.conf IP_WL="${IP_WL}" > /dev/null 2>&1
 					fi
 					;;
 			esac
@@ -347,8 +347,8 @@ while : ; do
 				enabled)
 					if getyesno "Turn Pubkey ACL OFF? ('n' or '0' - leave as enabled) "; then
 						PUB_WL="disabled"
-						${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock ${SYSRC_CMD} -qf /etc/rc.conf PUB_WL="${PUB_WL}" > /dev/null 2>&1
-						${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock ${SYSRC_CMD} -qf /etc/rc.conf cbsd_mq_api_flags="-listen 127.0.0.1:65531" > /dev/null 2>&1
+						${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock /usr/local/cbsd/misc/cbsdsysrc -qf /etc/rc.conf PUB_WL="${PUB_WL}" > /dev/null 2>&1
+						${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock /usr/local/cbsd/misc/cbsdsysrc -qf /etc/rc.conf cbsd_mq_api_flags="-listen 127.0.0.1:65531" > /dev/null 2>&1
 						_editfile=0
 						${SERVICE_CMD} cbsd-mq-api restart
 					fi
@@ -356,8 +356,8 @@ while : ; do
 				disabled)
 					if getyesno "Turn Pubkey ACL ON? ('n' or '0' - leave as disabled) "; then
 						PUB_WL="enabled"
-						${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock ${SYSRC_CMD} -qf /etc/rc.conf PUB_WL="${PUB_WL}" > /dev/null 2>&1
-						${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock ${SYSRC_CMD} -qf /etc/rc.conf cbsd_mq_api_flags="-listen 127.0.0.1:65531 -allowlist /usr/local/etc/cbsd-mq-api.allow" > /dev/null 2>&1
+						${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock /usr/local/cbsd/misc/cbsdsysrc -qf /etc/rc.conf PUB_WL="${PUB_WL}" > /dev/null 2>&1
+						${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock /usr/local/cbsd/misc/cbsdsysrc -qf /etc/rc.conf cbsd_mq_api_flags="-listen 127.0.0.1:65531 -allowlist /usr/local/etc/cbsd-mq-api.allow" > /dev/null 2>&1
 						${SERVICE_CMD} cbsd-mq-api restart
 					fi
 					;;
@@ -392,7 +392,7 @@ while : ; do
 					*)
 						if getyesno "Turn API FQDN/certbot OFF? ('n' or '0' - leave as enabled) "; then
 							API_FQDN="disabled"
-							${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock ${SYSRC_CMD} -qf /etc/rc.conf API_FQDN="${API_FQDN}" > /dev/null 2>&1
+							${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock /usr/local/cbsd/misc/cbsdsysrc -qf /etc/rc.conf API_FQDN="${API_FQDN}" > /dev/null 2>&1
 							_editfile=0
 							cbsd myb_api_fqdn mode=off
 						fi

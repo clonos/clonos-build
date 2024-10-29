@@ -65,7 +65,7 @@ echo
 				printf "${H2_COLOR} enter new domain for K8S, e.g. ${N2_COLOR}try-fcp.org${H2_COLOR}: ${N0_COLOR}"
 				read p
 				if getyesno "Change/reconfigure K8S cluster domain settings to: [${p}]?"; then
-					${SYSRC_CMD} -qf /usr/jails/etc/k8world.conf server_kubeconfig_domain="${p}" > /dev/null
+					/usr/local/cbsd/misc/cbsdsysrc -qf /usr/jails/etc/k8world.conf server_kubeconfig_domain="${p}" > /dev/null
 					server_kubeconfig_domain="${p}"
 					if [ -n "${p}" ]; then
 						cat <<EOF

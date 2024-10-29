@@ -152,7 +152,7 @@ set +e
 FULL_ST_TIME=$( ${DATE_CMD} +%s )
 
 #### PREPARE
-if [ 3 -gt 2 ]; then
+if [ 1 -gt 2 ]; then
 # first init
 
 cbsd module mode=install cpr || true
@@ -262,7 +262,7 @@ fi		## PREPARE
 # not for half:
 set -o errexit
 
-if [ 3 -gt 2 ]; then
+if [ 1 -gt 2 ]; then
 
 ## cleanup
 st_time=$( ${DATE_CMD} +%s )
@@ -324,6 +324,8 @@ time_stats "${N1_COLOR}update_repo done"
 end_time=$( ${DATE_CMD} +%s )
 diff_time=$(( end_time - st_time ))
 put_prometheus_file_metrics "rebuild-full" "updaterepo" ${diff_time}
+
+exit 0
 
 ### HALF-build
 #fi

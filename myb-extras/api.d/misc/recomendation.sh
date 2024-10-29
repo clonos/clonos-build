@@ -36,8 +36,8 @@ get_recomendation()
 	num=1
 	if [ -z "${current_srv}" ]; then
 		for i in ${server_list}; do
-			sysrc -qf ${_conf} current_srv="${i}" > /dev/null 2>&1
-			sysrc -qf ${_conf} current_num="${num}" > /dev/null 2>&1
+			/usr/local/cbsd/misc/cbsdsysrc -qf ${_conf} current_srv="${i}" > /dev/null 2>&1
+			/usr/local/cbsd/misc/cbsdsysrc -qf ${_conf} current_num="${num}" > /dev/null 2>&1
 			echo -n "${i}"
 			exit 0
 		done
@@ -53,8 +53,8 @@ get_recomendation()
 	num=1
 	for i in ${server_list}; do
 		if [ ${num} -eq ${next_id} ]; then
-			sysrc -qf ${_conf} current_srv="${i}" > /dev/null 2>&1
-			sysrc -qf ${_conf} current_num="${num}" > /dev/null 2>&1
+			/usr/local/cbsd/misc/cbsdsysrc -qf ${_conf} current_srv="${i}" > /dev/null 2>&1
+			/usr/local/cbsd/misc/cbsdsysrc -qf ${_conf} current_num="${num}" > /dev/null 2>&1
 			echo -n "${i}"
 			exit 0
 		fi

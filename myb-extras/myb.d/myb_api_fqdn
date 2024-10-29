@@ -70,7 +70,7 @@ while [ true ]; do
 	read ofqdn
 	if [ -n "${ofqdn}" ]; then
 		echo "Letsencrypt for: ${ofqdn}..."
-		${SYSRC_CMD} -qf ${tmp_choice} fqdn="${ofqdn}" > /dev/null 2>&1
+		/usr/local/cbsd/misc/cbsdsysrc -qf ${tmp_choice} fqdn="${ofqdn}" > /dev/null 2>&1
 		fqdn="${ofqdn}"
 		break
 	fi
@@ -145,7 +145,7 @@ EOF
 
 ${CHMOD_CMD} +x /root/bin/certbot.sh
 
-${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock ${SYSRC_CMD} -qf /etc/rc.conf API_FQDN="${API_FQDN}" > /dev/null 2>&1
+${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock /usr/local/cbsd/misc/cbsdsysrc -qf /etc/rc.conf API_FQDN="${API_FQDN}" > /dev/null 2>&1
 ${ECHO} "${N1_COLOR}${CBSD_APP}: new VHOST, crontab and certbot installed: ${N2_COLOR}${API_FQDN}${N0_COLOR}"
 ${SERVICE_CMD} nginx reload
 

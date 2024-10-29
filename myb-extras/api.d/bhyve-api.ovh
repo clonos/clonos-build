@@ -121,8 +121,8 @@ create_env()
 #	/sbin/ipfw -q add ${IPFW_RULE} deny ip6 from ${ext_ip} to any out via ${_uplink_iface4}
 
 	# rc.conf
-	${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock ${SYSRC_CMD} -qf /etc/rc.conf cloned_interfaces+="${int_bridge_name}"
-	${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock ${SYSRC_CMD} -qf /etc/rc.conf ifconfig_${int_bridge_name}="${int_br_ip}/24 up description k8s-${MYID}-int"
+	${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock /usr/local/cbsd/misc/cbsdsysrc -qf /etc/rc.conf cloned_interfaces+="${int_bridge_name}"
+	${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock /usr/local/cbsd/misc/cbsdsysrc -qf /etc/rc.conf ifconfig_${int_bridge_name}="${int_br_ip}/24 up description k8s-${MYID}-int"
 
 	${IFCONFIG_CMD} ${int_bridge_name} create description k8s-${MYID}-int
 	${IFCONFIG_CMD} ${int_bridge_name} ${int_br_ip}/24 up
@@ -131,8 +131,8 @@ create_env()
 #	${IFCONFIG_CMD} ${ext_bridge_name} inet6 ${ext_br_ip}/64 up
 
 	# rc.conf
-#	${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock ${SYSRC_CMD} -qf /etc/rc.conf cloned_interfaces+="${ext_bridge_name}"
-#	${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock ${SYSRC_CMD} -qf /etc/rc.conf ifconfig_${ext_bridge_name}="inet6 ${ext_br_ip}/64 up description k8s-${MYID}-ext"
+#	${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock /usr/local/cbsd/misc/cbsdsysrc -qf /etc/rc.conf cloned_interfaces+="${ext_bridge_name}"
+#	${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock /usr/local/cbsd/misc/cbsdsysrc -qf /etc/rc.conf ifconfig_${ext_bridge_name}="inet6 ${ext_br_ip}/64 up description k8s-${MYID}-ext"
 
 	# to post/pre hooks + destroy
 	# todo: route flags in CBSD 13.1.0+

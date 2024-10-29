@@ -75,11 +75,11 @@ gcc12 \
 git \
 libvncserver \
 node \
-npm-node18 \
-php83
-php83-session \
-php83-opcache \
-py39-numpy \
+npm-node23 \
+php84
+php84-session \
+php84-opcache \
+py311-numpy \
 "
 fi
 

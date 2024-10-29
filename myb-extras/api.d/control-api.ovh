@@ -56,8 +56,8 @@ destroy_env()
 
 		${IFCONFIG_CMD} ${int_bridge_name} destroy > /dev/null 2>&1
 #		${IFCONFIG_CMD} ${ext_bridge_name} destroy > /dev/null 2>&1
-		${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock ${SYSRC_CMD} -qf /etc/rc.conf cloned_interfaces-="${int_bridge_name}"
-		${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock ${SYSRC_CMD} -qf /etc/rc.conf ifconfig_${int_bridge_name}=""
+		${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock /usr/local/cbsd/misc/cbsdsysrc -qf /etc/rc.conf cloned_interfaces-="${int_bridge_name}"
+		${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock /usr/local/cbsd/misc/cbsdsysrc -qf /etc/rc.conf ifconfig_${int_bridge_name}=""
 	fi
 
 	# destroy alias

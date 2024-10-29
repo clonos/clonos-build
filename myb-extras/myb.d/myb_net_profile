@@ -141,38 +141,38 @@ echo "Reconfiguring MyBee network profile [ ${old_profile} -> ${new_profile} ]..
 
 case "${new_profile}" in
 	1)
-		${SYSRC_CMD} -qf /usr/jails/etc/bhyve-default-default.conf ci_interface2="" ci_gw42="" > /dev/null 2>&1
+		/usr/local/cbsd/misc/cbsdsysrc -qf /usr/jails/etc/bhyve-default-default.conf ci_interface2="" ci_gw42="" > /dev/null 2>&1
 		${IFCONFIG_CMD} bridge200 > /dev/null 2>&1
 		ret=$?
 		if [ ${ret} -eq 0 ]; then
 			${IFCONFIG_CMD} bridge200 destroy > /dev/null 2>&1
 		fi
-		${SYSRC_CMD} -qf /etc/rc.conf cloned_interfaces-="bridge200" ifconfig_bridge200="" > /dev/null 2>&1
+		/usr/local/cbsd/misc/cbsdsysrc -qf /etc/rc.conf cloned_interfaces-="bridge200" ifconfig_bridge200="" > /dev/null 2>&1
 
 		# k8s
 		[ ! -f /usr/jails/etc/k8world.conf ] && ${TOUCH_CMD} /usr/jails/etc/k8world.conf
-		${SYSRC_CMD} -qf /usr/jails/etc/k8world.conf multi_nic="0" > /dev/null 2>&1
+		/usr/local/cbsd/misc/cbsdsysrc -qf /usr/jails/etc/k8world.conf multi_nic="0" > /dev/null 2>&1
 		;;
 	2)
 		gw42=$( dhcpdv6 )
 
 		# IPTYPE
 
-		${SYSRC_CMD} -qf /usr/jails/etc/bhyve-default-default.conf ci_interface2="bridge200" ci_gw42="${gw42}" > /dev/null 2>&1
+		/usr/local/cbsd/misc/cbsdsysrc -qf /usr/jails/etc/bhyve-default-default.conf ci_interface2="bridge200" ci_gw42="${gw42}" > /dev/null 2>&1
 		${IFCONFIG_CMD} bridge200 > /dev/null 2>&1
 		ret=$?
 		if [ ${ret} -eq 0 ]; then
 			${IFCONFIG_CMD} bridge200 destroy > /dev/null 2>&1
 		fi
-		${SYSRC_CMD} -qf /etc/rc.conf cloned_interfaces+="bridge200" ifconfig_bridge200="inet6 ${gw42}/64 up" > /dev/null 2>&1
+		/usr/local/cbsd/misc/cbsdsysrc -qf /etc/rc.conf cloned_interfaces+="bridge200" ifconfig_bridge200="inet6 ${gw42}/64 up" > /dev/null 2>&1
 		${IFCONFIG_CMD} bridge200 create > /dev/null 2>&1
 		${IFCONFIG_CMD} bridge200 inet6 ${gw42}/64 up > /dev/null 2>&1
 		[ ! -f /usr/jails/etc/k8world.conf ] && ${TOUCH_CMD} /usr/jails/etc/k8world.conf
-		${SYSRC_CMD} -qf /usr/jails/etc/k8world.conf multi_nic="1" > /dev/null 2>&1
+		/usr/local/cbsd/misc/cbsdsysrc -qf /usr/jails/etc/k8world.conf multi_nic="1" > /dev/null 2>&1
 		;;
 esac
 
-${SYSRC_CMD} -qf /etc/rc.conf myb_net_cur_profile="${new_profile}" 2>/dev/null 2>&1
+/usr/local/cbsd/misc/cbsdsysrc -qf /etc/rc.conf myb_net_cur_profile="${new_profile}" 2>/dev/null 2>&1
 echo "DONE"
 read p
 

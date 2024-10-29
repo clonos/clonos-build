@@ -107,7 +107,7 @@ get_pool_flavors()
 
 		for i in ${flavors_available}; do
 			if [ "${i}" = "${oflavors}" ]; then
-				${SYSRC_CMD} -qf ${tmp_choice} flavors="${oflavors}" > /dev/null 2>&1
+				/usr/local/cbsd/misc/cbsdsysrc -qf ${tmp_choice} flavors="${oflavors}" > /dev/null 2>&1
 				flavors="${oflavors}"
 			fi
 		done
@@ -141,7 +141,7 @@ get_pool_images()
 		read oimages
 		for i in ${images_available}; do
 			if [ "${i}" = "${oimages}" ]; then
-				${SYSRC_CMD} -qf ${tmp_choice} images="${oimages}" > /dev/null 2>&1
+				/usr/local/cbsd/misc/cbsdsysrc -qf ${tmp_choice} images="${oimages}" > /dev/null 2>&1
 				images="${oimages}"
 			fi
 		done
@@ -197,7 +197,7 @@ get_pool_repos()
 
 		for i in ${repos_available}; do
 			if [ "${i}" = "${orepos}" ]; then
-				${SYSRC_CMD} -qf ${tmp_choice} repos="${orepos}" > /dev/null 2>&1
+				/usr/local/cbsd/misc/cbsdsysrc -qf ${tmp_choice} repos="${orepos}" > /dev/null 2>&1
 				repos="${orepos}"
 			fi
 		done
@@ -229,7 +229,7 @@ get_pool_max_runners()
 		fi
 
 		if [ ${omax_runners} -gt 0 ]; then
-			${SYSRC_CMD} -qf ${tmp_choice} max_runners="${omax_runners}" > /dev/null 2>&1
+			/usr/local/cbsd/misc/cbsdsysrc -qf ${tmp_choice} max_runners="${omax_runners}" > /dev/null 2>&1
 			max_runners="${omax_runners}"
 		fi
 		[ -n "${max_runners}" ] && break
@@ -256,7 +256,7 @@ get_pool_labels()
 		printf "Enter comma-separated labels: "
 		read olabels
 		labels=$( echo "${labels}" | ${TR_CMD} -d " " )
-		${SYSRC_CMD} -qf ${tmp_choice} labels="${olabels}" > /dev/null 2>&1
+		/usr/local/cbsd/misc/cbsdsysrc -qf ${tmp_choice} labels="${olabels}" > /dev/null 2>&1
 		labels="${olabels}"
 		break
 	done
@@ -289,7 +289,7 @@ get_pool_min_runners()
 			continue
 		fi
 		if [ ${omax_runners} -gt 0 ]; then
-			${SYSRC_CMD} -qf ${tmp_choice} min_runners="${omin_runners}" > /dev/null 2>&1
+			/usr/local/cbsd/misc/cbsdsysrc -qf ${tmp_choice} min_runners="${omin_runners}" > /dev/null 2>&1
 			min_runners="${omin_runners}"
 		fi
 		[ -n "${min_runners}" ] && break
@@ -327,7 +327,7 @@ EOF
 
 	if [ -z "${p}" ]; then
 		echo "APPLY"
-		${SYSRC_CMD} -qf ${tmp_choice} \
+		/usr/local/cbsd/misc/cbsdsysrc -qf ${tmp_choice} \
 			flavors="${flavors}" \
 			images="${images}" \
 			repos="${repos}" \
@@ -430,7 +430,7 @@ if [ -z "${PAT}" ]; then
 		printf "${N1_COLOR}Please insert you PAT here: ${N2_COLOR}"
 		read PAT
 		if [ -n "${PAT}" ]; then
-			${SYSRC_CMD} -qf ${MOD_CONFIG} PAT="${PAT}" > /dev/null 2>&1
+			/usr/local/cbsd/misc/cbsdsysrc -qf ${MOD_CONFIG} PAT="${PAT}" > /dev/null 2>&1
 			break
 		fi
 	done
@@ -443,7 +443,7 @@ fi
 if [ -z "${WEBHOOK_SECRET}" ]; then
 	WEBHOOK_SECRET=$( random_password_gen -l 64 )
 	${ECHO} "${N1_COLOR}${CBSD_APP}: bootstrap, new webhook secret was generated: ${N2_COLOR}${WEBHOOK_SECRET}${N0_COLOR}"
-	${SYSRC_CMD} -qf ${MOD_CONFIG} WEBHOOK_SECRET="${WEBHOOK_SECRET}" > /dev/null 2>&1
+	/usr/local/cbsd/misc/cbsdsysrc -qf ${MOD_CONFIG} WEBHOOK_SECRET="${WEBHOOK_SECRET}" > /dev/null 2>&1
 else
 	${ECHO} "${N1_COLOR}webhook secret exist: ${N2_COLOR}${WEBHOOK_SECRET}${N0_COLOR}"
 fi
@@ -465,7 +465,7 @@ if [ -z "${URL}" ]; then
 		read URL
 		[ -z "${URL}" ] && URL="${URL_EXAMPLE}"
 		if [ -n "${URL}" ]; then
-			${SYSRC_CMD} -qf ${MOD_CONFIG} URL="${URL}" > /dev/null 2>&1
+			/usr/local/cbsd/misc/cbsdsysrc -qf ${MOD_CONFIG} URL="${URL}" > /dev/null 2>&1
 			break
 		fi
 	done
@@ -502,13 +502,13 @@ if [ "${INIT_SUCCESS}" != "1" ]; then
 	${ECHO} "Your URL: ${URL}"
 	# we need to start GARM before init
 	PASSWORD=$( random_password_gen -l 64 )
-	${SYSRC_CMD} -qf ${MOD_CONFIG} PASSWORD="${PASSWORD}" > /dev/null 2>&1
+	/usr/local/cbsd/misc/cbsdsysrc -qf ${MOD_CONFIG} PASSWORD="${PASSWORD}" > /dev/null 2>&1
 	echo "garm-cli init --name="local_garm" --url ${URL} -e root@localhost --username=mybee --password=\"${PASSWORD}\""
 	garm-cli init --name="local_garm" --url ${URL} -e root@localhost --username=mybee --password="${PASSWORD}"
 	_ret=$?
 	echo "ret: ${_ret}"
 	if [ ${_ret} -eq 0 ]; then
-		${SYSRC_CMD} -qf ${MOD_CONFIG} INIT_SUCCESS="1" > /dev/null 2>&1
+		/usr/local/cbsd/misc/cbsdsysrc -qf ${MOD_CONFIG} INIT_SUCCESS="1" > /dev/null 2>&1
 	else
 		err 1 "${N1_COLOR}${CBSD_APP}: failed init${N0_COLOR}"
 	fi
@@ -573,7 +573,7 @@ case "${mode}" in
 		garm-cli repo create --credentials=mybee --name=${reponame} --owner=${owner} --webhook-secret="${WEBHOOK_SECRET}"
 		_ret=$?
 		echo "RET: ${_ret}"
-		${SYSRC} -qf ${MOD_CONFIG} repo+="${owner}/${reponame}" > /dev/null 2>&1
+		/usr/local/cbsd/misc/cbsdsysrc -qf ${MOD_CONFIG} repo+="${owner}/${reponame}" > /dev/null 2>&1
 		;;
 	lsrepo)
 		${ECHO} "${N1_COLOR}List of repo:${N0_COLOR}"
@@ -590,7 +590,7 @@ case "${mode}" in
 		${GARM_CLI_CMD} repo delete ${ID}
 		_ret=$?
 		echo "RET: ${_ret}"
-		[ ${_ret} -eq 0 ] && ${SYSRC} -qf ${MOD_CONFIG} repo-="${owner}/${reponame}" > /dev/null 2>&1
+		[ ${_ret} -eq 0 ] && /usr/local/cbsd/misc/cbsdsysrc -qf ${MOD_CONFIG} repo-="${owner}/${reponame}" > /dev/null 2>&1
 		;;
 	addpool)
 		REPO_COUNT=$( cbsdsqlro /usr/local/etc/garm/garm.db "SELECT COUNT(id) FROM repositories;" 2>/dev/null )

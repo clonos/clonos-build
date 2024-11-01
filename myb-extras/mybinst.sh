@@ -254,7 +254,6 @@ fi
 
 ip4_addr=$( ifconfig ${auto_iface} 2>/dev/null | /usr/bin/awk '/inet [0-9]+/ { print $2}' | /usr/bin/head -n 1 )
 
-
 ## when no IP?
 [ -z "${ip4_addr}" ] && ip4_addr="${myb_default_network}.1"
 
@@ -283,6 +282,7 @@ workdir="/usr/jails"
 jail_interface="${auto_iface}"
 parallel="5"
 stable="0"
+default_vs="1"
 EOF
 
 # todo:on-demand
@@ -305,6 +305,8 @@ export workdir=/usr/jails
 # Command 'hyperv_fattach' not found: FreeBSD-hyperv-tools
 [ -r /etc/devd/hyperv.conf ] && rm -f /etc/devd/hyperv.conf
 
+/usr/sbin/sysrc -qf /usr/jails/etc/global.conf configure_default_cbsd_vs_cidr4="${myb_default_network}.1/24"
+
 /usr/sbin/sysrc \
  utx_enable="NO" \
  netwait_enable="YES" \
@@ -326,8 +328,6 @@ export workdir=/usr/jails
  sendmail_submit_enable="NO" \
  sendmail_outbound_enable="NO" \
  sendmail_msp_queue_enable="NO" \
- cloned_interfaces="bridge100" \
- ifconfig_bridge100="inet ${myb_default_network}.1/24 up" \
  osrelease_enable="NO" \
  mybosrelease_enable="YES" \
  moused_nondefault_enable="NO" \
@@ -545,7 +545,6 @@ cat > ~cbsd/etc/bhyve-default-default.conf <<EOF
 skip_bhyve_init_warning=1
 create_cbsdsystem_tap=0
 ci_gw4="${myb_default_network}.1"
-interface="bridge100"
 EOF
 
 if [ "${myb_manage_nginx}" != "NO" ]; then

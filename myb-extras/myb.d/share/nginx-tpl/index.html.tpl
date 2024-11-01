@@ -71,7 +71,7 @@ pre {
     }
 
     # create cluster by data:
-    [you@home ~$] curl -X POST -H "Content-Type: application/json" -d @debian11.json %%SCHEMA%%://%%IP%%/api/v1/create/vm1
+    [you@home ~$] curl -X POST -H "Content-Type: application/json" -d @debian12.json %%SCHEMA%%://%%IP%%/api/v1/create/vm1
 
     # get your namespace status:
     [you@home ~$] curl -H "cid:&lt;cid&gt;" %%SCHEMA%%://%%IP%%/api/v1/cluster
@@ -91,10 +91,11 @@ pre {
      <span id="contactus" style="display: none;">
      # Сheck out <a target="_blank" href="https://github.com/myb-project/guide">MyB Handbook</a> before start.
 
-     # Get <strong>nubectl</strong>, MyBee thin client for <a href="/nubectl/freebsd/nubectl">FreeBSD</a>, <a href="/nubectl/linux/nubectl">Linux, <a href="/nubectl/darwin/nubectl">MacOS/Darwin</a>, <a href="/nubectl/windows/nubectl">Windows</a>
-     # Reach us <a target="_blank" href="https://t.me/mybgroup">on Telegram</a>
-     # Reach us <a target="_blank" href="https://twitter.com/">on Twitter</a>
-     # Support the project: <a target="_blank" href="https://www.patreon.com/clonos">via Patreon</a>
+     # Get <strong><a target="_blank" href="https://github.com/myb-project/mybee-qt</a></strong>, MyBee QT6-based GUI client for Mobile and PC;
+     # Get <strong>nubectl</strong>, MyBee thin client for <a href="/nubectl/freebsd/nubectl">FreeBSD</a>, <a href="/nubectl/linux/nubectl">Linux, <a href="/nubectl/darwin/nubectl">MacOS/Darwin</a>, <a href="/nubectl/windows/nubectl">Windows</a>;
+     # Reach us <a target="_blank" href="https://t.me/mybgroup">on Telegram</a>;
+     # Reach us <a target="_blank" href="https://twitter.com/">on Twitter</a>;
+     # Support the project: <a target="_blank" href="https://www.patreon.com/clonos">via Patreon</a>;
      </span>
     </output>
 </pre>

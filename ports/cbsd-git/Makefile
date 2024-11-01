@@ -1,10 +1,10 @@
 PORTNAME=	cbsd
-DISTVERSION=	14.1.2a
+DISTVERSION=	14.1.3a
 CATEGORIES=	sysutils
 
 MAINTAINER=	olevole@olevole.ru
 COMMENT=	Yet another FreeBSD Jail, XEN and Bhyve Management Utility
-WWW=		https://www.bsdstore.ru
+WWW=		https://github.com/cbsd/cbsd
 
 LICENSE=	BSD2CLAUSE
 LICENSE_FILE=	${WRKSRC}/LICENSE
@@ -21,7 +21,7 @@ RUN_DEPENDS=	${LOCALBASE}/share/certs/ca-root-nss.crt:security/ca_root_nss \
 
 USES=		compiler:c++11-lang libedit pkgconfig:both
 USE_GITHUB=	yes
-GH_TAGNAME=	d4ddac7
+GH_TAGNAME=	e8ea70d
 USE_RC_SUBR=	cbsdd cbsdrsyncd cbsd-statsd-bhyve cbsd-statsd-hoster \
 		cbsd-statsd-jail
 MAKE_JOBS_UNSAFE=	yes

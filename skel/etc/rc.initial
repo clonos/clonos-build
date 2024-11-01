@@ -376,11 +376,11 @@ while : ; do
 		16)
 			if [ ! -x /usr/local/bin/certbot ]; then
 				if getyesno "The system does not have the 'certbot' package. It seems you are running it for the first time. Can I install the necessary software to continue?"; then
-					env ASSUME_ALWAYS_YES=yes SIGNATURE_TYPE=none IGNORE_OSVERSION=yes /usr/sbin/pkg install -r MyBee-latest -y py39-certbot
+					env ASSUME_ALWAYS_YES=yes SIGNATURE_TYPE=none IGNORE_OSVERSION=yes /usr/sbin/pkg install -r MyBee-latest -y py311-certbot
 				fi
 			fi
 			if [ ! -x /usr/local/bin/certbot ]; then
-				${ECHO} "${N1_COLOR}error: no such /usr/local/bin/certbot, please install first: py39-certbot"
+				${ECHO} "${N1_COLOR}error: no such /usr/local/bin/certbot, please install first: py311-certbot"
 			else
 				_editfile=1		# always edit file
 				case ${API_FQDN} in

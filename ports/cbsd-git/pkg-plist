@@ -14,7 +14,6 @@ share/man/man8/cbsd.8.gz
 %%FBSD%%cbsd/tools/racct-jail-statsd
 %%FBSD%%cbsd/tools/vale-ctl
 %%X86%%cbsd/misc/popcnttest
-
 cbsd/.clang-format
 cbsd/.gitignore
 cbsd/.ssh/config
@@ -215,13 +214,9 @@ cbsd/etc/defaults/vm-freebsd-FreeBSD-from-jail.conf
 cbsd/etc/defaults/vm-freebsd-FreeBSD-img-aarch64-13.3.conf
 cbsd/etc/defaults/vm-freebsd-FreeBSD-img-arm64-13.3.conf
 cbsd/etc/defaults/vm-freebsd-FreeBSD-riscv64-14.1.conf
+cbsd/etc/defaults/vm-freebsd-FreeBSD-x64-13.4.conf
 cbsd/etc/defaults/vm-freebsd-FreeBSD-x64-14.1.conf
 cbsd/etc/defaults/vm-freebsd-FreeBSD-x64-15.0-LATEST.conf
-cbsd/etc/defaults/vm-freebsd-FreeBSD-x64-13.4.conf
-cbsd/etc/defaults/vm-freebsd-cloud-FreeBSD-ufs-x64-13.4.conf
-cbsd/etc/defaults/vm-freebsd-cloud-FreeBSD-zfs-x64-13.4.conf
-cbsd/etc/defaults/vm-linux-Gentoo-x86-2024.conf
-cbsd/tools/capabilities
 cbsd/etc/defaults/vm-freebsd-GhostBSD-x64-24.conf
 cbsd/etc/defaults/vm-freebsd-HardenedBSD-x64-14-STABLE.conf
 cbsd/etc/defaults/vm-freebsd-MidnightBSD-x64-3.conf
@@ -230,13 +225,15 @@ cbsd/etc/defaults/vm-freebsd-TrueNAS-CORE-x64-13.conf
 cbsd/etc/defaults/vm-freebsd-XigmaNAS-13.conf
 cbsd/etc/defaults/vm-freebsd-cloud-FreeBSD-ufs-x64-13.2.conf
 cbsd/etc/defaults/vm-freebsd-cloud-FreeBSD-ufs-x64-13.3.conf
+cbsd/etc/defaults/vm-freebsd-cloud-FreeBSD-ufs-x64-13.4.conf
 cbsd/etc/defaults/vm-freebsd-cloud-FreeBSD-ufs-x64-14.1.conf
 cbsd/etc/defaults/vm-freebsd-cloud-FreeBSD-ufs-x64-15.conf
 cbsd/etc/defaults/vm-freebsd-cloud-FreeBSD-zfs-x64-13.2.conf
 cbsd/etc/defaults/vm-freebsd-cloud-FreeBSD-zfs-x64-13.3.conf
+cbsd/etc/defaults/vm-freebsd-cloud-FreeBSD-zfs-x64-13.4.conf
 cbsd/etc/defaults/vm-freebsd-cloud-FreeBSD-zfs-x64-14.1.conf
 cbsd/etc/defaults/vm-freebsd-cloud-FreeBSD-zfs-x64-15.conf
-cbsd/etc/defaults/vm-freebsd-cloud-GhostBSD-ufs-x64-22.conf
+cbsd/etc/defaults/vm-freebsd-cloud-GhostBSD-zfs-x64-24.conf
 cbsd/etc/defaults/vm-freebsd-cloud-OPNSense-22-RELEASE-amd64-22.conf
 cbsd/etc/defaults/vm-freebsd-cloud-XigmaNAS-13-amd64.conf
 cbsd/etc/defaults/vm-freebsd-cloud-firestarter-ufs-x64-14.conf
@@ -263,6 +260,7 @@ cbsd/etc/defaults/vm-linux-Debian-x86-12.conf
 cbsd/etc/defaults/vm-linux-Devuan-x86-5.conf
 cbsd/etc/defaults/vm-linux-EuroLinux-9-x86_64.conf
 cbsd/etc/defaults/vm-linux-FreePBX-64bit-16.conf
+cbsd/etc/defaults/vm-linux-Gentoo-x86-2024.conf
 cbsd/etc/defaults/vm-linux-Kali-2024-amd64.conf
 cbsd/etc/defaults/vm-linux-Manjaro-x86-2024.conf
 cbsd/etc/defaults/vm-linux-Mint-22.conf
@@ -300,6 +298,7 @@ cbsd/etc/defaults/vm-linux-cloud-Fedora-40-x86_64.conf
 cbsd/etc/defaults/vm-linux-cloud-FreePBX-16-x86_64.conf
 cbsd/etc/defaults/vm-linux-cloud-HomeAssistantOS-2024.conf
 cbsd/etc/defaults/vm-linux-cloud-Kali-2022-amd64.conf
+cbsd/etc/defaults/vm-linux-cloud-Kali-2024-amd64.conf
 cbsd/etc/defaults/vm-linux-cloud-Oracle-7-x86_64.conf
 cbsd/etc/defaults/vm-linux-cloud-Oracle-8-x86_64.conf
 cbsd/etc/defaults/vm-linux-cloud-Oracle-9-x86_64.conf
@@ -309,6 +308,7 @@ cbsd/etc/defaults/vm-linux-cloud-Rocky-9-x86_64.conf
 cbsd/etc/defaults/vm-linux-cloud-firestarter-debian-11.conf
 cbsd/etc/defaults/vm-linux-cloud-kubernetes-27.conf
 cbsd/etc/defaults/vm-linux-cloud-ubuntudesktop-amd64-22.04.conf
+cbsd/etc/defaults/vm-linux-cloud-ubuntudesktop-amd64-24.04.conf
 cbsd/etc/defaults/vm-linux-cloud-ubuntuserver-amd64-20.conf
 cbsd/etc/defaults/vm-linux-cloud-ubuntuserver-amd64-22.04.conf
 cbsd/etc/defaults/vm-linux-cloud-ubuntuserver-amd64-23.04.conf
@@ -336,7 +336,7 @@ cbsd/etc/defaults/vm-netbsd-cloud-netbsd-x86-9.conf
 cbsd/etc/defaults/vm-netbsd-x86-10.conf
 cbsd/etc/defaults/vm-netbsd-x86-9.conf
 cbsd/etc/defaults/vm-openbsd-cloud-openbsd-x86-7.conf
-cbsd/etc/defaults/vm-openbsd-cloud-openbsd-x86-74.conf
+cbsd/etc/defaults/vm-openbsd-cloud-openbsd-x86-75.conf
 cbsd/etc/defaults/vm-openbsd-x86-7.conf
 cbsd/etc/defaults/vm-other-FreeDOS.conf
 cbsd/etc/defaults/vm-other-Haiku-r1.conf
@@ -410,12 +410,14 @@ cbsd/misc/cbsd_dot
 cbsd/misc/cbsd_fwatch
 cbsd/misc/cbsd_md5
 cbsd/misc/cbsdlogtail
+cbsd/misc/cbsdsysrc
 cbsd/misc/cbsdtee
 cbsd/misc/chk_arp_byip
 cbsd/misc/cmdboot
 cbsd/misc/config_pkgrepo
 cbsd/misc/conv2human
 cbsd/misc/daemon
+cbsd/misc/daemonize
 cbsd/misc/detect-emulation
 cbsd/misc/disks-list
 cbsd/misc/dump_cpu_topology
@@ -432,7 +434,6 @@ cbsd/misc/resolv
 cbsd/misc/sipcalc
 cbsd/misc/sqlcli
 cbsd/misc/symlink_changer
-cbsd/misc/sysrc
 cbsd/misc/tmpfsdir
 cbsd/misc/updatesql
 cbsd/modules/.gitignore
@@ -769,9 +770,15 @@ cbsd/share/bsdconfig/cbsd/xendsk
 cbsd/share/bsdconfig/cbsd/xendsk-cfgdsk
 cbsd/share/bsdconfig/cbsd/xendsk-newdsk
 cbsd/share/bsdconfig/cbsd/xennic
+cbsd/share/bsdconfig/common.subr
+cbsd/share/bsdconfig/dialog.subr
+cbsd/share/bsdconfig/mustberoot.subr
+cbsd/share/bsdconfig/strings.subr
+cbsd/share/bsdconfig/struct.subr
+cbsd/share/bsdconfig/sysrc.subr
+cbsd/share/bsdconfig/variable.subr
 cbsd/share/carp.conf
 cbsd/share/cbsd_carp.conf
-cbsd/share/cbsdinit.sample
 cbsd/share/cbsdtaskd-taskd.schema
 cbsd/share/devfs.rules.sample
 cbsd/share/emulators/ostype_bhyve.subr
@@ -809,6 +816,9 @@ cbsd/share/examples/env_start/nfsv4/env_start_nfs.conf
 cbsd/share/examples/env_start/nfsv4/env_start_nfs.sh
 cbsd/share/examples/jails-fstab/ntfs-3g.sh
 cbsd/share/examples/nodes/add.d/addhost.sh
+cbsd/share/examples/ovs/auto_configure_nic.sh
+cbsd/share/examples/systemd/README.md
+cbsd/share/examples/systemd/cbsdd.service
 cbsd/share/forms.schema
 cbsd/share/forms_system.schema
 cbsd/share/forms_yesno.schema
@@ -836,6 +846,7 @@ cbsd/share/jail-system-default/start.d/placeholder
 cbsd/share/jail-system-default/stop.d/placeholder
 cbsd/share/jail.jconf
 cbsd/share/jrctl-arg
+cbsd/share/libexec/bsdconfig/include/messages.subr
 cbsd/share/local-authkey.schema
 cbsd/share/local-bhyve-cpu_topology.schema
 cbsd/share/local-bhyve-dskcontroller.schema
@@ -904,7 +915,6 @@ cbsd/share/qemunic.conf
 cbsd/share/racct.schema
 cbsd/share/rctl.conf
 cbsd/share/storage_pools.conf
-cbsd/share/sysrc/sysrc.subr
 cbsd/share/system-expose.schema
 cbsd/share/virtualbox.conf
 cbsd/share/virtualboxdsk.conf
@@ -1077,6 +1087,7 @@ cbsd/tools/bhyve-p9shares
 cbsd/tools/bhyve-ppt
 cbsd/tools/bootmgmt
 cbsd/tools/bootmgmt-pxe
+cbsd/tools/capabilities
 cbsd/tools/carpcfg
 cbsd/tools/carpcontrol
 cbsd/tools/cbsdchown
@@ -1097,6 +1108,7 @@ cbsd/tools/distccmakeconf
 cbsd/tools/emulator
 cbsd/tools/expose
 cbsd/tools/fetch_iso
+cbsd/tools/find_free_cidr4
 cbsd/tools/forms
 cbsd/tools/freectr
 cbsd/tools/freejname
@@ -1338,6 +1350,8 @@ cbsd/upgrade/pre-patch-14.0.3.0
 cbsd/upgrade/pre-patch-14.0.8.1
 cbsd/upgrade/pre-patch-14.1.0.0
 cbsd/upgrade/pre-patch-14.1.1.0
+cbsd/upgrade/pre-patch-14.1.3.0
+cbsd/upgrade/pre-patch-14.1.3.1
 cbsd/vboxctl/vconfig
 cbsd/vboxctl/vconstruct-tui
 cbsd/vboxctl/vcontrol-tui
@@ -1369,6 +1383,7 @@ cbsd/xenctl/xstop
 cbsd/xenctl/xunregister
 cbsd/xenctl/xwhereis
 libexec/bsdconfig/cbsd
+cbsd/.github/FUNDING.yml
 cbsd/.github/workflows/main.yml
 cbsd/.pre-commit-config.yaml
 cbsd/tests/cbsd_bcreate_ci_settings.sh
@@ -1386,4 +1401,4 @@ cbsd/tests/cbsd_mountfstab_test.sh
 cbsd/tests/cbsd_vnet_ipv4v6.sh
 cbsd/tests/runall
 cbsd/tests/shunit2
-cbsd/.github/FUNDING.yml
+

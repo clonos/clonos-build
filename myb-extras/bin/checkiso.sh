@@ -10,7 +10,7 @@ fi
 
 ECHO="echo -e"
 
-check="jail alma9 arch22 centos7 centos8 centos9 debian11 debian12 devuan5 dflybsd6 euro9 fedora37 fedora38 fedora39 fedora40 freebsd13_ufs freebsd13_zfs freebsd14_ufs freebsd14_zfs freebsd15_ufs freebsd15_zfs freefire14_ufs freepbx ghostbsd24 homeass kali2022 k8s netbsd9 netbsd10 openbsd7 opnsense22 oracle7 oracle8 oracle9 rocky8 rocky9 ubuntu22 ubuntu22_vdi ubuntu24 ubuntu24_vdi xigmanas"
+check="jail alma9 arch22 centos7 centos8 centos9 debian11 debian12 devuan5 dflybsd6 euro9 fedora37 fedora38 fedora39 fedora40 freebsd13_ufs freebsd13_zfs freebsd14_ufs freebsd14_zfs freebsd15_ufs freebsd15_zfs freefire14_ufs freepbx ghostbsd24 homeass kali2024 k8s netbsd9 netbsd10 openbsd7 opnsense22 oracle7 oracle8 oracle9 rocky8 rocky9 ubuntu22 ubuntu22_vdi ubuntu24 ubuntu24_vdi xigmanas"
 
 if [ -z "${ver}" -o "${ver}" = "native" ]; then
 	tmpver=$( uname -r )
@@ -43,17 +43,17 @@ freebsd13_ufs_iso="${workdir}/src/iso/cbsd-cloud-FreeBSD-ufs-13.4.0-RELEASE-amd6
 freebsd13_zfs_iso="${workdir}/src/iso/cbsd-cloud-FreeBSD-zfs-13.4.0-RELEASE-amd64.raw"
 freebsd14_ufs_iso="${workdir}/src/iso/cbsd-cloud-FreeBSD-ufs-14.1.0-CURRENT-amd64.raw"
 freebsd14_zfs_iso="${workdir}/src/iso/cbsd-cloud-FreeBSD-zfs-14.1.0-CURRENT-amd64.raw"
-freebsd15_ufs_iso="${workdir}/src/iso/cbsd-cloud-FreeBSD-ufs-15.0.3-CURRENT-amd64.raw"
-freebsd15_zfs_iso="${workdir}/src/iso/cbsd-cloud-FreeBSD-zfs-15.0.3-CURRENT-amd64.raw"
+freebsd15_ufs_iso="${workdir}/src/iso/cbsd-cloud-FreeBSD-ufs-15.0.4-CURRENT-amd64.raw"
+freebsd15_zfs_iso="${workdir}/src/iso/cbsd-cloud-FreeBSD-zfs-15.0.4-CURRENT-amd64.raw"
 freefire14_ufs_iso="${workdir}/src/iso/cbsd-cloud-firestarter-ufs-14.0-RELEASE-amd64.raw"
 freepbx_iso="${workdir}/src/iso/cbsd-cloud-FreePBX-16.0-x86_64-cloud.raw"
 ghostbsd24_iso="${workdir}/src/iso/cbsd-cloud-GhostBSD-zfs-x64-24.07-RELEASE-amd64.raw"
 homeass_iso="${workdir}/src/iso/cbsd-iso-haos_generic-x86-64-12.1.img"
-kali2022_iso="${workdir}/src/iso/cbsd-cloud-cloud-Kali-2022-amd64.raw"
+kali2024_iso="${workdir}/src/iso/cbsd-cloud-cloud-Kali-2024-amd64.raw"
 k8s_iso="${workdir}/src/iso/cbsd-cloud-cloud-kubernetes-27.1.2.raw"
 netbsd10_iso="${workdir}/src/iso/cbsd-cloud-netbsd-10.0.raw"
 netbsd9_iso="${workdir}/src/iso/cbsd-cloud-netbsd-9.3.raw"
-openbsd7_iso="${workdir}/src/iso/cbsd-cloud-openbsd-75.raw"
+openbsd7_iso="${workdir}/src/iso/cbsd-cloud-openbsd-76.raw"
 opnsense22_iso="${workdir}/src/iso/cbsd-cloud-OPNSense-22.7-RELEASE-amd64.raw"
 oracle7_iso="${workdir}/src/iso/cbsd-cloud-Oracle-7.9.0-x86_64-cloud.raw"
 oracle8_iso="${workdir}/src/iso/cbsd-cloud-Oracle-8.8.0-x86_64-cloud.raw"

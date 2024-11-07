@@ -64,10 +64,6 @@ hash -r
 /usr/local/bin/cbsd get-profiles src=cloud json=1 > /usr/local/www/public/profiles.html
 EOF
 
-echo "TEST"
-read p
-
-
 # /usr/local/bin/spacevm-perf-fio-run
 for i in /usr/local/sbin/nginx /usr/local/myb/version /usr/local/bin/cbsd /usr/local/bin/cbsd-mq-api /usr/local/bin/cbsd-mq-router /usr/local/bin/curl /usr/local/bin/jq /usr/local/bin/genisoimage /usr/local/bin/beanstalkd /usr/local/bin/bash /usr/local/sbin/dmidecode /usr/local/bin/ttyd; do
 	if [ ! -r "${cbsd_workdir}/jails-data/${jname}-data${i}" ]; then

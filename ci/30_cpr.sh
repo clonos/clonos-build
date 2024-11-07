@@ -5,6 +5,7 @@ progdir="${0%/*}"			# Program directory
 progdir=$( realpath ${progdir} )
 progdir=$( dirname ${progdir} )
 . ${progdir}/cmd.subr
+
 . ${progdir}/brand.conf
 dstdir=$( ${MKTEMP_CMD} -d )
 

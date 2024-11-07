@@ -56,6 +56,7 @@ column
 chmod
 chown
 chroot
+chflags
 cp
 curl
 cut
@@ -74,6 +75,7 @@ mount
 mv
 mktemp
 openssl
+pw
 realpath
 readlink
 rm
@@ -262,7 +264,7 @@ fi		## PREPARE
 # not for half:
 set -o errexit
 
-if [ 3 -gt 2 ]; then
+if [ 1 -gt 2 ]; then
 
 ## cleanup
 st_time=$( ${DATE_CMD} +%s )
@@ -306,8 +308,6 @@ time_stats "${N1_COLOR}cpr done"
 end_time=$( ${DATE_CMD} +%s )
 diff_time=$(( end_time - st_time ))
 put_prometheus_file_metrics "rebuild-full" "cpr" ${diff_time}
-fi
-
 
 # cpr-micro
 #st_time=$( ${DATE_CMD} +%s )
@@ -325,7 +325,7 @@ end_time=$( ${DATE_CMD} +%s )
 diff_time=$(( end_time - st_time ))
 put_prometheus_file_metrics "rebuild-full" "updaterepo" ${diff_time}
 
-exit 0
+fi
 
 ### HALF-build
 #fi

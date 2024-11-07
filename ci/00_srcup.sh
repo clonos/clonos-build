@@ -10,7 +10,15 @@ set +e
 . ${progdir}/brand.conf
 
 echo "Build ${OSNAME} base version: ${mybbasever}"
-cbsd srcup ver=${mybbasever} rev=65691b2dafd
+
+case "${ver}" in
+	15*)
+		cbsd srcup ver=${mybbasever} rev=65691b2dafd
+		;;
+	14*)
+		cbsd srcup ver=${mybbasever}
+		;;
+esac
 
 src_dir_makefile="${cbsd_workdir}/src/src_${mybbasever}/src/Makefile"
 

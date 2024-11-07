@@ -16,7 +16,6 @@ progdir=$( dirname ${progdir} )
 . ${progdir}/cmd.subr
 . ${progdir}/brand.conf
 
-
 ver_w_point=$( echo ${mybbasever} | tr -d '.' )
 
 # re-check before upload

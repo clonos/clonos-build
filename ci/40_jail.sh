@@ -64,6 +64,9 @@ hash -r
 /usr/local/bin/cbsd get-profiles src=cloud json=1 > /usr/local/www/public/profiles.html
 EOF
 
+echo "TEST"
+read p
+
 
 # /usr/local/bin/spacevm-perf-fio-run
 for i in /usr/local/sbin/nginx /usr/local/myb/version /usr/local/bin/cbsd /usr/local/bin/cbsd-mq-api /usr/local/bin/cbsd-mq-router /usr/local/bin/curl /usr/local/bin/jq /usr/local/bin/genisoimage /usr/local/bin/beanstalkd /usr/local/bin/bash /usr/local/sbin/dmidecode /usr/local/bin/ttyd; do
@@ -106,7 +109,7 @@ case "${OSNAME}" in
 esac
 
 # set brand
-sysrc -qf ${cbsd_workdir}/jails-data/${jname}-data/etc/rc.conf \
+/usr/local/cbsd/misc/cbsdsysrc -qf ${cbsd_workdir}/jails-data/${jname}-data/etc/rc.conf \
 	producturl="${producturl}" \
 	bugreporturl="${bugreporturl}" > /dev/null 2>&1
 
@@ -166,66 +169,66 @@ vmm_load="YES"
 zfs_load="YES"
 EOF
 
-pw -R ${cbsd_workdir}/jails-data/${jname}-data usermod root -s /bin/csh
-echo "cbsd" | pw -R ${cbsd_workdir}/jails-data/${jname}-data usermod "root" -h 0
+${PW_CMD} -R ${cbsd_workdir}/jails-data/${jname}-data usermod root -s /bin/csh
+echo "cbsd" | ${PW_CMD} -R ${cbsd_workdir}/jails-data/${jname}-data usermod "root" -h 0
 
-find  ${cbsd_workdir}/jails-data/${jname}-data/ -type f -name \*.a -delete
-find  ${cbsd_workdir}/jails-data/${jname}-data/ -type f -name \*.o -delete
-chflags -R noschg ${cbsd_workdir}/jails-data/${jname}-data
-rm -rf ${cbsd_workdir}/jails-data/${jname}-data/usr/lib32
-rm -rf ${cbsd_workdir}/jails-data/${jname}-data/usr/tests
-rm -rf ${cbsd_workdir}/jails-data/${jname}-data/usr/include
-rm -rf ${cbsd_workdir}/jails-data/${jname}-data/usr/share/man
-rm -rf ${cbsd_workdir}/jails-data/${jname}-data/usr/share/doc
-rm -rf ${cbsd_workdir}/jails-data/${jname}-data/usr/share/nls
-rm -rf ${cbsd_workdir}/jails-data/${jname}-data/usr/share/games
-rm -rf ${cbsd_workdir}/jails-data/${jname}-data/usr/share/examples
+${FIND_CMD} ${cbsd_workdir}/jails-data/${jname}-data/ -type f -name \*.a -delete
+${FIND_CMD} ${cbsd_workdir}/jails-data/${jname}-data/ -type f -name \*.o -delete
+${CHFLAGS_CMD} -R noschg ${cbsd_workdir}/jails-data/${jname}-data
+${RM_CMD} -rf ${cbsd_workdir}/jails-data/${jname}-data/usr/lib32
+${RM_CMD} -rf ${cbsd_workdir}/jails-data/${jname}-data/usr/tests
+${RM_CMD} -rf ${cbsd_workdir}/jails-data/${jname}-data/usr/include
+${RM_CMD} -rf ${cbsd_workdir}/jails-data/${jname}-data/usr/share/man
+${RM_CMD} -rf ${cbsd_workdir}/jails-data/${jname}-data/usr/share/doc
+${RM_CMD} -rf ${cbsd_workdir}/jails-data/${jname}-data/usr/share/nls
+${RM_CMD} -rf ${cbsd_workdir}/jails-data/${jname}-data/usr/share/games
+${RM_CMD} -rf ${cbsd_workdir}/jails-data/${jname}-data/usr/share/examples
 
-rm -f ${cbsd_workdir}/jails-data/${jname}-data/usr/libexec/atf-check
-rm -f ${cbsd_workdir}/jails-data/${jname}-data/usr/libexec/kcm
-rm -f ${cbsd_workdir}/jails-data/${jname}-data/usr/libexec/dma
-rm -f ${cbsd_workdir}/jails-data/${jname}-data/usr/libexec/smrsh
-rm -f ${cbsd_workdir}/jails-data/${jname}-data/usr/libexec/tftp-proxy
-rm -f ${cbsd_workdir}/jails-data/${jname}-data/usr/libexec/mail.local
-rm -f ${cbsd_workdir}/jails-data/${jname}-data/usr/libexec/ftpd
-rm -f ${cbsd_workdir}/jails-data/${jname}-data/usr/libexec/flua
+${RM_CMD} -f ${cbsd_workdir}/jails-data/${jname}-data/usr/libexec/atf-check
+${RM_CMD} -f ${cbsd_workdir}/jails-data/${jname}-data/usr/libexec/kcm
+${RM_CMD} -f ${cbsd_workdir}/jails-data/${jname}-data/usr/libexec/dma
+${RM_CMD} -f ${cbsd_workdir}/jails-data/${jname}-data/usr/libexec/smrsh
+${RM_CMD} -f ${cbsd_workdir}/jails-data/${jname}-data/usr/libexec/tftp-proxy
+${RM_CMD} -f ${cbsd_workdir}/jails-data/${jname}-data/usr/libexec/mail.local
+${RM_CMD} -f ${cbsd_workdir}/jails-data/${jname}-data/usr/libexec/ftpd
+${RM_CMD} -f ${cbsd_workdir}/jails-data/${jname}-data/usr/libexec/flua
 
-rm -f ${cbsd_workdir}/jails-data/${jname}-data/usr/bin/cpp
-rm -f ${cbsd_workdir}/jails-data/${jname}-data/usr/bin/clang-cpp
-rm -f ${cbsd_workdir}/jails-data/${jname}-data/usr/bin/clang++
-rm -f ${cbsd_workdir}/jails-data/${jname}-data/usr/bin/clang
-rm -f ${cbsd_workdir}/jails-data/${jname}-data/usr/bin/cc
-rm -f ${cbsd_workdir}/jails-data/${jname}-data/usr/bin/c++
-rm -f ${cbsd_workdir}/jails-data/${jname}-data/usr/bin/lldb
-rm -f ${cbsd_workdir}/jails-data/${jname}-data/usr/bin/ld.lld
-rm -f ${cbsd_workdir}/jails-data/${jname}-data/usr/bin/lldb-server
-rm -f ${cbsd_workdir}/jails-data/${jname}-data/usr/bin/objdump
-rm -f ${cbsd_workdir}/jails-data/${jname}-data/usr/bin/llvm-objdump
-rm -f ${cbsd_workdir}/jails-data/${jname}-data/usr/bin/llvm-nm
-rm -f ${cbsd_workdir}/jails-data/${jname}-data/usr/bin/llvm-ranlib
-rm -f ${cbsd_workdir}/jails-data/${jname}-data/usr/bin/llvm-ar
-rm -f ${cbsd_workdir}/jails-data/${jname}-data/usr/bin/llvm-readobj
-rm -f ${cbsd_workdir}/jails-data/${jname}-data/usr/bin/llvm-readelf
-rm -f ${cbsd_workdir}/jails-data/${jname}-data/usr/bin/llvm-profdata
-rm -f ${cbsd_workdir}/jails-data/${jname}-data/usr/bin/llvm-symbolizer
-rm -f ${cbsd_workdir}/jails-data/${jname}-data/usr/bin/llvm-addr2line
-rm -f ${cbsd_workdir}/jails-data/${jname}-data/usr/bin/llvm-cov
-rm -f ${cbsd_workdir}/jails-data/${jname}-data/usr/bin/gcov
-rm -f ${cbsd_workdir}/jails-data/${jname}-data/usr/bin/llvm-strip
-rm -f ${cbsd_workdir}/jails-data/${jname}-data/usr/bin/llvm-objcopy
-rm -f ${cbsd_workdir}/jails-data/${jname}-data/usr/bin/llvm-size
-rm -f ${cbsd_workdir}/jails-data/${jname}-data/usr/bin/kyua
+${RM_CMD} -f ${cbsd_workdir}/jails-data/${jname}-data/usr/bin/cpp
+${RM_CMD} -f ${cbsd_workdir}/jails-data/${jname}-data/usr/bin/clang-cpp
+${RM_CMD} -f ${cbsd_workdir}/jails-data/${jname}-data/usr/bin/clang++
+${RM_CMD} -f ${cbsd_workdir}/jails-data/${jname}-data/usr/bin/clang
+${RM_CMD} -f ${cbsd_workdir}/jails-data/${jname}-data/usr/bin/cc
+${RM_CMD} -f ${cbsd_workdir}/jails-data/${jname}-data/usr/bin/c++
+${RM_CMD} -f ${cbsd_workdir}/jails-data/${jname}-data/usr/bin/lldb
+${RM_CMD} -f ${cbsd_workdir}/jails-data/${jname}-data/usr/bin/ld.lld
+${RM_CMD} -f ${cbsd_workdir}/jails-data/${jname}-data/usr/bin/lldb-server
+${RM_CMD} -f ${cbsd_workdir}/jails-data/${jname}-data/usr/bin/objdump
+${RM_CMD} -f ${cbsd_workdir}/jails-data/${jname}-data/usr/bin/llvm-objdump
+${RM_CMD} -f ${cbsd_workdir}/jails-data/${jname}-data/usr/bin/llvm-nm
+${RM_CMD} -f ${cbsd_workdir}/jails-data/${jname}-data/usr/bin/llvm-ranlib
+${RM_CMD} -f ${cbsd_workdir}/jails-data/${jname}-data/usr/bin/llvm-ar
+${RM_CMD} -f ${cbsd_workdir}/jails-data/${jname}-data/usr/bin/llvm-readobj
+${RM_CMD} -f ${cbsd_workdir}/jails-data/${jname}-data/usr/bin/llvm-readelf
+${RM_CMD} -f ${cbsd_workdir}/jails-data/${jname}-data/usr/bin/llvm-profdata
+${RM_CMD} -f ${cbsd_workdir}/jails-data/${jname}-data/usr/bin/llvm-symbolizer
+${RM_CMD} -f ${cbsd_workdir}/jails-data/${jname}-data/usr/bin/llvm-addr2line
+${RM_CMD} -f ${cbsd_workdir}/jails-data/${jname}-data/usr/bin/llvm-cov
+${RM_CMD} -f ${cbsd_workdir}/jails-data/${jname}-data/usr/bin/gcov
+${RM_CMD} -f ${cbsd_workdir}/jails-data/${jname}-data/usr/bin/llvm-strip
+${RM_CMD} -f ${cbsd_workdir}/jails-data/${jname}-data/usr/bin/llvm-objcopy
+${RM_CMD} -f ${cbsd_workdir}/jails-data/${jname}-data/usr/bin/llvm-size
+${RM_CMD} -f ${cbsd_workdir}/jails-data/${jname}-data/usr/bin/kyua
 
-rm -f ${cbsd_workdir}/jails-data/${jname}-data/usr/lib/libpmc.so.5
+${RM_CMD} -f ${cbsd_workdir}/jails-data/${jname}-data/usr/lib/libpmc.so.5
 
-rm -f ${cbsd_workdir}/jails-data/${jname}-data/usr/sbin/cxgbetool
-rm -f ${cbsd_workdir}/jails-data/${jname}-data/usr/sbin/tcpdump
-rm -f ${cbsd_workdir}/jails-data/${jname}-data/usr/sbin/wpa_supplicant
+${RM_CMD} -f ${cbsd_workdir}/jails-data/${jname}-data/usr/sbin/cxgbetool
+${RM_CMD} -f ${cbsd_workdir}/jails-data/${jname}-data/usr/sbin/tcpdump
+${RM_CMD} -f ${cbsd_workdir}/jails-data/${jname}-data/usr/sbin/wpa_supplicant
 
-rm -f ${cbsd_workdir}/jails-data/${jname}-data/bin/tcsh
-rm -rf ${cbsd_workdir}/jails-data/${jname}-data/usr/lib/debug
+${RM_CMD} -f ${cbsd_workdir}/jails-data/${jname}-data/bin/tcsh
+${RM_CMD} -rf ${cbsd_workdir}/jails-data/${jname}-data/usr/lib/debug
 
-rm -f ${cbsd_workdir}/jails-data/${jname}-data/etc/issue
+${RM_CMD} -f ${cbsd_workdir}/jails-data/${jname}-data/etc/issue
 
 echo "Convert ${jname} to bhyve image into /tmp..."
 ## convert to bhyve
@@ -240,6 +243,11 @@ echo "Convert ${jname} to bhyve image into /tmp..."
 #ret=$?
 
 cd ${cbsd_workdir}/jails-data/${jname}-data/
-env XZ_OPT="-9 -T8" tar -cJf /root/base.txz .
+
+# remove hw_probe_enabled
+cp -a ${cbsd_workdir}/jails-data/${jname}-data/etc/rc.conf /tmp
+grep -v hw_probe /tmp/rc.conf > ${cbsd_workdir}/jails-data/${jname}-data/etc/rc.conf
+
+env XZ_OPT="-9 -T8" ${TAR_CMD} -cJf /root/base.txz .
 
 #cbsd up cbsdfile=${progdir}/micro-CBSDfile ver="${mybbasever}"

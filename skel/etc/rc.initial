@@ -246,6 +246,19 @@ while : ; do
 	if [ -n "${SOCKS5_PROXY}" ]; then
 		echo -e "        Proxy enabled: ${PROXY_ARGS}"
 	fi
+	case "${ttyd_enable}" in
+		[Yy][Ee][Ss])
+			case "${API_FQDN}" in
+				disabled|"")
+					echo -e "        Websocket CLI/Shell enabled: ${H3_COLOR}http://${ip4}/shell${NORMAL}"
+					;;
+				*)
+					echo -e "        Websocket CLI/Shell enabled: ${W1_COLOR}http://${ip4}/shell (${H3_COLOR}https://${API_FQDN}/shell${W1_COLOR})${NORMAL}"
+					;;
+			esac
+			;;
+	esac
+
 	# display menu
 	echo
 	echo "Console Menu"

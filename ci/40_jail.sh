@@ -27,9 +27,17 @@ ${MOUNT_CMD} -t devfs devfs ${cbsd_workdir}/jails-data/${jname}-data/dev
 
 PKG_BASE="FreeBSD-runtime"
 
-if [ -r "${progdir}/profiles/${OSNAME}/basejail.conf" ]; then
-	echo "GET PKG FROM: ${progdir}/profiles/${OSNAME}/basejail.conf"
-	. "${progdir}/profiles/${OSNAME}/basejail.conf"
+basejail_conf=
+
+if [ -r "${progdir}/profiles/${OSNAME}/basejail.conf-${ver}" ]; then
+	basejail_conf="${progdir}/profiles/${OSNAME}/basejail.conf-${ver}"
+elif [ -r "${progdir}/profiles/${OSNAME}/basejail.conf" ]; then
+	basejail_conf="${progdir}/profiles/${OSNAME}/basejail.conf"
+fi
+
+if [ -n "${basejail_conf}" ]; then
+	echo "GET PKG FROM: ${basejail_conf}"
+	. "${basejail_conf}"
 else
 	echo "no such PKG_BASE profiles: ${progdir}/profiles/${OSNAME}/basejail.conf"
 fi

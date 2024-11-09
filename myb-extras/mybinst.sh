@@ -803,6 +803,7 @@ if [ "${OSNAME}" = "ClonOS" ]; then
 	/usr/sbin/service nginx reload
 fi
 
+[ ! -h /usr/local/etc/rc.d/tty.sh ] && ln -sf /root/bin/tty.sh
 echo "mybinst.sh done"
 
 exit 0

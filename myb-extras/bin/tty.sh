@@ -23,9 +23,12 @@ _ret=$?
 [ ${_ret} -eq 2 ] && exit 0
 
 . /etc/rc.conf
+. /etc/rc.initial.subr
 [ -z "${OSNAME}" ] && OSNAME="MyBee"
 . /usr/local/cbsd/cbsd.conf
 . /usr/local/cbsd/subr/ansiicolor.subr
+
+[ -z "${ip4}" -o -z "${ip6}" ] && init_settings
 
 CURSORRST='\033[1000D'
 printf "${CURSORRST}" >> /dev/ttyv0

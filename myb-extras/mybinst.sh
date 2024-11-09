@@ -486,6 +486,8 @@ cp -a /usr/local/myb/syslog.conf /etc/syslog.conf
 
 tube_name=$( echo ${hostname} | tr '.' '_' )
 
+/usr/sbin/pw usermod root -c "${OSNAME} ${hostname}"
+
 cat > /usr/local/etc/cbsd-mq-router.json <<EOF
 {
     "cbsdenv": "/usr/jails",
@@ -803,7 +805,7 @@ if [ "${OSNAME}" = "ClonOS" ]; then
 	/usr/sbin/service nginx reload
 fi
 
-[ ! -h /usr/local/etc/rc.d/tty.sh ] && ln -sf /root/bin/tty.sh
+[ ! -h /usr/local/etc/rc.d/tty.sh ] && ln -sf /root/bin/tty.sh /usr/local/etc/rc.d/tty.sh
 echo "mybinst.sh done"
 
 exit 0

@@ -17,6 +17,7 @@ export workdir="${cbsd_workdir}"
 . /usr/local/cbsd/subr/ansiicolor.subr
 . /usr/jails/nc.inventory
 . /usr/local/cbsd/subr/nc.subr
+. /etc/rc.initial.subr
 # Make sure the user can't kill us by pressing Ctrl-C
 trap : 2
 trap : 3
@@ -24,93 +25,8 @@ trap : 4
 # Make sure the user can't access rootshell by pressing Ctrl-Z
 trap : 18
 
-check_tty()
-{
-	MYTTY=$( tty )
-
-	[ "${MYTTY}" = "not a tty" ] && exit 0
-
-	MYIP=$( /usr/bin/w -h -n | while read _user _tty _ip _x; do
-		_tty="/dev/${_tty}"
-		if [ "${_tty}" = "${MYTTY}" ]; then
-			echo "${_ip}"
-			exit 0
-		fi
-	done )
-
-	[ -n "${MYIP}" ] && export MYIP="${MYIP}"
-}
-
-hwprobe()
-{
-	local p _send=0
-
-	[ -n "${hw_probe_enabled}" ] && return 0
-	[ ! -x /usr/local/bin/hw-probe ] && return 0
-
-	${ECHO} "${H1_COLOR}${OSNAME} first start. Before we start, would you like to send anonymous ( via hw-probe: ${H3_COLOR}https://bsd-hardware.info/${H1_COLOR} ) hardware data (one time, now)? This will allow us to improve hardware support in the future [Y] ?${N2_COLOR}"
-
-	trap "export SEND_STATS=\"n\"" SIGHUP SIGINT SIGTERM
-	# HUP INT ABRT BUS TERM EXIT
-
-	read p
-
-	trap ""
-
-	[ -n "${SEND_STATS}" ] && p="${SEND_STATS}"
-
-	if [ -z "${p}" ]; then
-		_send=1
-	else
-		case "${p}" in
-			[Yy])
-				_send=1
-				;;
-		esac
-	fi
-
-	/usr/local/cbsd/misc/cbsdsysrc -qf /etc/rc.conf hw_probe_enabled="1" > /dev/null 2>&1
-
-	[ ${_send} -ne 1 ] && return 0
-
-	/usr/local/bin/hw-probe -all -upload
-
-}
-
-check_sshflags()
-{
-	local _i
-
-	for _i in ${sshd_flags}; do
-		p1=${_i%%=*}
-		p2=${_i##*=}
-		[ "${p1}" != "-oPermitRootLogin" ] && continue
-		[ "${p2}" = "yes" ] && return 0
-	done
-
-	return 1
-}
-
-change_sshflags()
-{
-	case "${myb_ssh_root_ssh}" in
-		[Ee][Nn]*)
-			/usr/local/cbsd/misc/cbsdsysrc -qf /etc/rc.conf sshd_flags="-oUseDNS=no -oPermitRootLogin=no -oPort=22" > /dev/null 2>&1
-			;;
-		[Dd][Ii]*)
-			/usr/local/cbsd/misc/cbsdsysrc -qf /etc/rc.conf sshd_flags="-oUseDNS=no -oPermitRootLogin=yes -oPort=22" > /dev/null 2>&1
-			;;
-		*)
-			return 0
-			;;
-	esac
-
-	${SERVICE_CMD} sshd restart
-}
-
 ## MAIN
 check_tty
-
 hwprobe
 
 # ${myb_version}
@@ -121,41 +37,19 @@ fi
 [ -z "${myb_version}" ] && myb_version="unknown"
 [ -z "${producturl}" ] && producturl="https://mybee.convectix.com"
 
-HOSTNAME=$( hostname -s )
-/usr/sbin/pw usermod root -c "${OSNAME} ${HOSTNAME}"
-
 MYB_SMTP_CONFIG_FILE="/usr/local/etc/smtp.conf"
-
 [ -z "${myb_net_cur_profile}" ] && myb_net_cur_profile="1"
 
 while : ; do
 	check_tty
+	init_settings
 
 	# exit loop
 	[ -r /tmp/stop ] && exit 0
 	# re-read ACL on/off, net profile
 	. /etc/rc.conf
 
-	if check_sshflags; then
-		myb_ssh_root_ssh="Enabled "
-	else
-		myb_ssh_root_ssh="Disabled"
-	fi
-
 	[ -r ${MYB_SMTP_CONFIG_FILE} ] && . ${MYB_SMTP_CONFIG_FILE}
-
-	if [ -z "${PUB_WL}" ]; then
-		PUB_WL="disabled"
-		${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock /usr/local/cbsd/misc/cbsdsysrc -qf /etc/rc.conf PUB_WL="${PUB_WL}" > /dev/null 2>&1
-	fi
-	if [ -z "${IP_WL}" ]; then
-		IP_WL="disabled"
-		${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock /usr/local/cbsd/misc/cbsdsysrc -qf /etc/rc.conf IP_WL="${IP_WL}" > /dev/null 2>&1
-	fi
-	if [ -z "${API_FQDN}" ]; then
-		API_FQDN="disabled"
-		${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock /usr/local/cbsd/misc/cbsdsysrc -qf /etc/rc.conf API_FQDN="${IP_FQDN}" > /dev/null 2>&1
-	fi
 
 	case ${PUB_WL} in
 		enabled)
@@ -182,23 +76,6 @@ while : ; do
 			;;
 	esac
 
-	uplink_iface4=$( /sbin/route -n -4 get 0.0.0.0 2>/dev/null | /usr/bin/awk '/interface/{print $2}' )
-	uplink_iface6=$( /sbin/route -n -6 get ::0 2>/dev/null | /usr/bin/awk '/interface/{print $2}' )
-
-	if [ -n "${uplink_iface6}" ]; then
-		ip6=$( /sbin/ifconfig ${uplink_iface6} | /usr/bin/awk '/inet6 *:*+/{print $2}' | /usr/bin/grep -v %${uplink_iface6}$ | /usr/bin/head -n1 )
-	else
-		# route can not work in jail, looks at all
-		ip6=$( /sbin/ifconfig | /usr/bin/awk '/inet6 *:*+/{print $2}' | /usr/bin/grep -v %${uplink_iface6}$ | /usr/bin/head -n1 )
-	fi
-
-	if [ -n "${uplink_iface4}" ]; then
-		ip4=$( /sbin/ifconfig ${uplink_iface4} | /usr/bin/awk '/inet [0-9]+/{print $2}' | /usr/bin/head -n1 )
-	else
-		# route can not work in jail, looks at all
-		ip4=$( /sbin/ifconfig | /usr/bin/awk '/inet [0-9]+/{print $2}' | /usr/bin/head -n1 )
-	fi
-
 	VPN_COLOR="${H2_COLOR}"
 	[ ! -x /root/bin/vpn.sh ] && VPN_COLOR="${DGRAY}"
 	PROFILE_COLOR="${H2_COLOR}"
@@ -218,9 +95,6 @@ while : ; do
 		PROXY_ARGS="${H2_COLOR}${SOCKS5_PROXY}${N0_COLOR}"
 	fi
 
-	${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock /usr/local/cbsd/misc/cbsdsysrc -qf /etc/rc.conf ip4="${ip4}" > /dev/null
-	${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock /usr/local/cbsd/misc/cbsdsysrc -qf /etc/rc.conf ip6="${ip6}" > /dev/null
-
 	echo
 	if [ -n "${myb_build}" ]; then
 		echo "Welcome to ${OSNAME} ${myb_version} (build: ${myb_build}) console."
@@ -233,7 +107,7 @@ while : ; do
 	echo -e "    ${LCYAN}Visit: $producturl for system updates! ${H3_COLOR}(or type 'u'+Enter)${N0_COLOR}"
 	echo
 	case "${API_FQDN}" in
-		disabled)
+		disabled|'')
 			echo -e "        API address: ${W1_COLOR}http://${ip4}${N0_COLOR}"
 			[ -n "${ip6}" ] && echo -e "        API v6 address: ${W1_COLOR}http://${ip6}${N0_COLOR}"
 			;;
@@ -242,7 +116,7 @@ while : ; do
 			[ -n "${ip6}" ] && echo -e "        API v6 address: ${W1_COLOR}http://${ip6} (${H3_COLOR}https://${API_FQDN}${W1_COLOR})${N0_COLOR}"
 			;;
 	esac
-	echo -e "        LAN Network IPv4 Address: ${H3_COLOR}10.0.0.1${N0_COLOR}"
+	echo -e "        LAN Network IPv4 Address: ${H3_COLOR}${lan_ipv4}${N0_COLOR}"
 	if [ -n "${SOCKS5_PROXY}" ]; then
 		echo -e "        Proxy enabled: ${PROXY_ARGS}"
 	fi

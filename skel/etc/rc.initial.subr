@@ -1,0 +1,139 @@
+if [ ! "$_RC_INITIAL_SUBR" ]; then _RC_INITIAL_SUBR=1
+#
+
+check_tty()
+{
+	MYTTY=$( tty )
+
+	[ "${MYTTY}" = "not a tty" ] && exit 0
+
+	MYIP=$( /usr/bin/w -h -n | while read _user _tty _ip _x; do
+		_tty="/dev/${_tty}"
+		if [ "${_tty}" = "${MYTTY}" ]; then
+			echo "${_ip}"
+			exit 0
+		fi
+	done )
+
+	[ -n "${MYIP}" ] && export MYIP="${MYIP}"
+}
+
+hwprobe()
+{
+	local p _send=0
+
+	[ -n "${hw_probe_enabled}" ] && return 0
+	[ ! -x /usr/local/bin/hw-probe ] && return 0
+
+	${ECHO} "${H1_COLOR}${OSNAME} first start. Before we start, would you like to send anonymous ( via hw-probe: ${H3_COLOR}https://bsd-hardware.info/${H1_COLOR} ) hardware data (one time, now)? This will allow us to improve hardware support in the future [Y] ?${N2_COLOR}"
+
+	trap "export SEND_STATS=\"n\"" SIGHUP SIGINT SIGTERM
+	# HUP INT ABRT BUS TERM EXIT
+
+	read p
+
+	trap ""
+
+	[ -n "${SEND_STATS}" ] && p="${SEND_STATS}"
+
+	if [ -z "${p}" ]; then
+		_send=1
+	else
+		case "${p}" in
+			[Yy])
+				_send=1
+				;;
+		esac
+	fi
+
+	/usr/local/cbsd/misc/cbsdsysrc -qf /etc/rc.conf hw_probe_enabled="1" > /dev/null 2>&1
+
+	[ ${_send} -ne 1 ] && return 0
+
+	/usr/local/bin/hw-probe -all -upload
+
+}
+
+check_sshflags()
+{
+	local _i
+
+	for _i in ${sshd_flags}; do
+		p1=${_i%%=*}
+		p2=${_i##*=}
+		[ "${p1}" != "-oPermitRootLogin" ] && continue
+		[ "${p2}" = "yes" ] && return 0
+	done
+
+	return 1
+}
+
+change_sshflags()
+{
+	case "${myb_ssh_root_ssh}" in
+		[Ee][Nn]*)
+			/usr/local/cbsd/misc/cbsdsysrc -qf /etc/rc.conf sshd_flags="-oUseDNS=no -oPermitRootLogin=no -oPort=22" > /dev/null 2>&1
+			;;
+		[Dd][Ii]*)
+			/usr/local/cbsd/misc/cbsdsysrc -qf /etc/rc.conf sshd_flags="-oUseDNS=no -oPermitRootLogin=yes -oPort=22" > /dev/null 2>&1
+			;;
+		*)
+			return 0
+			;;
+	esac
+
+	${SERVICE_CMD} sshd restart
+}
+
+init_settings()
+{
+	if check_sshflags; then
+		myb_ssh_root_ssh="Enabled "
+	else
+		myb_ssh_root_ssh="Disabled"
+	fi
+
+	if [ -z "${PUB_WL}" ]; then
+		PUB_WL="disabled"
+		${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock /usr/local/cbsd/misc/cbsdsysrc -qf /etc/rc.conf PUB_WL="${PUB_WL}" > /dev/null 2>&1
+	fi
+	if [ -z "${IP_WL}" ]; then
+		IP_WL="disabled"
+		${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock /usr/local/cbsd/misc/cbsdsysrc -qf /etc/rc.conf IP_WL="${IP_WL}" > /dev/null 2>&1
+	fi
+	if [ -z "${API_FQDN}" ]; then
+		API_FQDN="disabled"
+		${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock /usr/local/cbsd/misc/cbsdsysrc -qf /etc/rc.conf API_FQDN="${IP_FQDN}" > /dev/null 2>&1
+	fi
+
+	uplink_iface4=$( /sbin/route -n -4 get 0.0.0.0 2>/dev/null | /usr/bin/awk '/interface/{print $2}' )
+	uplink_iface6=$( /sbin/route -n -6 get ::0 2>/dev/null | /usr/bin/awk '/interface/{print $2}' )
+
+	if [ -n "${uplink_iface6}" ]; then
+		nip6=$( /sbin/ifconfig ${uplink_iface6} | /usr/bin/awk '/inet6 *:*+/{print $2}' | /usr/bin/grep -v %${uplink_iface6}$ | /usr/bin/head -n1 )
+	else
+		# route can not work in jail, looks at all
+		nip6=$( /sbin/ifconfig | /usr/bin/awk '/inet6 *:*+/{print $2}' | /usr/bin/grep -v %${uplink_iface6}$ | /usr/bin/head -n1 )
+	fi
+
+	if [ -n "${uplink_iface4}" ]; then
+		nip4=$( /sbin/ifconfig ${uplink_iface4} | /usr/bin/awk '/inet [0-9]+/{print $2}' | /usr/bin/head -n1 )
+	else
+		# route can not work in jail, looks at all
+		nip4=$( /sbin/ifconfig | /usr/bin/awk '/inet [0-9]+/{print $2}' | /usr/bin/head -n1 )
+	fi
+
+	if [ "${ip4}" != "${nip4}" ]; then
+		ip4="${nip4}"
+		${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock /usr/local/cbsd/misc/cbsdsysrc -qf /etc/rc.conf ip4="${ip4}" > /dev/null
+	fi
+
+	if [ "${ip6}" != "${nip6}" ]; then
+		ip6="${nip6}"
+		${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock /usr/local/cbsd/misc/cbsdsysrc -qf /etc/rc.conf ip6="${ip6}" > /dev/null
+	fi
+
+	lan_ipv4="${configure_default_cbsd_vs_cidr4%/*}"
+}
+
+fi # ! $_RC_INITIAL_SUBR

@@ -1,5 +1,9 @@
 #!/bin/sh
+# PROVIDE: tty.sh
+# REQUIRE: securelevel adjkerntz ipfw pf sysctl_lastload
+
 export PATH="/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin"
+export TERM=xterm-256color
 
 check_tty()
 {
@@ -110,6 +114,7 @@ printf "${CURSORRST}" >> /dev/ttyv0
 echo -e "${H2_COLOR}Pubkey WhiteList: ${PUB_WL_COLOR}${PUB_WL}${NORMAL}" >> /dev/ttyv0
 printf "${CURSORRST}" >> /dev/ttyv0
 echo -e "${H2_COLOR}SSH root user: ${myb_ssh_root_ssh}${NORMAL}" >> /dev/ttyv0
+printf "${CURSORRST}" >> /dev/ttyv0
 
 case "${ttyd_enable}" in
 	[Yy][Ee][Ss])

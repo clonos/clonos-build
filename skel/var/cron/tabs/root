@@ -7,4 +7,4 @@
 #
 * * * * * /usr/bin/lockf -s -t0 /tmp/proc-stats.lock /root/bin/proc-stats.sh > /dev/null 2>&1
 # update ttyv0
-*/10 * * * * /usr/bin/lockf -s -t0 /tmp/ttyd.sh.lock /root/bin/ttyd.sh > /dev/null 2>&1
+*/10 * * * * /usr/bin/lockf -s -t0 /tmp/tty.sh.lock /root/bin/tty.sh > /dev/null 2>&1

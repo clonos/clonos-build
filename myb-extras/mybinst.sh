@@ -466,7 +466,6 @@ for i in \$( egrep -E '^ifconfig_[aA-zZ]+[0-9]+="DHCP"' /etc/rc.conf | tr "_=" "
 done
 
 truncate -s0 /etc/motd /var/run/motd /etc/motd.template
-/root/bin/ttyd.sh
 EOF
 fi
 

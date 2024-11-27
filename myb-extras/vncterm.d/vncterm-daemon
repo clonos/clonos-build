@@ -96,7 +96,7 @@ case "${mode}" in
 		echo "${vm_port}" > ${vnc_port}
 
 		while [ ${stopme} -eq 0 ]; do
-			${DAEMON_CMD} -r -R 1 ${LOCKF_CMD} -s -t0 ${vnc_lockfile} ${cbsdvnc} -j ${jid} -s ${command} ${password_args} ${port_args} ${addr_args} -i ${vnc_pidfile}
+			/usr/sbin/daemon -r -R 1 ${LOCKF_CMD} -s -t0 ${vnc_lockfile} ${cbsdvnc} -j ${jid} -s ${command} ${password_args} ${port_args} ${addr_args} -i ${vnc_pidfile}
 			sleep 1
 			${ECHO} "${MAGENTA}VRDP is enabled. VNC port: ${GREEN}${vm_port}. ${MAGENTA}VNC pass: ${GREEN}${password}${NORMAL}${NORMAL}"
 			watchtest=$( cbsd_fwatch --file=${vnc_lockfile} --timeout=0 )

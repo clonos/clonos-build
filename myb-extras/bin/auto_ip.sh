@@ -143,7 +143,7 @@ fi
 # /ETC/ISSUE
 cat > /tmp/issue.$$ <<EOF
 
- === Welcome to MyBee ${myb_version} ===
+ === Welcome to ${OSNAME} ${myb_version} ===
  * API: ${schema}://${ip4}
  * SSH: ${ip4}
 

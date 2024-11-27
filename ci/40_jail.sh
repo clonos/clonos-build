@@ -12,7 +12,7 @@ progdir=$( dirname ${progdir} )
 tmpver=$( ${UNAME_CMD} -r )
 ver=${tmpver%%-*}
 unset tmpver
-#${CP_CMD} -a ${progdir}/skel/usr/local/etc/pkg/repos/MyBee-latest.conf /usr/local/etc/pkg/repos/MyBee-latest.conf
+#${CP_CMD} -a ${progdir}/skel/usr/local/etc/pkg/repos/${OSNAME}-latest.conf /usr/local/etc/pkg/repos/${OSNAME}-latest.conf
 
 cbsd destroy cbsdfile=${progdir}/mybee-CBSDfile || true
 cbsd destroy cbsdfile=${progdir}/micro-CBSDfile || true
@@ -42,8 +42,11 @@ else
 	echo "no such PKG_BASE profiles: ${progdir}/profiles/${OSNAME}/basejail.conf"
 fi
 
-env ASSUME_ALWAYS_YES=yes SIGNATURE_TYPE=none IGNORE_OSVERSION=yes pkg -C /root/clonos-build/etc/pkg/pkg.conf update -f -r MyBee-latest
-env ASSUME_ALWAYS_YES=yes SIGNATURE_TYPE=none IGNORE_OSVERSION=yes pkg -C /root/clonos-build/etc/pkg/pkg.conf -r ${cbsd_workdir}/jails-data/${jname}-data install -r MyBee-latest ${PKG_BASE}
+env ASSUME_ALWAYS_YES=yes SIGNATURE_TYPE=none IGNORE_OSVERSION=yes pkg -C /root/clonos-build/etc/pkg/pkg.conf update -f -r ${OSNAME}-latest
+
+echo "env ASSUME_ALWAYS_YES=yes SIGNATURE_TYPE=none IGNORE_OSVERSION=yes pkg -C /root/clonos-build/etc/pkg/pkg.conf -r ${cbsd_workdir}/jails-data/${jname}-data install -r ${OSNAME}-latest ${PKG_BASE}"
+env ASSUME_ALWAYS_YES=yes SIGNATURE_TYPE=none IGNORE_OSVERSION=yes pkg -C /root/clonos-build/etc/pkg/pkg.conf -r ${cbsd_workdir}/jails-data/${jname}-data install -r ${OSNAME}-latest ${PKG_BASE}
+
 
 #_rpath=$( realpath ${cbsd_workdir}/jails-data/${jname}-data )
 #make -C /usr/src installworld DESTDIR="${_rpath}"
@@ -63,13 +66,13 @@ FreeBSD: {
 EOF
 
 #spacevm-sendfio
+
 cbsd jexec jname=${jname} /bin/sh <<EOF
+echo "Install MyBee packages"
 pkg update -f
-pkg install -y myb nginx cbsd cbsd-mq-router cbsd-mq-api curl jq cdrkit-genisoimage ca_root_nss beanstalkd bash dmidecode hw-probe rsync smartmontools sudo tmux mc ttyd fio
+echo "env ASSUME_ALWAYS_YES=yes SIGNATURE_TYPE=none IGNORE_OSVERSION=yes pkg install -r ${OSNAME}-latest -y myb nginx cbsd cbsd-mq-router cbsd-mq-api curl jq cdrkit-genisoimage ca_root_nss beanstalkd bash dmidecode hw-probe rsync smartmontools sudo tmux mc ttyd fio"
+env ASSUME_ALWAYS_YES=yes SIGNATURE_TYPE=none IGNORE_OSVERSION=yes pkg install -r ${OSNAME}-latest -y myb nginx cbsd cbsd-mq-router cbsd-mq-api curl jq cdrkit-genisoimage ca_root_nss beanstalkd bash dmidecode hw-probe rsync smartmontools sudo tmux mc ttyd fio
 hash -r
-/usr/local/cbsd/sudoexec/initenv /usr/local/cbsd/share/initenv.conf
-/usr/local/myb/mybinst.sh
-/usr/local/bin/cbsd get-profiles src=cloud json=1 > /usr/local/www/public/profiles.html
 EOF
 
 # /usr/local/bin/spacevm-perf-fio-run
@@ -79,6 +82,32 @@ for i in /usr/local/sbin/nginx /usr/local/myb/version /usr/local/bin/cbsd /usr/l
 		exit 1
 	fi
 done
+
+# ClonOS extra
+if [ "${OSNAME}" = "ClonOS" ]; then
+
+cbsd jexec jname=${jname} /bin/sh <<EOF
+echo "Install ClonOS packages"
+	pkg install -y lang/python311 lang/php84 net/libvncserver security/gnutls sqlite3 shells/bash www/node23 www/nginx \
+sysutils/cbsd security/ca_root_nss security/sudo net/beanstalkd git devel/pkgconf tmux py311-numpy www/php84-session \
+archivers/php84-zip databases/php84-sqlite3 databases/php84-pdo_sqlite security/php84-filter www/php84-opcache www/npm-node23 clonos clonos-ws
+pkg remove -y go121
+EOF
+for i in /usr/local/www/clonos/version /usr/local/bin/node /usr/local/bin/php; do
+	if [ ! -r "${cbsd_workdir}/jails-data/${jname}-data${i}" ]; then
+		echo "error: No such: ${cbsd_workdir}/jails-data/${jname}-data${i}"
+		exit 1
+	fi
+done
+fi
+
+# first init
+cbsd jexec jname=${jname} /bin/sh <<EOF
+/usr/local/cbsd/sudoexec/initenv /usr/local/cbsd/share/initenv.conf
+/usr/local/myb/mybinst.sh
+/usr/local/bin/cbsd get-profiles src=cloud json=1 > /usr/local/www/public/profiles.html
+EOF
+
 
 ${RM_CMD} -f ${cbsd_workdir}/jails-data/${jname}-data/var/cache/pkg/*
 ${RM_CMD} -rf ${cbsd_workdir}/jails-data/${jname}-data/tmp/*
@@ -237,9 +266,10 @@ ${RM_CMD} -f ${cbsd_workdir}/jails-data/${jname}-data/etc/issue
 echo "Convert ${jname} to bhyve image into /tmp..."
 ## convert to bhyve
 
+# use BSDBOOT instead. we need only base.txz
 #cbsd jail2iso jname=${jname} dstdir=/tmp media=mfs freesize=2m ver=${ver} efi=1
-#cbsd jail2iso jname=${jname} dstdir=/tmp media=bhyve freesize=2m ver=${ver} efi=1
-#cbsd jail2iso jname=${jname} dstdir=/tmp media=mfs freesize=2m ver=${ver} efi=1 mfs_struct_only=1
+#cbsd jail2iso name=CBSD jname=${jname} dstdir=/tmp media=bhyve freesize=2m ver=${ver} efi=1
+#cbsd jail2iso name=CBSD jname=${jname} dstdir=/tmp media=mfs freesize=2m ver=${ver} efi=1 mfs_struct_only=1
 
 #cp -a ${cbsd_workdir}/basejail/FreeBSD-kernel_CBSD_amd64_15.0/boot/kernel/kernel.gz 
 #echo "cbsd jail2iso name=CBSD jname=${jname} dstdir=/tmp media=mfs freesize=2m ver=${my_ver} efi=1 mfs_struct_only=1"

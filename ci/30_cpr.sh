@@ -5,7 +5,7 @@ progdir="${0%/*}"			# Program directory
 progdir=$( realpath ${progdir} )
 progdir=$( dirname ${progdir} )
 . ${progdir}/cmd.subr
-
+#OSNAME="ClonOS"
 . ${progdir}/brand.conf
 dstdir=$( ${MKTEMP_CMD} -d )
 
@@ -63,24 +63,37 @@ ${CP_CMD} -a ${progdir}/${OSNAME}.list ${progdir}/myb.list
 echo "cbsd cpr batch=1 ver=${mybbasever} jname="${cpr_jname}" pkglist=${progdir}/myb.list dstdir=${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/"
 
 PREFETCHED_PACKAGES="\
+jq \
+sudo \
+bash \
 cmake \
 gmake \
+gcc13 \
 go \
+go122 \
 ninja \
+nginx \
+python311 \
+wireguard-go \
+sqlite3 \
+rsync \
+gettext \
+mutt \
 "
 
 if [ "${OSNAME}" = "ClonOS" ]; then
 # ClonOS brand:
 PREFETCHED_PACKAGES="${PREFETCHED_PACKAGES} \
-gcc12 \
+rust \
+bash \
 git \
 libvncserver \
-node \
-npm-node23 \
 php84
 php84-session \
 php84-opcache \
-py311-numpy \
+gnutls \
+node23 \
+npm-node23 \
 "
 fi
 
@@ -89,7 +102,7 @@ fi
 
 
 echo "cbsd cpr batch=1 makeconf=/root/myb-build/myb_make.conf jname=\"${cpr_jname}\" ver=${mybbasever} pkglist=${progdir}/myb.list dstdir=${dstdir} package_fetch=\"${PREFETCHED_PACKAGES}\" autoremove=1"
-cbsd cpr batch=1 makeconf=/root/myb-build/myb_make.conf jname="${cpr_jname}" ver=${mybbasever} pkglist=${progdir}/myb.list dstdir=${dstdir} package_fetch="${PREFETCHED_PACKAGES}" autoremove=1
+cbsd cpr pause=1 batch=1 makeconf=/root/myb-build/myb_make.conf jname="${cpr_jname}" ver=${mybbasever} pkglist=${progdir}/myb.list dstdir=${dstdir} package_fetch="${PREFETCHED_PACKAGES}" autoremove=1
 ret=$?
 
 if [ ${ret} -ne 0 ]; then

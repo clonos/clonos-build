@@ -11,8 +11,8 @@ export PATH="/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin"
 #export OSNAME="home.olevole.ru"
 #export OSNAME="mother.olevole.ru"
 #export OSNAME="FreeBSD"
-export OSNAME="MyBee"
-#export OSNAME="ClonOS"
+#export OSNAME="MyBee"
+export OSNAME="ClonOS"
 
 cd /
 
@@ -154,7 +154,7 @@ set +e
 FULL_ST_TIME=$( ${DATE_CMD} +%s )
 
 #### PREPARE
-if [ 1 -gt 2 ]; then
+if [ 3 -gt 2 ]; then
 # first init
 
 cbsd module mode=install cpr || true
@@ -208,9 +208,10 @@ case "${OSNAME}" in
 		${CP_CMD} -a /root/clonos-ports/sysutils/clonos-ws /usr/ports/sysutils/
 		${CP_CMD} -a /root/clonos-ports/sysutils/cbsd-plugin-wsqueue /usr/ports/sysutils/
 		make -C /usr/local/cbsd/modules/vncterm.d
+		strip /usr/local/cbsd/modules/vncterm.d/cbsdvnc
 		[ -d /root/myb-build/myb-extras/vncterm.d ] && ${RM_CMD} -rf /root/myb-build/myb-extras/vncterm.d
 		${CP_CMD} -a /usr/local/cbsd/modules/vncterm.d /root/myb-build/myb-extras/
-		${RM_CMD} -rf /root/myb-build/myb-extras/.git
+		${RM_CMD} -rf /root/myb-build/myb-extras/vncterm.d/.git
 		;;
 esac
 

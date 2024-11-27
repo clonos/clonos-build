@@ -556,13 +556,9 @@ fi
 
 if [ "${myb_manage_sudo}" != "NO" ]; then
 	[ ! -d /usr/local/etc/sudoers.d ] && mkdir -m 0755 -p /usr/local/etc/sudoers.d
-	case "${OSNAME}" in
-			MyBee)
-					cat > /usr/local/etc/sudoers.d/10_wheelgroup <<EOF
+		cat > /usr/local/etc/sudoers.d/10_wheelgroup <<EOF
 %wheel ALL=(ALL) NOPASSWD: ALL
 EOF
-					;;
-	esac
 
 	chmod 0440 /usr/local/etc/sudoers.d/10_wheelgroup
 

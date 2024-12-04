@@ -300,7 +300,7 @@ export workdir=/usr/jails
 /usr/local/cbsd/sudoexec/initenv /tmp/initenv.conf >> /var/log/cbsd_init.log 2>&1
 
 [ ! -r ~cbsd/etc/cbsd-pf.conf ] && /usr/bin/touch ~cbsd/etc/cbsd-pf.conf
-/usr/sbin/sysrc -qf ~cbsd/etc/cbsd-pf.conf cbsd_nat_skip_natip_network=1
+/usr/sbin/sysrc -qf ~cbsd/etc/cbsd-pf.conf cbsd_nat_skip_natip_network=0
 
 # Command 'hyperv_fattach' not found: FreeBSD-hyperv-tools
 [ -r /etc/devd/hyperv.conf ] && rm -f /etc/devd/hyperv.conf
@@ -479,7 +479,7 @@ cp -a /usr/local/myb/syslog.conf /etc/syslog.conf
 
 # dup ?
 [ ! -r ~cbsd/etc/cbsd-pf.conf ] && /usr/bin/touch -s0 ~cbsd/etc/cbsd-pf.conf
-/usr/sbin/sysrc -qf ~cbsd/etc/cbsd-pf.conf cbsd_nat_skip_natip_network=1
+/usr/sbin/sysrc -qf ~cbsd/etc/cbsd-pf.conf cbsd_nat_skip_natip_network=0
 
 /usr/sbin/sysrc -qf ~cbsd/etc/api.conf server_list="${hostname}"
 /usr/sbin/sysrc -qf ~cbsd/etc/bhyve-api.conf ip4_gw="${myb_default_network}.1"
@@ -647,7 +647,7 @@ if [ "${OSNAME}" = "ClonOS" ]; then
 	sysrc clonos_vnc2wss_enable="YES"
 
 	cp -a /usr/local/cbsd/modules/cbsd_queue.d/etc-sample/cbsd_queue.conf ~cbsd/etc/
-	ln -sf /usr/local/bin/python3.9 /usr/local/bin/python3
+	ln -sf /usr/local/bin/python3.11 /usr/local/bin/python3
 
 	/usr/local/bin/cbsd clonosdb
 fi
@@ -799,6 +799,11 @@ if [ "${OSNAME}" = "ClonOS" ]; then
 	/usr/local/bin/cbsd get_bhyve_profiles src=vm clonos=1
 
 	/usr/sbin/service nginx reload
+
+	/usr/sbin/service stop clonos-ws > /dev/null 2>&1 || true
+	/usr/sbin/service stop clonos-node-ws > /dev/null 2>&1 || true
+	/usr/sbin/service start clonos-node-ws
+	/usr/sbin/service start clonos-ws
 fi
 
 [ ! -h /usr/local/etc/rc.d/tty.sh ] && ln -sf /root/bin/tty.sh /usr/local/etc/rc.d/tty.sh

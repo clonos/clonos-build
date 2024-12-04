@@ -1,9 +1,10 @@
 {
   "images": [
     "alma9",
-    "arch22",
+    "arch",
     "centos7",
     "centos9",
+    "debian10",
     "debian11",
     "debian12",
     "devuan5",

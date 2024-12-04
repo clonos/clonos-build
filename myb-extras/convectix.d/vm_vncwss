@@ -64,10 +64,10 @@ done
 
 # todo: while/nc loop ?
 # daemon: mandatory for ClonOS runCMD/vnc.php
-${DAEMON_CMD} -f ${SERVICE_CMD} clonos-vnc2wss start
+/usr/local/cbsd/misc/daemonize ${SERVICE_CMD} clonos-vnc2wss start
 sleep 3
 
-${DAEMON_CMD} -f ${SERVICE_CMD} nginx reload > /dev/null 2>&1
+/usr/local/cbsd/misc/daemonize ${SERVICE_CMD} nginx reload > /dev/null 2>&1
 
 sleep 1
 

@@ -30,7 +30,7 @@ PKG_BASE="FreeBSD-runtime"
 basejail_conf=
 
 if [ -r "${progdir}/profiles/${OSNAME}/basejail.conf-${ver}" ]; then
-	basejail_conf="${progdir}/profiles/${OSNAME}/basejail.conf-${ver}"
+	basejail_conf="${progdir}/profiles/${OSNAME}/basejail.conf-${ver}.conf"
 elif [ -r "${progdir}/profiles/${OSNAME}/basejail.conf" ]; then
 	basejail_conf="${progdir}/profiles/${OSNAME}/basejail.conf"
 fi

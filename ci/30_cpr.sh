@@ -83,8 +83,10 @@ mutt \
 
 if [ "${OSNAME}" = "ClonOS" ]; then
 # ClonOS brand:
+
+#rust \
+
 PREFETCHED_PACKAGES="${PREFETCHED_PACKAGES} \
-rust \
 bash \
 git \
 libvncserver \

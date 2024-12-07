@@ -89,6 +89,73 @@ else
 	${ECHO} "${N1_COLOR}${CBSD_APP}: admin account already exist${NORMAL}"
 fi
 
+#### temporary, for test purposes only
+${SQLITE3_CMD} ${DBFILE} << EOF
+BEGIN TRANSACTION;
+CREATE TABLE IF NOT EXISTS 'lang_en' ('id' INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, 'text' TEXT, 'modify' INTEGER DEFAULT CURRENT_TIMESTAMP);
+INSERT INTO lang_en VALUES(1,'Summary statistics for cloud:','2024-11-24 00:08:06');
+INSERT INTO lang_en VALUES(2,'Param','2024-11-24 00:08:06');
+INSERT INTO lang_en VALUES(3,'Num of nodes:','2024-11-24 00:08:06');
+INSERT INTO lang_en VALUES(4,'Online nodes:','2024-11-24 00:08:06');
+INSERT INTO lang_en VALUES(5,'Offline nodes:','2024-11-24 00:08:06');
+INSERT INTO lang_en VALUES(6,'Num of jails:','2024-11-24 00:08:06');
+INSERT INTO lang_en VALUES(7,'Num of cores:','2024-11-24 00:08:06');
+INSERT INTO lang_en VALUES(8,'Average freq. Mhz:','2024-11-24 00:08:06');
+INSERT INTO lang_en VALUES(9,'Summary RAM:','2024-11-24 00:08:06');
+INSERT INTO lang_en VALUES(10,'Summary storage size:','2024-11-24 00:08:06');
+INSERT INTO lang_en VALUES(11,'Unable to fetch net info!','2024-11-24 00:08:06');
+INSERT INTO lang_en VALUES(12,'Current node CPU usage:','2024-11-24 00:08:06');
+INSERT INTO lang_en VALUES(13,'Current node RAM usage:','2024-11-24 00:08:06');
+INSERT INTO lang_en VALUES(14,'It is an open source and free product which powered by other project (major importance list):','2024-11-24 00:08:06');
+INSERT INTO lang_en VALUES(15,'FreeBSD OS virtual environment management framework','2024-11-24 00:08:06');
+INSERT INTO lang_en VALUES(16,'FreeBSD  is a free and open source Unix-like operating system descended from Research Unix created in <a href="https://en.wikipedia.org/wiki/Berkeley_Software_Distribution">University of California, Berkeley, U.S.','2024-11-24 00:08:06');
+INSERT INTO lang_en VALUES(17,'Puppet is an open-source configuration management tool.','2024-11-24 00:08:06');
+INSERT INTO lang_en VALUES(18,'and many other..','2024-11-24 00:08:06');
+INSERT INTO lang_en VALUES(19,'Can not be empty. Name must begin with a letter / a-z / and not have any special symbols: -,.=%','2024-12-04 21:16:03');
+INSERT INTO lang_en VALUES(20,'This field can not be empty','2024-12-04 21:16:03');
+INSERT INTO lang_en VALUES(21,'Write correct ip address, e.g: 10.0.0.2','2024-12-04 21:16:03');
+INSERT INTO lang_en VALUES(22,'Password can not be less than 3 symbols','2024-12-04 21:16:03');
+INSERT INTO lang_en VALUES(23,'Please retype password correctly','2024-12-04 21:16:03');
+INSERT INTO lang_en VALUES(24,'Create jail','2024-12-04 21:16:03');
+INSERT INTO lang_en VALUES(25,'Edit jail','2024-12-04 21:16:03');
+INSERT INTO lang_en VALUES(26,'Jail Settings','2024-12-04 21:16:03');
+INSERT INTO lang_en VALUES(27,'Jail name','2024-12-04 21:16:03');
+INSERT INTO lang_en VALUES(28,'Hostname','2024-12-04 21:16:03');
+INSERT INTO lang_en VALUES(29,'available on the jail is not running','2024-12-04 21:16:03');
+INSERT INTO lang_en VALUES(30,'IP address','2024-12-04 21:16:03');
+INSERT INTO lang_en VALUES(31,'Root password','2024-12-04 21:16:03');
+INSERT INTO lang_en VALUES(32,'Root password (again)','2024-12-04 21:16:03');
+INSERT INTO lang_en VALUES(33,'Net Interface','2024-12-04 21:16:03');
+INSERT INTO lang_en VALUES(34,'Parameters','2024-12-04 21:16:03');
+INSERT INTO lang_en VALUES(35,'Base writable','2024-12-04 21:16:03');
+INSERT INTO lang_en VALUES(36,'Mount','2024-12-04 21:16:03');
+INSERT INTO lang_en VALUES(37,'Autostart jail at system startup','2024-12-04 21:16:03');
+INSERT INTO lang_en VALUES(38,'Virtual network stack (VIMAGE)','2024-12-04 21:16:03');
+INSERT INTO lang_en VALUES(39,'Enabled services','2024-12-04 21:16:03');
+INSERT INTO lang_en VALUES(40,'Create','2024-12-04 21:16:03');
+INSERT INTO lang_en VALUES(41,'Save','2024-12-04 21:16:03');
+INSERT INTO lang_en VALUES(42,'Cancel','2024-12-04 21:16:03');
+CREATE TABLE IF NOT EXISTS 'lang_other' ('id' INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, 'en_id' INTEGER, 'text' TEXT, 'lang' TEXT, 'modify' INTEGER DEFAULT CURRENT_TIMESTAMP, 'type' TEXT NOT NULL DEFAULT 'system');
+INSERT INTO lang_other VALUES(1,1,'Общая статистика облака:','ru','2024-11-24 21:14:53','system');
+INSERT INTO lang_other VALUES(2,2,'Параметр','ru','2024-11-24 21:16:17','system');
+INSERT INTO lang_other VALUES(3,3,'Количество нод:','ru','2024-11-24 21:17:21','system');
+INSERT INTO lang_other VALUES(4,27,'Имя контейнера','ru','2024-12-04 22:19:35','system');
+CREATE TABLE IF NOT EXISTS 'lang_other_types' ('type' TEXT PRIMARY KEY NOT NULL, 'seq' INTEGER);
+INSERT INTO lang_other_types VALUES('system',1);
+INSERT INTO lang_other_types VALUES('pages',2);
+INSERT INTO lang_other_types VALUES('dialogs',3);
+DELETE FROM sqlite_sequence;
+INSERT INTO sqlite_sequence VALUES('sys_helpers_list',8);
+INSERT INTO sqlite_sequence VALUES('jails_helpers_list',8);
+INSERT INTO sqlite_sequence VALUES('auth_user',1);
+INSERT INTO sqlite_sequence VALUES('auth_list',4);
+INSERT INTO sqlite_sequence VALUES('lang_en',42);
+INSERT INTO sqlite_sequence VALUES('lang_other',4);
+CREATE INDEX 'lo_ind' ON "lang_other" ("en_id", "lang");
+COMMIT;
+EOF
+
+
 ${CHOWN_CMD} www:www ${DBFILE}
 
 exit 0

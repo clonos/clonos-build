@@ -18,7 +18,7 @@
 /usr/ports/sysutils/cbsd-mq-router
 /usr/ports/sysutils/genisoimage
 /usr/ports/net/wireguard-go
-/usr/ports/sysutils/garm
+#/usr/ports/sysutils/garm
 /usr/ports/benchmarks/fio
 /usr/ports/sysutils/spacevm-sendfio
 /usr/ports/www/nginx

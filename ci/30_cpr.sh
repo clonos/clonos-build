@@ -104,7 +104,7 @@ fi
 
 
 echo "cbsd cpr batch=1 makeconf=/root/myb-build/myb_make.conf jname=\"${cpr_jname}\" ver=${mybbasever} pkglist=${progdir}/myb.list dstdir=${dstdir} package_fetch=\"${PREFETCHED_PACKAGES}\" autoremove=1"
-cbsd cpr pause=1 batch=1 makeconf=/root/myb-build/myb_make.conf jname="${cpr_jname}" ver=${mybbasever} pkglist=${progdir}/myb.list dstdir=${dstdir} package_fetch="${PREFETCHED_PACKAGES}" autoremove=1
+cbsd cpr batch=1 makeconf=/root/myb-build/myb_make.conf jname="${cpr_jname}" ver=${mybbasever} pkglist=${progdir}/myb.list dstdir=${dstdir} package_fetch="${PREFETCHED_PACKAGES}" autoremove=1
 ret=$?
 
 if [ ${ret} -ne 0 ]; then
@@ -114,28 +114,28 @@ fi
 
 cbsd jstart jname=${cpr_jname} || true
 
-#echo "Update/run cix_upgrade: clonos_ver.conf"
-#cp -a ${progdir}/scripts/cix_upgrade ${cbsd_workdir}/jails-data/${cpr_jname}-data/root/
-#cbsd jexec jname=${cpr_jname} /root/cix_upgrade
-
-#echo "/root/cix_upgrade"
+echo "Update/run cix_upgrade: clonos_ver.conf"
+cp -a ${progdir}/scripts/cix_upgrade ${cbsd_workdir}/jails-data/${cpr_jname}-data/root/
+cbsd jexec jname=${cpr_jname} /root/cix_upgrade
+echo "/root/cix_upgrade"
 
 # original?
-#case "${OSNAME}" in
-#	ClonOS)
-#		echo "copy ${cbsd_workdir}/jails-data/${cpr_jname}-data/tmp/clonos_ver.{conf,json} -> ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/"
-#		cp -a ${cbsd_workdir}/jails-data/${cpr_jname}-data/tmp/clonos_ver.conf ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/
-#		cp -a ${cbsd_workdir}/jails-data/${cpr_jname}-data/tmp/clonos_ver.json ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/
-#		;;
-#	MyBee)
-#		echo "copy ${cbsd_workdir}/jails-data/${cpr_jname}-data/tmp/myb_ver.{conf,json} -> ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/"
-#		cp -a ${cbsd_workdir}/jails-data/${cpr_jname}-data/tmp/myb_ver.conf ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/
-#		cp -a ${cbsd_workdir}/jails-data/${cpr_jname}-data/tmp/myb_ver.json ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/
-#		;;
-#esac
+case "${OSNAME}" in
+	ClonOS)
+		echo "copy ${cbsd_workdir}/jails-data/${cpr_jname}-data/tmp/cbsd_ver.{conf,json} -> ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/clonos_ver.*"
+		cp -a ${cbsd_workdir}/jails-data/${cpr_jname}-data/tmp/cbsd_ver.conf ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/clonos_ver.conf
+		cp -a ${cbsd_workdir}/jails-data/${cpr_jname}-data/tmp/cbsd_ver.json ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/clonos_ver.json
+		;;
+	MyBee)
+		echo "copy ${cbsd_workdir}/jails-data/${cpr_jname}-data/tmp/cbsd_ver.{conf,json} -> ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/myb_ver.*"
+		cp -a ${cbsd_workdir}/jails-data/${cpr_jname}-data/tmp/cbsd_ver.conf ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/myb_ver.conf
+		cp -a ${cbsd_workdir}/jails-data/${cpr_jname}-data/tmp/cbsd_ver.json ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/myb_ver.json
+		;;
+esac
 
 cbsd jstop jname=${cpr_jname} || true
 
+echo "${MV_CMD} ${dstdir}/* ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/"
 ${MV_CMD} ${dstdir}/* ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/
 
 ${RM_CMD} -rf ${dstdir}
@@ -144,6 +144,6 @@ if [ ! -h ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/pkg.pkg ]; then
 	exit 1
 fi
 
-cbsd jremove jname=${cpr_jname} > /dev/null 2>&1
+#cbsd jremove jname=${cpr_jname} > /dev/null 2>&1
 
 exit 0

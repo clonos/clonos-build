@@ -470,9 +470,12 @@ EOF
 fi
 
 cp -a /usr/local/myb/myb-os-release /usr/local/etc/rc.d/myb-os-release
-cp -a /usr/local/myb/api.d/etc/api.conf ~cbsd/etc/
-cp -a /usr/local/myb/bhyve-api.conf ~cbsd/etc/
-cp -a /usr/local/myb/api.d/etc/jail-api.conf ~cbsd/etc/
+
+if [ ${myb_firstboot} -eq 1 ]; then
+	cp -a /usr/local/myb/api.d/etc/api.conf ~cbsd/etc/
+	cp -a /usr/local/myb/bhyve-api.conf ~cbsd/etc/
+	cp -a /usr/local/myb/api.d/etc/jail-api.conf ~cbsd/etc/
+fi
 
 cp -a /usr/local/myb/cbsd_api_cloud_images.json /usr/local/etc/cbsd_api_cloud_images.json
 cp -a /usr/local/myb/syslog.conf /etc/syslog.conf
@@ -540,7 +543,7 @@ ip=$( /sbin/ifconfig ${uplink_iface4} | /usr/bin/awk '/inet [0-9]+/{print $2}'| 
 # set IP for API/public.html/..
 [ ! -d /usr/local/www/public ] && mkdir -p /usr/local/www/public
 rsync -avz --exclude nubectl /usr/local/myb/myb-public/public/ /usr/local/www/public/
-rsync -avz /usr/local/myb/bin/ /root/bin/
+rsync -avz --delete /usr/local/myb/bin/ /root/bin/
 [ -x /root/bin/auto_ip.sh ] && /root/bin/auto_ip.sh
 
 cat > ~cbsd/etc/bhyve-default-default.conf <<EOF
@@ -605,6 +608,7 @@ if [ "${OSNAME}" = "ClonOS" ]; then
 	sysrc cbsd_statsd_hoster_enable=YES \
 		cbsd_statsd_jail_enable=YES \
 		cbsd_statsd_bhyve_enable=YES
+
 	service cbsd-statsd-hoster restart
 	service cbsd-statsd-jail restart
 	service cbsd-statsd-bhyve restart

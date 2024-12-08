@@ -45,7 +45,7 @@ upgrade_packages()
 		fi
 	fi
 
-	if [ -z "${myhost}" -o "${myhost}" = "home.olevole.ru" ]; then
+	if [ -z "${myhost}" -o "${myhost}" = "clonos.my.domain" ]; then
 		echo "Dev server"
 		echo "Upgrade in progress..."
 		for i in $( seq 1 5 ); do

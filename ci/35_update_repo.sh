@@ -98,8 +98,28 @@ ${PKG_CMD} repo .
 
 sysrc -qf ${progdir}/myb/myb_ver.conf myb_ver_new="${VER}"
 
-${CP_CMD} -a ${progdir}/cbsd/myb_ver.conf ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/
-${CP_CMD} -a ${progdir}/cbsd/myb_ver.json ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/
+# original?
+case "${OSNAME}" in
+	ClonOS)
+		sysrc -qf ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/clonos_ver.conf myb_ver_new="${VER}"
+		cp -a ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/clonos_ver.json ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/clonos_ver.json-o
+jq '.installed + {
+  "myb": "${VER}"
+}' ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/clonos_ver.json-o > ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/clonos_ver.json
+		;;
+	MyBee)
+		sysrc -qf ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/myb_ver.conf myb_ver_new="${VER}"
+		cp -a ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/myb_ver.json ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/myb_ver.json-o
+jq '.installed + {
+  "myb": "${VER}"
+}' ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/myb_ver.json-o > ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/myb_ver.json
+
+		rm -f ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/myb_ver.json-o
+	;;
+esac
+
+echo "check ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/"
+read p
 
 echo "${RSYNC_CMD} -avz ./ ${RSYNC_DST}latest/"
 #read p

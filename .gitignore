@@ -3,8 +3,10 @@ micro1
 myb/*
 cmd.subr
 myb-extras/puppet.d
+myb-extras/vncterm.d
 cbsd.lock
 myb/puppet.d
 profiles/home.olevole.ru
 profiles/mother.olevole.ru
 ports/myb/work
+myb.list

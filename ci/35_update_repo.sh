@@ -103,16 +103,16 @@ case "${OSNAME}" in
 	ClonOS)
 		sysrc -qf ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/clonos_ver.conf myb_ver_new="${VER}"
 		cp -a ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/clonos_ver.json ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/clonos_ver.json-o
-jq '.installed + {
-  "myb": "${VER}"
-}' ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/clonos_ver.json-o > ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/clonos_ver.json
+jq ".installed + {
+  \"myb\": \"${VER}\"
+}" ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/clonos_ver.json-o > ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/clonos_ver.json
 		;;
 	MyBee)
 		sysrc -qf ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/myb_ver.conf myb_ver_new="${VER}"
 		cp -a ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/myb_ver.json ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/myb_ver.json-o
-jq '.installed + {
-  "myb": "${VER}"
-}' ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/myb_ver.json-o > ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/myb_ver.json
+jq ". + {
+  \"myb\": \"${VER}\"
+}" ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/myb_ver.json-o > ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/myb_ver.json
 
 		rm -f ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/myb_ver.json-o
 	;;

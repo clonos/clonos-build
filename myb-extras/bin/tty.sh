@@ -30,6 +30,15 @@ _ret=$?
 
 [ -z "${ip4}" -o -z "${ip6}" ] && init_settings
 
+BOOT=$( sysctl -qn kern.boottime |tr -d ',' | awk '{printf $4}' )
+NOW=$( date +%s )
+BOOT_TIME=$(( NOW - BOOT ))
+days=$(( BOOT_TIME / 86400 ))
+tmp=$(( BOOT_TIME % 86400 ))
+hours=$(( tmp / 3600))
+mins=$(( tmp % 3600 ))
+mins=$(( mins / 60 ))
+
 CURSORRST='\033[1000D'
 printf "${CURSORRST}" >> /dev/ttyv0
 clear > /dev/ttyv0
@@ -93,6 +102,9 @@ else
 	echo "${OSNAME} ${myb_version} console." >> /dev/ttyv0
 fi
 echo >> /dev/ttyv0
+printf "${CURSORRST}" >> /dev/ttyv0
+
+echo -e "Uptime: ${H3_COLOR}${days} days, ${hours} hours, ${mins} mins${N0_COLOR}" >> /dev/ttyv0
 printf "${CURSORRST}" >> /dev/ttyv0
 
 case "${API_FQDN}" in

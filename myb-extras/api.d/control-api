@@ -50,6 +50,7 @@ destroy_env()
 . ${subrdir}/rcconf.subr
 if [ $? -eq 1 ]; then
 	log "no such env: ${jname}"
+	destroy_env
 	err 1 "${N1_COLOR}no such env: ${N2_COLOR}${jname}${N0_COLOR}"
 fi
 

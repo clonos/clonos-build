@@ -105,7 +105,7 @@ if [ ${ret} -ne 0 ]; then
 fi
 
 ${CP_CMD} ${HTTPS_NGINX} /usr/local/etc/nginx/nginx.conf
-${SERVICE_CMD} nginx restart
+${SERVICE_CMD} nginx reload
 /usr/local/bin/certbot -n --agree-tos --email root@${API_FQDN} --webroot -w /usr/local/www/letsencrypt certonly -d ${API_FQDN}
 ret=$?
 

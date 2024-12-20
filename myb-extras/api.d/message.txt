@@ -18,4 +18,4 @@ Quick start:
   `service cbsd-mq-router start`
   `service cbsd-mq-api start`
 
-  Refer to the documentation page: https://www.bsdstore.ru/en/13.x/wf_api_ssi.html
+  Refer to the documentation page: https://github.com/cbsd/cbsd/blob/develop/share/docs/general/cbsd_api.md

@@ -11,7 +11,7 @@ To install module:
   - echo 'api.d' >> ~cbsd/etc/modules.conf
   - cbsd initenv
 
-Quick start:
+## Quick start:
 
   `service beanstalkd enable`
 
@@ -26,5 +26,5 @@ Quick start:
 
   `service cbsd-mq-api start`
 
+  Refer to the documentation page: [https://github.com/cbsd/cbsd/blob/develop/share/docs/general/cbsd_api.md](https://github.com/cbsd/cbsd/blob/develop/share/docs/general/cbsd_api.md)
 
-  Refer to the documentation page: https://www.bsdstore.ru/en/13.x/wf_api_ssi.html

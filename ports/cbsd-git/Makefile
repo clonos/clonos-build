@@ -1,5 +1,5 @@
 PORTNAME=	cbsd
-DISTVERSION=	14.1.3a
+DISTVERSION=	14.2.2a
 CATEGORIES=	sysutils
 
 MAINTAINER=	olevole@olevole.ru
@@ -21,7 +21,7 @@ RUN_DEPENDS=	${LOCALBASE}/share/certs/ca-root-nss.crt:security/ca_root_nss \
 
 USES=		compiler:c++11-lang libedit pkgconfig:both
 USE_GITHUB=	yes
-GH_TAGNAME=	e8ea70d
+GH_TAGNAME=	6e98c4c
 USE_RC_SUBR=	cbsdd cbsdrsyncd cbsd-statsd-bhyve cbsd-statsd-hoster \
 		cbsd-statsd-jail
 MAKE_JOBS_UNSAFE=	yes
@@ -68,6 +68,7 @@ do-install:
 		${STAGEDIR}${PREFIX}/cbsd/misc/src \
 		${STAGEDIR}${PREFIX}/cbsd/sbin/src \
 		${STAGEDIR}${PREFIX}/cbsd/tools/src
+	${RM} -rf ${STAGEDIR}${PREFIX}/cbsd/share/docs
 	${INSTALL_MAN} ${WRKSRC}/man/cbsd.8 \
 		${STAGEDIR}${PREFIX}/share/man/man8
 	@${MKDIR} ${STAGEDIR}${PREFIX}/libexec/bsdconfig

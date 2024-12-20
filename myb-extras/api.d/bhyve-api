@@ -28,20 +28,33 @@ gold=0
 develop=0
 runasap=0
 ip4_gw=
+nodeip_expose=
+nodeip_expose_ssh=
+nodeip_expose_vnc=
+nodeip_expose_rdp=
+
 readconf bhyve-default-default.conf
 readconf bhyve.conf
-
-# ssh host
-ssh_host=
 
 readconf api.conf
 readconf bhyve-api.conf
 
 [ -n "${ip4_gw}" ] && oip4_gw="${ip4_gw}"
 
+# host variables
+ssh_host=
+vnc_host=
+rdp_host=
+
+# port
+ssh_port=
+vnc_port=
+rdp_port=
+
 set -e
 . ${distmoduledir}/api.d/api.subr
 set +e
+
 MY_LOG="${cbsd_api_logdir}/bhyve-api.log"
 log "wakeup: [workdir: ${workdir}, cbsdworkdir: ${cbsd_workdir}, api_postcreate_hook: ${api_postcreate_hook}, cbsd_api_dbdir: ${cbsd_api_dbdir}]: $*"
 
@@ -59,35 +72,77 @@ vm_os_profile=
 
 [ -z "${ip4_gw}" -a -n "${oip4_gw}" ] && ip4_gw="${oip4_gw}"
 
+api_err()
+{
+	local _code="${1}"
+	local _msg="${2}"
+	echo -n "${jname}" > ${cbsd_api_dbdir}/${cid}/vm-${host_hostname}
+	echo "${hostname}" > ${cbsd_api_dbdir}/${cid}/${jname}.node
+	${CAT_CMD} > ${cbsd_api_dbdir}/${cid}/${jname}-bhyve.ssh <<EOF
+{
+  "Message": "${_msg}"
+}
+EOF
+
+	err "${_code}" "${_msg}"
+}
+
 create_env()
 {
 	local _profile_file=
 	ssh_user=
 	ssh_port=
 
+	cid=$( ${miscdir}/cbsd_md5 "${pubkey}" )
+
+	# additional check for profile/type?
+	# hier
+	if [ ! -d ${cbsd_api_dbdir}/${cid} ]; then
+		${MKDIR_CMD} -m 0770 -p ${cbsd_api_dbdir}/${cid}
+		${CHOWN_CMD} ${cbsduser}:${cbsduser} ${cbsd_api_dbdir}/${cid}
+	fi
+
+	if [ ! -d ${cbsd_api_dbdir}/${cid}/.ssh ]; then
+		${MKDIR_CMD} -m 0770 -p ${cbsd_api_dbdir}/${cid}/.ssh
+		${CHOWN_CMD} ${cbsduser}:${cbsduser} ${cbsd_api_dbdir}/${cid}/.ssh
+	fi
+
+	if [ ! -r ${cbsd_api_dbdir}/${cid}/.ssh/authorized_keys ]; then
+		echo "${pubkey}" > ${cbsd_api_dbdir}/${cid}/.ssh/authorized_keys
+		${CHOWN_CMD} ${cbsduser}:${cbsduser} ${cbsd_api_dbdir}/${cid}/.ssh/authorized_keys
+		sync
+		#fflush?
+		sleep 1
+	fi
+	if [ ! -d ${cbsd_api_dbdir}/${cid}/vms ]; then
+		${MKDIR_CMD} -m 0770 -p ${cbsd_api_dbdir}/${cid}/vms
+		${CHOWN_CMD} ${cbsduser}:${cbsduser} ${cbsd_api_dbdir}/${cid}/vms
+	fi
+
 	if [ "${image}" = "bhyve" -o -z "${image}" ]; then
-		[ -z "${vm_os_type}" ] && err 1 "empty image and/or vm_os_type"
-		[ -z "${vm_os_profile}" ] && err 1 "empty image and/or vm_os_profile"
+		[ -z "${vm_os_type}" ] && api_err 1 "empty image and/or vm_os_type"
+		[ -z "${vm_os_profile}" ] && api_err 1 "empty image and/or vm_os_profile"
 		if [ -r "${workdir}/etc/vm-${vm_os_type}-${vm_os_profile}.conf" ]; then
 			_profile_file="${workdir}/etc/vm-${vm_os_type}-${vm_os_profile}.conf"
 		elif [ -r "${workdir}/etc/defaults/vm-${vm_os_type}-${vm_os_profile}.conf" ]; then
 			_profile_file="${workdir}/etc/defaults/vm-${vm_os_type}-${vm_os_profile}.conf"
 		fi
-		[ -z "${_profile_file}" ] && err 1 "no such profile for type/profile: ${vm_os_type}-${vm_os_profile}"
+		[ -z "${_profile_file}" ] && api_err 1 "no such profile for type/profile: ${vm_os_type}-${vm_os_profile}"
 		eval $( ${GREP_CMD} ^myb_image= ${_profile_file} 2>/dev/null )
-		[ -z "${myb_image}" ] && err 1 "no such myb_image vars for type/profile: ${vm_os_type}-${vm_os_profile}"
+		[ -z "${myb_image}" ] && api_err 1 "no such myb_image vars for type/profile: ${vm_os_type}-${vm_os_profile}"
 		image="${myb_image}"
 	else
 		eval vm_os_type="\$${image}_vm_os_type"
 		eval vm_os_profile="\$${image}_vm_os_profile"
 	fi
 
+	[ -z "${vm_os_type}" ] && api_err 1 "vm_os_type empty? check img/mapping in bhyve-api.conf for: ${image}"
+	[ -z "${vm_os_profile}" ] && api_err 1 "vm_os_profile empty? check img/mapping in bhyve-api.conf for: ${image}"
+
 	eval ssh_user="\$${image}_ssh_user"
 
+	[ -z "${ssh_user}" ] && api_err 1 "ssh_user empty? check img/mapping in bhyve-api.conf for: ${image}"
 	[ -z "${ssh_host}" ] && ssh_host="${nodeip}"
-	[ -z "${vm_os_type}" ] && err 1 "vm_os_type empty? check img/mapping in bhyve-api.conf for: ${image}"
-	[ -z "${vm_os_profile}" ] && err 1 "vm_os_profile empty? check img/mapping in bhyve-api.conf for: ${image}"
-	[ -z "${ssh_user}" ] && err 1 "ssh_user empty? check img/mapping in bhyve-api.conf for: ${image}"
 
 	# extras area
 	v6_addr=
@@ -213,30 +268,6 @@ create_env()
 	[ -z "${vm_os_type}" ] && err 1 "no vm_os_type"
 	[ -z "${vm_os_profile}" ] && err 1 "no vm_os_profile"
 
-	# additional check for profile/type?
-
-	cid=$( ${miscdir}/cbsd_md5 "${pubkey}" )
-	if [ ! -d ${cbsd_api_dbdir}/${cid} ]; then
-		${MKDIR_CMD} -m 0770 -p ${cbsd_api_dbdir}/${cid}
-		${CHOWN_CMD} ${cbsduser}:${cbsduser} ${cbsd_api_dbdir}/${cid}
-	fi
-
-	if [ ! -d ${cbsd_api_dbdir}/${cid}/.ssh ]; then
-		${MKDIR_CMD} -m 0770 -p ${cbsd_api_dbdir}/${cid}/.ssh
-		${CHOWN_CMD} ${cbsduser}:${cbsduser} ${cbsd_api_dbdir}/${cid}/.ssh
-	fi
-
-	if [ ! -r ${cbsd_api_dbdir}/${cid}/.ssh/authorized_keys ]; then
-		echo "${pubkey}" > ${cbsd_api_dbdir}/${cid}/.ssh/authorized_keys
-		${CHOWN_CMD} ${cbsduser}:${cbsduser} ${cbsd_api_dbdir}/${cid}/.ssh/authorized_keys
-		sync
-		#fflush?
-		sleep 1
-	fi
-	if [ ! -d ${cbsd_api_dbdir}/${cid}/vms ]; then
-		${MKDIR_CMD} -m 0770 -p ${cbsd_api_dbdir}/${cid}/vms
-		${CHOWN_CMD} ${cbsduser}:${cbsduser} ${cbsd_api_dbdir}/${cid}/vms
-	fi
 
 	if [ -n "${ci_gw42}" ]; then
 		str="cbsd bcreate jname=${jname} runasap=1 vm_cpus=${cpus} vm_ram=${ram} imgsize=${imgsize} vm_os_type=\"${vm_os_type}\" vm_os_profile=\"${vm_os_profile}\" ci_jname=\"${jname}\" ci_fqdn=\"${ci_fqdn}\" ci_ip4_addr=\"${ip4_addr}\" ci_gw4=\"${ip4_gw}\" ip4_addr=\"${ip4_addr}\" ci_user_pubkey=\"${cbsd_api_dbdir}/${cid}/.ssh/authorized_keys\" ci_jname=\"${ci_fqdn}\" ci_ip4_addr2=\"${v6_addr}\" ci_user_pw_root=\"cbsd\""
@@ -266,6 +297,8 @@ create_env()
 		retry=$(( retry + 1 ))
 	done
 
+	[ -r ${cbsd_workdir}/vm/${jname}/rc.conf_${jname} ] && . ${cbsd_workdir}/vm/${jname}/rc.conf_${jname}
+
 	if [ ${retry} -gt ${max_retry} ]; then
 		log "unable to read vnc port file: ${cbsd_workdir}/vm/${jname}/vnc_port"
 		err 1 "unable to read vnc port file: ${cbsd_workdir}/vm/${jname}/vnc_port"
@@ -274,27 +307,68 @@ create_env()
 	# for slow hdd/vm startup
 	sleep 5
 
-	if [ "${nodeip_expose}" = "0" ]; then
-		port=22
+	original_vnc_port=$( ${HEAD_CMD} -n1 ${cbsd_workdir}/vm/${jname}/vnc_port | ${AWK_CMD} '{printf $1}' )
+	log "expose settings: nodeip_expose:${nodeip_expose}, nodeip_expose_ssh=${nodeip_expose_ssh}, nodeip_expose_vnc=${nodeip_expose_vnc}, nodeip_expose_rdp=${nodeip_expose_rdp}"
+
+	### SSH access
+	_ssh_expose=0
+	[ "${nodeip_expose}" = "1" ] && _ssh_expose=1
+	if [ -n "${nodeip_expose_ssh}" ]; then
+		if [ "${nodeip_expose_ssh}" = "1" ]; then
+			_ssh_expose=1
+		else
+			_ssh_expose=0
+		fi
+	fi
+
+	if [ "${_ssh_expose}" = "0" ]; then
+		ssh_port=22
 		ssh_host="${ip4_addr}"
 	else
-		vnc_port=$( ${HEAD_CMD} -n1 ${cbsd_workdir}/vm/${jname}/vnc_port | ${AWK_CMD} '{printf $1}' )
-		port=$(( vnc_port + 3000 ))
-		vnc_redir=$(( vnc_port + 4000 ))
+		ssh_port=$(( original_vnc_port + 3000 ))
+		ssh_host="${nodeip}"
+		log "expose mode=add jname=${jname} in=${ssh_port} out=22"
+		expose mode=add jname=${jname} in=${ssh_port} out=22 >> ${MY_LOG}
+	fi
 
-		# to config: VDI flags
-		expose mode=add jname=${jname} in=${vnc_redir} out=${vnc_port} outaddr=127.0.0.1 >> ${MY_LOG}
-
-		if [ "${vm_os_type}" = "windows" ]; then
-			log "expose mode=add jname=${jname} in=${port} out=3389"
-			expose mode=add jname=${jname} in=${port} out=3389 >> ${MY_LOG}
-		elif [ "${image}" = "ubuntu22_vdi" ]; then
-			log "expose mode=add jname=${jname} in=${port} out=3389"
-			expose mode=add jname=${jname} in=${port} out=3389 >> ${MY_LOG}
+	### VNC access
+	_vnc_expose=0
+	[ "${nodeip_expose}" = "1" ] && _vnc_expose=1
+	if [ -n "${nodeip_expose_ssh}" ]; then
+		if [ "${nodeip_expose_vnc}" = "1" ]; then
+			_vnc_expose=1
 		else
-			log "expose mode=add jname=${jname} in=${port} out=22"
-			expose mode=add jname=${jname} in=${port} out=22 >> ${MY_LOG}
+			_vnc_expose=0
 		fi
+	fi
+	if [ "${_vnc_expose}" = "0" ]; then
+		vnc_port=${original_vnc_port}
+		vnc_host="${ip4_addr}"
+	else
+		vnc_port=$(( original_vnc_port + 3001 ))
+		vnc_host="${nodeip}"
+		log "expose mode=add jname=${jname} in=${vnc_port} out=${original_vnc_port} outaddr=127.0.0.1"
+		expose mode=add jname=${jname} in=${vnc_port} out=${original_vnc_port} outaddr=127.0.0.1 >> ${MY_LOG}
+	fi
+
+	### RDP access, VDI only (check)
+	_rdp_expose=0
+	[ "${nodeip_expose}" = "1" ] && _rdp_expose=1
+	if [ -n "${nodeip_expose_rdp}" ]; then
+		if [ "${nodeip_expose_rdp}" = "1" ]; then
+			_rdp_expose=1
+		else
+			_rdp_expose=0
+		fi
+	fi
+	if [ "${_rdp_expose}" = "0" ]; then
+		rdp_port=3389
+		rdp_host="${ip4_addr}"
+	else
+		rdp_port=$(( original_vnc_port + 3002 ))
+		rdp_host="${nodeip}"
+		log "expose mode=add jname=${jname} in=${rdp_port} out=3389"
+		expose mode=add jname=${jname} in=${rdp_port} out=3389 >> ${MY_LOG}
 	fi
 
 	if [ -n "${api_ip4_pool}" ]; then
@@ -367,40 +441,11 @@ EOF
 		hostname="${mq_tube}"
 	fi
 
-	case "${vm_os_type}" in
-		windows)
-			port4=3389
-			port6=3389
-			rdp_host="${ssh_host}"
-			rdp_port="${port}"
-			rdp4_host="${ssh4_host}"
-			rdp6_host="${ssh6_host}"
-			rdp4_port="${port4}"
-			rdp6_port="${port6}"
-			[ -z "${rdp6_port}" ] && rdp6_port="${rdp4_port}"
-			ssh_user=
-			ssh_host=
-			ssh4_host=
-			ssh6_host=
-			ssh_port=
-			ssh4_port=
-			ssh6_port=
-			rdp_user="Admin"
-			rdp_password="cix2022"
-			;;
-		*)
-			rdp_user=
-			rdp_password=
-			rdp_host=
-			rdp_port=
-			;;
-	esac
-
-	if [ "${image}" = "ubuntu22_vdi" ]; then
+	if [ "${cbsd_vdi_image}" = "1" ]; then
 		port4=3389
 		port6=3389
-		rdp_host="${ssh_host}"
-		rdp_port="${port}"
+		rdp_user="${cbsd_vdi_user}"
+		rdp_password="${cbsd_vdi_password}"
 		rdp4_host="${ssh4_host}"
 		rdp6_host="${ssh6_host}"
 		rdp4_port="${port4}"
@@ -408,13 +453,16 @@ EOF
 		[ -z "${rdp6_port}" ] && rdp6_port="${rdp4_port}"
 		ssh_user=
 		ssh_host=
+		ssh_port=
 		ssh4_host=
 		ssh6_host=
-		ssh_port=
 		ssh4_port=
 		ssh6_port=
-		rdp_user="user"
-		rdp_password="password"
+	else
+		rdp_user=
+		rdp_password=
+		rdp_host=
+		rdp_port=
 	fi
 
 	echo "${hostname}" > ${cbsd_api_dbdir}/${cid}/${jname}.node
@@ -486,6 +534,11 @@ ${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-bhyve.ssh <<EOF
   "rdp_host": "${rdp_host}",
 EOF
 fi
+if [ -n "${rdp_port}" ]; then
+${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-bhyve.ssh <<EOF
+  "rdp_port": ${rdp_port},
+EOF
+fi
 if [ -n "${rdp4_host}" ]; then
 ${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-bhyve.ssh <<EOF
   "rdp4_host": "${rdp4_host}",
@@ -506,48 +559,31 @@ ${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-bhyve.ssh <<EOF
   "rdp6_port": ${rdp6_port},
 EOF
 fi
-if [ -n "${rdp_port}" ]; then
-${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-bhyve.ssh <<EOF
-  "rdp_port": ${rdp_port},
-EOF
-fi
 
 ## VNC REDIR
 ${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-bhyve.ssh <<EOF
-  "vnc_port": ${vnc_redir},
+  "vnc_port": ${vnc_port},
   "vnc_password": "cbsd",
-  "vnc_host": "209.127.24.102",
+  "vnc_host": "${vnc_host}",
 EOF
 
-	case "${vm_os_type}" in
-		windows)
+	case "${cbsd_vdi_image}" in
+		1)
 			${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-bhyve.ssh <<EOF
-  "rdp_string": "xfreerdp +clipboard +fonts /rfx /size:1920x1200 /u:Admin /p:cix2022 /v:${rdp_host}:${rdp_port}",
-  "rdp4_string": "xfreerdp +clipboard +fonts /rfx /size:1920x1200 /u:Admin /p:cix2022 /v:${rdp4_host}:${port4}",
-  "rdp6_string": "xfreerdp +clipboard +fonts /rfx /size:1920x1200 /u:Admin /p:cix2022 /v:[${rdp6_host}]:${port6}"
+  "rdp_string": "xfreerdp +clipboard +fonts /rfx /size:1920x1200 /u:${rdp_user} /p:${rdp_password} /v:${rdp_host}:${rdp_port}",
+  "rdp4_string": "xfreerdp +clipboard +fonts /rfx /size:1920x1200 /u:${rdp_user} /p:${rdp_password} /v:${rdp4_host}:${port4}",
+  "rdp6_string": "xfreerdp +clipboard +fonts /rfx /size:1920x1200 /u:${rdp_user} /p:${rdp_password} /v:[${rdp6_host}]:${port6}"
 }
 EOF
 			;;
 		*)
-
-			if [ "${image}" = "ubuntu22_vdi" ]; then
 			${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-bhyve.ssh <<EOF
-  "rdp_string": "xfreerdp +clipboard +fonts /rfx /size:1920x1200 /u:user /p:password /v:${rdp_host}:${rdp_port}",
-  "rdp4_string": "xfreerdp +clipboard +fonts /rfx /size:1920x1200 /u:user /p:password /v:${rdp4_host}:${port4}",
-  "rdp6_string": "xfreerdp +clipboard +fonts /rfx /size:1920x1200 /u:user /p:password /v:[${rdp6_host}]:${port6}"
-}
-EOF
-			else
-			${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-bhyve.ssh <<EOF
-  "ssh_port": ${port},
-  "ssh_string": "ssh ${ssh_user}@${ssh_host} -p${port}",
+  "ssh_port": ${ssh_port},
+  "ssh_string": "ssh ${ssh_user}@${ssh_host} -p${ssh_port}",
   "ssh4_string": "ssh ${ssh_user}@${ssh4_host} -p${port4}",
   "ssh6_string": "ssh ${ssh_user}@${ssh6_host} -p${port6}"
 }
 EOF
-
-
-fi
 			;;
 	esac
 
@@ -571,22 +607,22 @@ ssh_user="${ssh_user}"
 ssh_host="${ssh_host}"
 ssh4_host="${ssh4_host}"
 ssh6_host="${ssh6_host}"
-ssh_port="${port}"
+ssh_port="${ssh_port}"
 ssh_port4="${port4}"
 ssh_port6="${port6}"
 EOF
 
-	case "${vm_os_type}" in
-		windows)
+	case "${cbsd_vdi_image}" in
+		1)
 			${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/vms/${jname} <<EOF
-ssh_string="xfreerdp +clipboard +fonts /rfx /size:1920x1200 /u:Admin /v:${ssh_host}:${port}"
+ssh_string="xfreerdp +clipboard +fonts /rfx /size:1920x1200 /u:Admin /v:${ssh_host}:${ssh_port}"
 ssh4_string="xfreerdp +clipboard +fonts /rfx /size:1920x1200 /u:Admin /v:${ssh4_host}:${port4}"
 ssh6_string="xfreerdp +clipboard +fonts /rfx /size:1920x1200 /u:Admin /v:${ssh6_host}:${port6}"
 EOF
 			;;
 		*)
 			${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/vms/${jname} <<EOF
-ssh_string="ssh ${ssh_user}@${ssh_host} -p${port}"
+ssh_string="ssh ${ssh_user}@${ssh_host} -p${ssh_port}"
 ssh4_string="ssh ${ssh_user}@${ssh4_host} -p${port4}"
 ssh6_string="ssh ${ssh_user}@${ssh6_host} -p${port6}"
 EOF

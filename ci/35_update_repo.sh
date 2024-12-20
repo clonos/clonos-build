@@ -110,7 +110,7 @@ jq ".installed + {
 	MyBee)
 		sysrc -qf ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/myb_ver.conf myb_ver_new="${VER}"
 		cp -a ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/myb_ver.json ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/myb_ver.json-o
-jq ". + {
+jq ".installed + {
   \"myb\": \"${VER}\"
 }" ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/myb_ver.json-o > ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/myb_ver.json
 

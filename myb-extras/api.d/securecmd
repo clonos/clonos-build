@@ -2,6 +2,6 @@
 SECCMD="\
 ${SECCMD}
 bhyve-api \
-jail-api \
 control-api \
+jail-api \
 "

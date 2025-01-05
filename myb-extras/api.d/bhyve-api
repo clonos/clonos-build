@@ -255,24 +255,24 @@ create_env()
 
 	#ip4_addr=$( dhcpd ip4pool=${ip4pool} )
 	[ -z "${ip4_gw}" ] && ip4_gw="10.0.0.1"
-	ci_jname="${jname}"
 
 	if [ -n "${host_hostname}" ]; then
 		ci_fqdn="${host_hostname}"
 	else
 		ci_fqdn="${jname}.my.domain"
 	fi
+	ci_jname="${ci_fqdn}"
+
 	ci_ip4_addr="${ip4_addr}"
 	ci_gw4="${ip4_gw}"
 
 	[ -z "${vm_os_type}" ] && err 1 "no vm_os_type"
 	[ -z "${vm_os_profile}" ] && err 1 "no vm_os_profile"
 
-
 	if [ -n "${ci_gw42}" ]; then
-		str="cbsd bcreate jname=${jname} runasap=1 vm_cpus=${cpus} vm_ram=${ram} imgsize=${imgsize} vm_os_type=\"${vm_os_type}\" vm_os_profile=\"${vm_os_profile}\" ci_jname=\"${jname}\" ci_fqdn=\"${ci_fqdn}\" ci_ip4_addr=\"${ip4_addr}\" ci_gw4=\"${ip4_gw}\" ip4_addr=\"${ip4_addr}\" ci_user_pubkey=\"${cbsd_api_dbdir}/${cid}/.ssh/authorized_keys\" ci_jname=\"${ci_fqdn}\" ci_ip4_addr2=\"${v6_addr}\" ci_user_pw_root=\"cbsd\""
+		str="cbsd bcreate jname=${jname} runasap=1 vm_cpus=${cpus} vm_ram=${ram} imgsize=${imgsize} vm_os_type=\"${vm_os_type}\" vm_os_profile=\"${vm_os_profile}\" ci_fqdn=\"${ci_fqdn}\" ci_ip4_addr=\"${ip4_addr}\" ci_gw4=\"${ip4_gw}\" ip4_addr=\"${ip4_addr}\" ci_user_pubkey=\"${cbsd_api_dbdir}/${cid}/.ssh/authorized_keys\" ci_jname=\"${ci_jname}\" ci_ip4_addr2=\"${v6_addr}\" ci_user_pw_root=\"cbsd\""
 	else
-		str="cbsd bcreate jname=${jname} runasap=1 vm_cpus=${cpus} vm_ram=${ram} imgsize=${imgsize} vm_os_type=\"${vm_os_type}\" vm_os_profile=\"${vm_os_profile}\" ci_jname=\"${jname}\" ci_fqdn=\"${ci_fqdn}\" ci_ip4_addr=\"${ip4_addr}\" ci_gw4=\"${ip4_gw}\" ip4_addr=\"${ip4_addr}\" ci_user_pubkey=\"${cbsd_api_dbdir}/${cid}/.ssh/authorized_keys\" ci_jname=\"${ci_fqdn}\""
+		str="cbsd bcreate jname=${jname} runasap=1 vm_cpus=${cpus} vm_ram=${ram} imgsize=${imgsize} vm_os_type=\"${vm_os_type}\" vm_os_profile=\"${vm_os_profile}\" ci_fqdn=\"${ci_fqdn}\" ci_ip4_addr=\"${ip4_addr}\" ci_gw4=\"${ip4_gw}\" ip4_addr=\"${ip4_addr}\" ci_user_pubkey=\"${cbsd_api_dbdir}/${cid}/.ssh/authorized_keys\" ci_jname=\"${ci_jname}\""
 	fi
 
 	[ -n "${bhyve_vnc_tcp_bind}" ] && str="${str} bhyve_vnc_tcp_bind=\"${bhyve_vnc_tcp_bind}\""
@@ -307,6 +307,7 @@ create_env()
 	# for slow hdd/vm startup
 	sleep 5
 
+	### partial dub code with nodeip-expose
 	original_vnc_port=$( ${HEAD_CMD} -n1 ${cbsd_workdir}/vm/${jname}/vnc_port | ${AWK_CMD} '{printf $1}' )
 	log "expose settings: nodeip_expose:${nodeip_expose}, nodeip_expose_ssh=${nodeip_expose_ssh}, nodeip_expose_vnc=${nodeip_expose_vnc}, nodeip_expose_rdp=${nodeip_expose_rdp}"
 
@@ -327,8 +328,6 @@ create_env()
 	else
 		ssh_port=$(( original_vnc_port + 3000 ))
 		ssh_host="${nodeip}"
-		log "expose mode=add jname=${jname} in=${ssh_port} out=22"
-		expose mode=add jname=${jname} in=${ssh_port} out=22 >> ${MY_LOG}
 	fi
 
 	### VNC access
@@ -343,12 +342,10 @@ create_env()
 	fi
 	if [ "${_vnc_expose}" = "0" ]; then
 		vnc_port=${original_vnc_port}
-		vnc_host="${ip4_addr}"
+		vnc_host="127.0.0.1"
 	else
 		vnc_port=$(( original_vnc_port + 3001 ))
 		vnc_host="${nodeip}"
-		log "expose mode=add jname=${jname} in=${vnc_port} out=${original_vnc_port} outaddr=127.0.0.1"
-		expose mode=add jname=${jname} in=${vnc_port} out=${original_vnc_port} outaddr=127.0.0.1 >> ${MY_LOG}
 	fi
 
 	### RDP access, VDI only (check)
@@ -367,15 +364,16 @@ create_env()
 	else
 		rdp_port=$(( original_vnc_port + 3002 ))
 		rdp_host="${nodeip}"
-		log "expose mode=add jname=${jname} in=${rdp_port} out=3389"
-		expose mode=add jname=${jname} in=${rdp_port} out=3389 >> ${MY_LOG}
 	fi
+	### // partial dub code with nodeip-expose
+
+	nodeip-expose mode=create jname=${jname}
 
 	if [ -n "${api_ip4_pool}" ]; then
 		my_extv4=$( /usr/local/bin/cbsd dhcpd ip4pool=${api_ip4_pool} )
 	fi
 
-	# for test only
+	# for test only, sample code
 	if [ -n "${my_extv4}" ]; then
 		cat > /usr/jails/jails-system/${jname}/master_poststart.d/v4 <<EOF
 #!/bin/sh
@@ -468,7 +466,7 @@ EOF
 	echo "${hostname}" > ${cbsd_api_dbdir}/${cid}/${jname}.node
 	${CAT_CMD} > ${cbsd_api_dbdir}/${cid}/${jname}-bhyve.ssh <<EOF
 {
-  "id": "${host_hostname}",
+  "id": "${ci_jname}",
   "type": "vm",
   "emulator": "bhyve",
   "is_power_on": true,

@@ -318,6 +318,7 @@ put_prometheus_file_metrics "rebuild-full" "cpr" ${diff_time}
 #diff_time=$(( end_time - st_time ))
 #put_prometheus_file_metrics "rebuild-full" "cprmicro" ${diff_time}
 
+
 # update-repo
 st_time=$( ${DATE_CMD} +%s )
 /root/myb-build/ci/35_update_repo.sh
@@ -333,6 +334,7 @@ fi
 # half build
 #fi
 # jail
+
 st_time=$( ${DATE_CMD} +%s )
 /root/myb-build/ci/40_jail.sh
 time_stats "${N1_COLOR}jail done"

@@ -103,6 +103,7 @@ fi
 
 # first init
 cbsd jexec jname=${jname} /bin/sh <<EOF
+unset workdir cbsd_workdir data path
 /usr/local/cbsd/sudoexec/initenv /usr/local/cbsd/share/initenv.conf
 /usr/local/myb/mybinst.sh
 /usr/local/bin/cbsd get-profiles src=cloud json=1 > /usr/local/www/public/profiles.html

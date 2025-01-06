@@ -119,7 +119,6 @@ jq ".installed + {
 esac
 
 echo "check ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/"
-read p
 
 echo "${RSYNC_CMD} -avz ./ ${RSYNC_DST}latest/"
 #read p

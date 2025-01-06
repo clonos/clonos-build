@@ -47,17 +47,19 @@ env ASSUME_ALWAYS_YES=yes SIGNATURE_TYPE=none IGNORE_OSVERSION=yes pkg -C /root/
 echo "env ASSUME_ALWAYS_YES=yes SIGNATURE_TYPE=none IGNORE_OSVERSION=yes pkg -C /root/clonos-build/etc/pkg/pkg.conf -r ${cbsd_workdir}/jails-data/${jname}-data install -r ${OSNAME}-latest ${PKG_BASE}"
 env ASSUME_ALWAYS_YES=yes SIGNATURE_TYPE=none IGNORE_OSVERSION=yes pkg -C /root/clonos-build/etc/pkg/pkg.conf -r ${cbsd_workdir}/jails-data/${jname}-data install -r ${OSNAME}-latest ${PKG_BASE}
 
-
 #_rpath=$( realpath ${cbsd_workdir}/jails-data/${jname}-data )
 #make -C /usr/src installworld DESTDIR="${_rpath}"
 #make -C /usr/src distribution DESTDIR="${_rpath}"
 
 cbsd jstart jname=${jname}
 
+fetch -o ${cbsd_workdir}/jails-data/${jname}-data/bin/distribution https://pkg.convectix.com/FreeBSD:14:amd64/latest/distribution
+chmod +x ${cbsd_workdir}/jails-data/${jname}-data/bin/distribution
+
 [ ! -d ${cbsd_workdir}/jails-data/${jname}-data/usr/local/etc/pkg/repos ] && ${MKDIR_CMD} -p ${cbsd_workdir}/jails-data/${jname}-data/usr/local/etc/pkg/repos
 ${CAT_CMD} > ${cbsd_workdir}/jails-data/${jname}-data/usr/local/etc/pkg/repos/FreeBSD.conf <<EOF
 FreeBSD: {
-  url: "pkg+https://pkg.FreeBSD.org/\${ABI}/quarterly",
+  url: "pkg+https://pkg.FreeBSD.org/\${ABI}/latest",
   mirror_type: "srv",
   signature_type: "fingerprints",
   fingerprints: "/usr/share/keys/pkg",
@@ -118,6 +120,13 @@ ${RSYNC_CMD} -avz /root/clonos-build/skel/ ${cbsd_workdir}/jails-data/${jname}-d
 
 [ ! -d ${cbsd_workdir}/jails-data/${jname}-data/root/bin ] && ${MKDIR_CMD} -p ${cbsd_workdir}/jails-data/${jname}-data/root/bin
 ${RSYNC_CMD} -avz ${cbsd_workdir}/jails-data/${jname}-data/usr/local/myb/bin/ ${cbsd_workdir}/jails-data/${jname}-data/root/bin/ || true
+
+${cbsd_workdir}/jails-data/${jname}-data/bin/distribution init ${cbsd_workdir}/jails-data/${jname}-data
+
+# replace pkg by pkg-static
+${RM_CMD} ${cbsd_workdir}/jails-data/${jname}-data/usr/sbin/pkg
+${CP_CMD} -a ${cbsd_workdir}/jails-data/${jname}-data/usr/local/sbin/pkg-static ${cbsd_workdir}/jails-data/${jname}-data/usr/sbin/pkg
+
 
 ### HOME
 #echo "OK: ${progdir}/profiles/${OSNAME}/skel"

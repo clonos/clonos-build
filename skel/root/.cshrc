@@ -57,6 +57,20 @@ if ($?prompt) then
 	endif
 endif
 
+# MyB CLIENT&friends
+if ( $?SUDO_COMMAND ) then
+	setenv MYB_SUBSHELL 1
+endif
+if ( $?NOINTER ) then
+	setenv MYB_SUBSHELL 1
+endif
+if ( $?CBSD_PWD ) then
+	setenv MYB_SUBSHELL 1
+endif
+if ( $?CBSD_APP ) then
+	setenv MYB_SUBSHELL 1
+endif
+
 #if ( "ttyv0" == "$tty" || "ttyu0" == "$tty" || "xc0" == "$tty" ) then
 if (! $?MYB_SUBSHELL ) then
 	setenv MYB_SUBSHELL 1

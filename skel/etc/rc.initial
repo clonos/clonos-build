@@ -270,7 +270,7 @@ while : ; do
 	echo -e "${H2_COLOR}q) ${SELECTOR_PRE}Exit${SELECTOR_POST}${NORMAL}"
 	echo
 #	read -p "Enter a number:" opmode
-	opmode=$( /root/a.out )
+	opmode=$( /usr/local/cbsd/modules/myb.d/getch )
 	ret=$?
 
 	echo "ERRCODE: ${ret}"

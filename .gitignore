@@ -4,6 +4,7 @@ myb/*
 cmd.subr
 myb-extras/puppet.d
 myb-extras/vncterm.d
+myb-extras/myb.d
 cbsd.lock
 myb/puppet.d
 profiles/home.olevole.ru

@@ -367,8 +367,8 @@ if [ ${myb_firstboot} -eq 1 ]; then
 	/usr/sbin/service sshd restart >/dev/null 2>&1
 fi
 
-
 cat > /etc/sysctl.conf <<EOF
+hw.usb.debug = -1
 security.bsd.see_other_uids = 0
 kern.init_shutdown_timeout = 900
 security.bsd.see_other_gids = 0

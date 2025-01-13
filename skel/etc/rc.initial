@@ -14,7 +14,6 @@ export workdir="${cbsd_workdir}"
 [ -n "${SOCKS5_PROXY}" ] && export SOCKS5_PROXY="${SOCKS5_PROXY}"
 
 . /usr/local/cbsd/cbsd.conf
-. /usr/local/cbsd/subr/ansiicolor.subr
 . /usr/jails/nc.inventory
 . /usr/local/cbsd/subr/nc.subr
 . /etc/rc.initial.subr
@@ -25,7 +24,52 @@ trap : 4
 # Make sure the user can't access rootshell by pressing Ctrl-Z
 trap : 18
 
+is_number()
+{
+	case "${1}" in
+		''|*[!0-9]*) return 1 ;;
+		*) return 0 ;;
+	esac
+}
+
+die()
+{
+	echo "Type: /etc/rc.initial to re-launch"
+	exit 0
+}
+
+apply_color()
+{
+	unset _CBSD_ANSIICOLOR_SUBR
+
+	case "${MYB_SUBSHELL_COLOR}" in
+		black)
+			MYB_SUBSHELL_COLOR="black"
+			MYB_SUBSHELL_COLOR_file="/usr/local/cbsd/etc/defaults/color.conf"
+			;;
+		white)
+			MYB_SUBSHELL_COLOR="white"
+			MYB_SUBSHELL_COLOR_file="/usr/local/cbsd/etc/defaults/color-white.conf"
+			;;
+		*)
+			unset MYB_SUBSHELL_COLOR MYB_SUBSHELL_COLOR_file
+			;;
+	esac
+
+	if [ -n "${MYB_SUBSHELL_COLOR}" ]; then
+		unset NOCOLOR
+	else
+		export NOCOLOR=1
+	fi
+
+	. /usr/local/cbsd/subr/ansiicolor.subr
+	[ -n "${MYB_SUBSHELL_COLOR_file}" ] && . ${MYB_SUBSHELL_COLOR_file}
+}
+
 ## MAIN
+[ -z "${MYB_SUBSHELL_COLOR}" ] && MYB_SUBSHELL_COLOR="black"
+apply_color
+
 check_tty
 hwprobe
 
@@ -40,15 +84,18 @@ fi
 MYB_SMTP_CONFIG_FILE="/usr/local/etc/smtp.conf"
 [ -z "${myb_net_cur_profile}" ] && myb_net_cur_profile="1"
 
+preselected=3
+time_pressed_last=0
+
 while : ; do
+	. /etc/rc.conf
+	selected=0
 	check_tty
 	init_settings
 
 	# exit loop
 	[ -r /tmp/stop ] && exit 0
-	# re-read ACL on/off, net profile
-	. /etc/rc.conf
-
+	clear
 	[ -r ${MYB_SMTP_CONFIG_FILE} ] && . ${MYB_SMTP_CONFIG_FILE}
 
 	case ${PUB_WL} in
@@ -97,14 +144,33 @@ while : ; do
 
 	echo
 	if [ -n "${myb_build}" ]; then
-		echo "Welcome to ${OSNAME} ${myb_version} (build: ${myb_build}) console."
+		echo "    Welcome to ${OSNAME} ${myb_version} (build: ${myb_build}) console."
 	else
-		echo "Welcome to ${OSNAME} ${myb_version} console."
+		echo "    Welcome to ${OSNAME} ${myb_version} console."
 	fi
 	echo
-	echo -e "    Copyright (c) 2013-2024 CBSD Team"
-	echo -e "    Copyright (c) 2019-2024 ${OSNAME} Team"
-	echo -e "    ${LCYAN}Visit: $producturl for system updates! ${H3_COLOR}(or type 'u'+Enter)${N0_COLOR}"
+	echo -e "    Copyright (c) 2013-2025 CBSD Team"
+	echo -e "    Copyright (c) 2019-2025 ${OSNAME} Team"
+	echo -e "    ${H5_COLOR}Visit: $producturl for system updates! ${H3_COLOR}(or type 'u'+Enter)${N0_COLOR}"
+	case "${MYB_SUBSHELL_COLOR}" in
+		black)
+			MYB_SUBSHELL_COLOR_black="*"
+			MYB_SUBSHELL_COLOR_white=""
+			MYB_SUBSHELL_COLOR_disabled=""
+			;;
+		white)
+			MYB_SUBSHELL_COLOR_black=""
+			MYB_SUBSHELL_COLOR_white="*"
+			MYB_SUBSHELL_COLOR_disabled=""
+			;;
+		*)
+			MYB_SUBSHELL_COLOR_black=""
+			MYB_SUBSHELL_COLOR_white=""
+			MYB_SUBSHELL_COLOR_disabled="*"
+			;;
+	esac
+
+	echo -e "    ${H5_COLOR}To change color schema (${MYB_SUBSHELL_COLOR_black}black/${MYB_SUBSHELL_COLOR_white}white/${MYB_SUBSHELL_COLOR_disabled}disabled): ${H3_COLOR}type 'c'${N0_COLOR}"
 	echo
 	case "${API_FQDN}" in
 		disabled|'')
@@ -134,168 +200,347 @@ while : ; do
 	esac
 
 	# display menu
+	SELECTOR=
+	max_menu_len=52
+	max_menu_len=52
 	echo
-	echo "Console Menu"
-	echo "------------"
-	echo -e "${H2_COLOR}1) (Re)Configure Host Network${NORMAL}     ${H2_COLOR}11) Configure Hosts Allow for API ${IP_WL_COLOR}(${IP_WL})${NORMAL}"
-	echo -e "${H2_COLOR}2) Reset 'root' user password${NORMAL}     ${H2_COLOR}12) Configure Pubkey WhiteList ${PUB_WL_COLOR}(${PUB_WL})${NORMAL}"
-	echo -e "${VPN_COLOR}3) Configure VPN access for API${NORMAL}   ${DGRAY}13) Add cluster node${NORMAL}"
-	echo -e "${H2_COLOR}4) Change VM network profile (${myb_net_cur_profile})${NORMAL}  ${H2_COLOR}14) Console Keyboard Map${NORMAL}"
-	echo -e "${TEMPLATE_COLOR}5) Install container template${NORMAL}     ${DGRAY}15) NFS/PVC/P9FS shares for VM${NORMAL}"
-	echo -e "${H2_COLOR}6) Shell ( warm cloud image )${NORMAL}     ${H2_COLOR}16) Set API FQDN ( + certbot ) ${API_FQDN_COLOR}(${API_FQDN})${NORMAL}"
-	echo -e "${H2_COLOR}7) Reboot Server${NORMAL}                  ${H2_COLOR}17) Kubernetes clusters setting${NORMAL}"
-	echo -e "${H2_COLOR}8) Shutdown Server${NORMAL}                ${DGRAY}18) ${NORMAL}"
-	echo -e "${H2_COLOR}9) Configure SMTP${NORMAL} (${SMTP_COLOR}${SMTP_STATUS}${NORMAL})  ${DGRAY}19) ${NORMAL}"
-	echo -e "${H2_COLOR}10) SSH root user: ${myb_ssh_root_ssh}${NORMAL}       ${DGRAY}20) Add cluster node${NORMAL}"
-	echo
-	echo -e "${H2_COLOR}0) Exit${NORMAL}"
-	echo
-	read -p "Enter a number:" opmode
+	echo -e "                              ${BOLD}${LBLUE}-= Console Menu (${preselected}) =-" # [${time_pressed_last}]" 
+	echo "                                 ----------------"
 
-	# see what the user has chosen
-	case ${opmode} in
-		0)
-			exit 0
-			;;
-		1)
-			bsdinstall netconfig
-			if [ -r /tmp/bsdinstall_etc/resolv.conf ]; then
-				cp -a /tmp/bsdinstall_etc/resolv.conf /etc/resolv.conf
-			fi
-			if [ -r /tmp/bsdinstall_etc/rc.conf.net ]; then
-				cut -d "=" -f 1 /tmp/bsdinstall_etc/rc.conf.net | while read _param; do
-					grep . /etc/rc.conf > /etc/rc.conf.bak
-					# sed 'd
-					grep -v ${_param} /etc/rc.conf.bak > /etc/rc.conf
-				done
-				echo >> /etc/rc.conf
-				cat /tmp/bsdinstall_etc/rc.conf.net >> /etc/rc.conf
-				echo "reboot the host to apply the changes"
-				read p
-			fi
-		 	;;
-		2)
-			echo "not implemented yet"
-			read p
-		 	;;
-		3)
-			passwd root
-			;;
-		4)
-			/usr/local/bin/cbsd myb_net_profile
-			;;
-		5)
-			/etc/rc.initial.ping
-			echo "not implemented yet"
-			read p
-			;;
-		6)
-			export PATH=/root/bin:/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin
-			export MYB_SUBSHELL=1
-			/root/bin/checkiso.sh
-			;;
-		7)
-			/etc/rc.initial.reboot
-			;;
-		8)
-			/etc/rc.initial.halt
-			;;
-		9)
-			/usr/local/bin/cbsd config_smtp
-			;;
-		10)
-			change_sshflags
-			;;
-		11)
-			_editfile=1		# always edit file
-			case ${IP_WL} in
-				enabled)
-					if getyesno "Turn ACL OFF? ('n' or '0' - leave as enabled) "; then
-						IP_WL="disabled"
-						${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock /usr/local/cbsd/misc/cbsdsysrc -qf /etc/rc.conf IP_WL="${IP_WL}" > /dev/null 2>&1
-						_editfile=0
-						cbsd myb_ip_whitelist mode=off
-					fi
-					;;
-				disabled)
-					if getyesno "Turn ACL ON? ('n' or '0' - leave as disabled) "; then
-						IP_WL="enabled"
-						${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock /usr/local/cbsd/misc/cbsdsysrc -qf /etc/rc.conf IP_WL="${IP_WL}" > /dev/null 2>&1
-					fi
-					;;
-			esac
-			if [ "${_editfile}" = "1" ]; then
-				cbsd myb_ip_whitelist
-			fi
-		;;
-		12)
-			_editfile=1		# always edit file
-			case ${PUB_WL} in
-				enabled)
-					if getyesno "Turn Pubkey ACL OFF? ('n' or '0' - leave as enabled) "; then
-						PUB_WL="disabled"
-						${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock /usr/local/cbsd/misc/cbsdsysrc -qf /etc/rc.conf PUB_WL="${PUB_WL}" > /dev/null 2>&1
-						${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock /usr/local/cbsd/misc/cbsdsysrc -qf /etc/rc.conf cbsd_mq_api_flags="-listen 127.0.0.1:65531" > /dev/null 2>&1
-						_editfile=0
-						${SERVICE_CMD} cbsd-mq-api restart
-					fi
-					;;
-				disabled)
-					if getyesno "Turn Pubkey ACL ON? ('n' or '0' - leave as disabled) "; then
-						PUB_WL="enabled"
-						${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock /usr/local/cbsd/misc/cbsdsysrc -qf /etc/rc.conf PUB_WL="${PUB_WL}" > /dev/null 2>&1
-						${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock /usr/local/cbsd/misc/cbsdsysrc -qf /etc/rc.conf cbsd_mq_api_flags="-listen 127.0.0.1:65531 -allowlist /usr/local/etc/cbsd-mq-api.allow" > /dev/null 2>&1
-						${SERVICE_CMD} cbsd-mq-api restart
-					fi
-					;;
-			esac
-			if [ "${_editfile}" = "1" ]; then
-				cbsd myb_pub_whitelist
-			fi
-			;;
-		13)
-			echo "not implemented yet"
-			read p
-			;;
-		14)
-			/usr/sbin/kbdmap
-			;;
-		16)
-			if [ ! -x /usr/local/bin/certbot ]; then
-				if getyesno "The system does not have the 'certbot' package. It seems you are running it for the first time. Can I install the necessary software to continue?"; then
-					env ASSUME_ALWAYS_YES=yes SIGNATURE_TYPE=none IGNORE_OSVERSION=yes /usr/sbin/pkg install -r MyBee-latest -y py311-certbot
-				fi
-			fi
-			if [ ! -x /usr/local/bin/certbot ]; then
-				${ECHO} "${N1_COLOR}error: no such /usr/local/bin/certbot, please install first: py311-certbot"
+	enum=1; export menu_item_${enum}="(Re)Configure Host Network"
+	enum=2; export menu_item_${enum}="Configure Hosts Allow for API ${IP_WL_COLOR}(${IP_WL})"
+	enum=3; export menu_item_${enum}="Reset 'root' user password"
+	enum=4; export menu_item_${enum}="Configure Pubkey WhiteList ${PUB_WL_COLOR}(${PUB_WL})"
+	enum=5; export menu_item_${enum}="Change VM network profile (${myb_net_cur_profile})"
+	enum=6; export menu_item_${enum}="Shell ( warm cloud image )"
+	enum=7; export menu_item_${enum}="Set API FQDN (+certbot) ${API_FQDN_COLOR}(${API_FQDN})"
+	enum=8; export menu_item_${enum}="Reboot Server"
+	enum=9; export menu_item_${enum}="Shutdown Server"
+	enum=10; export menu_item_${enum}="Configure SMTP${NORMAL} (${SMTP_COLOR}${SMTP_STATUS} )"
+	enum=11; export menu_item_${enum}="SSH root user: ${myb_ssh_root_ssh}"
+	max_item_num=11
+
+	for item in $( jot ${max_item_num} ); do
+		if [ ${item} -eq ${preselected} ]; then
+
+			if [ ${item} -ge 10 ]; then
+				SELECTOR_PRE="${UNDERLINE}${H7_COLOR}>[ "
 			else
-				_editfile=1		# always edit file
-				case ${API_FQDN} in
-					disabled)
-						if getyesno "Turn API FQDN/certbot ON? ('n' or '0' - leave as disabled) "; then
-							cbsd myb_api_fqdn
-						fi
+				SELECTOR_PRE=" ${UNDERLINE}${H7_COLOR}>[ "
+			fi
+			SELECTOR_POST=" ]<"
+		else
+			if [ ${item} -ge 10 ]; then
+				SELECTOR_PRE="   "
+			else
+				SELECTOR_PRE="    "
+			fi
+			SELECTOR_POST=""
+		fi
+
+		eval menu_item="\$menu_item_$item"
+
+		second=$(( item % 2 ))
+		if [ $second -eq 1 ]; then
+			printf "${H2_COLOR}${item})${SELECTOR_PRE}${menu_item}${SELECTOR_POST}${NORMAL}"
+
+			# remove ansii codes to calc valid string len
+			menu_item_printed=$( printf "${SELECTOR_PRE}${menu_item}${SELECTOR_POST}" | sed 's/\x1b\[[0-9;]*[mGKHF]//g' )
+			len=${#menu_item_printed}
+			align_spaces=$(( max_menu_len - len ))
+
+			while [ $align_spaces -gt 0 ]; do
+				printf " "
+				align_spaces=$(( align_spaces - 1 ))
+			done
+		else
+			echo -e "${H2_COLOR}${item})${SELECTOR_PRE}${menu_item}${SELECTOR_POST}${NORMAL} "
+		fi
+	done
+
+	if [ ${preselected} -eq 0 ]; then
+		SELECTOR_PRE="${UNDERLINE}${H7_COLOR}>[ "
+		SELECTOR_POST=" ] <"
+	else
+		SELECTOR_PRE="   "
+		SELECTOR_POST=""
+	fi
+	echo
+	echo
+	echo -e "${H2_COLOR}q) ${SELECTOR_PRE}Exit${SELECTOR_POST}${NORMAL}"
+	echo
+#	read -p "Enter a number:" opmode
+	opmode=$( /root/a.out )
+	ret=$?
+
+	echo "ERRCODE: ${ret}"
+	echo "CODE: [$opmode]"
+
+	# enter pressed
+	if [ ${ret} -eq 0 -a -z "${opmode}" ]; then
+		[ ${preselected} -eq 0 ] && die
+	fi
+	[ "${opmode}" = "q" ] && die
+
+	# hotkey area
+	if [ -n "${opmode}" ]; then
+		case "${opmode}" in
+			c|C)
+				# trugger color
+				case "${MYB_SUBSHELL_COLOR}" in
+					black)
+						MYB_SUBSHELL_COLOR="white"
+						;;
+					white)
+						MYB_SUBSHELL_COLOR="disabled"
 						;;
 					*)
-						if getyesno "Turn API FQDN/certbot OFF? ('n' or '0' - leave as enabled) "; then
-							API_FQDN="disabled"
-							${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock /usr/local/cbsd/misc/cbsdsysrc -qf /etc/rc.conf API_FQDN="${API_FQDN}" > /dev/null 2>&1
+						MYB_SUBSHELL_COLOR="black"
+						;;
+				esac
+				${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock /usr/local/cbsd/misc/cbsdsysrc -qf /etc/rc.conf MYB_SUBSHELL_COLOR="${MYB_SUBSHELL_COLOR}" > /dev/null 2>&1
+				apply_color
+				continue
+				;;
+			u|U)
+				# upgrade
+				/root/bin/upgrade.sh -c 0 -w 0
+				;;
+		esac
+	fi
+
+	if [ ${ret} -ne 0 ]; then
+		# special key pressed
+		case "${opmode}" in
+			67)
+				# right key
+				if [ ${preselected} -eq ${max_item_num} ]; then
+					preselected=0
+				elif [ ${preselected} -eq 0 ]; then
+					preselected=1
+				else
+					second=$(( preselected % 2 ))
+					if [ $second -eq 1 ]; then
+						preselected=$(( preselected + 1 ))
+					else
+						preselected=$(( preselected - 1 ))
+					fi
+				fi
+				;;
+			68)
+				# left key
+				if [ ${preselected} -eq 0 ]; then
+					preselected=${max_item_num}
+				else
+					second=$(( preselected % 2 ))
+					if [ $second -eq 1 ]; then
+						preselected=$(( preselected + 1 ))
+					else
+						preselected=$(( preselected - 1 ))
+					fi
+					[ ${preselected} -gt ${max_item_num} ] && preselected=0
+				fi
+				;;
+			65)
+				# up key
+				if [ ${preselected} -eq 0 ]; then
+					preselected=${max_item_num}
+				elif [ ${preselected} -eq ${max_item_num} ]; then
+					preselected=$(( preselected - 2 ))
+					[ ${preselected} -lt 1 ] && preselected=0
+				elif [ ${preselected} -eq 1 ]; then
+					preselected=0
+				else
+					preselected=$(( preselected - 2 ))
+				fi
+				;;
+			66)
+				# down key
+				if [ ${preselected} -eq ${max_item_num} ]; then
+					preselected=0
+				elif [ ${preselected} -eq 0 ]; then
+					preselected=1
+				else
+					preselected=$(( preselected + 2 ))
+					[ ${preselected} -gt ${max_item_num} ] && preselected=${max_item_num};
+				fi
+				;;
+		esac
+		# reset timer
+		time_pressed_last=0
+		continue
+	fi
+
+	if is_number "${opmode}"; then
+		# num pressed
+		if [ ${opmode} -ge 0 -a ${opmode} -le ${max_item_num} ]; then
+			time_pressed=$( date "+%s" )
+
+			if [ ${time_pressed_last} -eq 0 ]; then
+				time_pressed_last="${time_pressed}"
+			else
+				time_pressed_diff=$(( time_pressed - time_pressed_last ))
+				if [ ${time_pressed_diff} -gt 2 ]; then
+					time_pressed_last="${time_pressed}"
+					preselected=${opmode}
+					continue
+				else
+					test_item="${preselected}${opmode}"
+
+					if [ ${test_item} -le ${max_item_num} ]; then
+						time_pressed_last=0
+						preselected="${test_item}"
+						continue
+					else
+						preselected=${opmode}
+						continue
+					fi
+				fi
+			fi
+			preselected=${opmode}
+			continue
+		fi
+	fi
+
+	# reset timer
+	time_pressed=0
+
+	# enter pressed
+	if [ -z "${opmode}" ]; then
+		case ${preselected} in
+			0)
+				die
+				;;
+			1)
+				bsdinstall netconfig
+				if [ -r /tmp/bsdinstall_etc/resolv.conf ]; then
+					cp -a /tmp/bsdinstall_etc/resolv.conf /etc/resolv.conf
+				fi
+				if [ -r /tmp/bsdinstall_etc/rc.conf.net ]; then
+					cut -d "=" -f 1 /tmp/bsdinstall_etc/rc.conf.net | while read _param; do
+						grep . /etc/rc.conf > /etc/rc.conf.bak
+						# sed 'd
+						grep -v ${_param} /etc/rc.conf.bak > /etc/rc.conf
+					done
+					echo >> /etc/rc.conf
+					cat /tmp/bsdinstall_etc/rc.conf.net >> /etc/rc.conf
+					echo "reboot the host to apply the changes"
+					read p
+				fi
+				;;
+			2)
+				_editfile=1		# always edit file
+				case ${PUB_WL} in
+					enabled)
+						if getyesno "Turn Pubkey ACL OFF? ('n' or '0' - leave as enabled) "; then
+							PUB_WL="disabled"
+							${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock /usr/local/cbsd/misc/cbsdsysrc -qf /etc/rc.conf PUB_WL="${PUB_WL}" > /dev/null 2>&1
+							${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock /usr/local/cbsd/misc/cbsdsysrc -qf /etc/rc.conf cbsd_mq_api_flags="-listen 127.0.0.1:65531" > /dev/null 2>&1
 							_editfile=0
-							cbsd myb_api_fqdn mode=off
+							${SERVICE_CMD} cbsd-mq-api restart
+						fi
+						;;
+					disabled)
+						if getyesno "Turn Pubkey ACL ON? ('n' or '0' - leave as disabled) "; then
+							PUB_WL="enabled"
+							${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock /usr/local/cbsd/misc/cbsdsysrc -qf /etc/rc.conf PUB_WL="${PUB_WL}" > /dev/null 2>&1
+							${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock /usr/local/cbsd/misc/cbsdsysrc -qf /etc/rc.conf cbsd_mq_api_flags="-listen 127.0.0.1:65531 -allowlist /usr/local/etc/cbsd-mq-api.allow" > /dev/null 2>&1
+							${SERVICE_CMD} cbsd-mq-api restart
 						fi
 						;;
 				esac
-			fi
-			;;
-		17)
-			/usr/local/bin/cbsd myb_k8s_settings
-			;;
-		u)	
-			/root/bin/upgrade.sh -c 0 -w 0
-			;;
-		*)
-			;;
-	esac
+				if [ "${_editfile}" = "1" ]; then
+					cbsd myb_pub_whitelist
+				fi
+				;;
+			3)
+				/usr/bin/passwd root
+				;;
+			4)
+				_editfile=1		# always edit file
+				case ${IP_WL} in
+					enabled)
+						if getyesno "Turn ACL OFF? ('n' or '0' - leave as enabled) "; then
+							IP_WL="disabled"
+							${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock /usr/local/cbsd/misc/cbsdsysrc -qf /etc/rc.conf IP_WL="${IP_WL}" > /dev/null 2>&1
+							_editfile=0
+							cbsd myb_ip_whitelist mode=off
+						fi
+						;;
+					disabled)
+						if getyesno "Turn ACL ON? ('n' or '0' - leave as disabled) "; then
+							IP_WL="enabled"
+							${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock /usr/local/cbsd/misc/cbsdsysrc -qf /etc/rc.conf IP_WL="${IP_WL}" > /dev/null 2>&1
+						fi
+						;;
+				esac
+				if [ "${_editfile}" = "1" ]; then
+					cbsd myb_ip_whitelist
+				fi
+				;;
+			5)
+				/usr/local/bin/cbsd myb_net_profile
+				;;
+			6)
+				export PATH=/root/bin:/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin
+				export MYB_SUBSHELL=1
+				echo
+				echo "Type: Ctrl+D (or 'exit' to return"
+				echo
+				/root/bin/checkiso.sh
+				;;
+			7)
+				if [ ! -x /usr/local/bin/certbot ]; then
+					if getyesno "The system does not have the 'certbot' package. It seems you are running it for the first time. Can I install the necessary software to continue?"; then
+						env ASSUME_ALWAYS_YES=yes SIGNATURE_TYPE=none IGNORE_OSVERSION=yes /usr/sbin/pkg install -r MyBee-latest -y py311-certbot
+					fi
+				fi
+				if [ ! -x /usr/local/bin/certbot ]; then
+					${ECHO} "${N1_COLOR}error: no such /usr/local/bin/certbot, please install first: py311-certbot"
+				else
+					_editfile=1		# always edit file
+					case ${API_FQDN} in
+						disabled)
+							if getyesno "Turn API FQDN/certbot ON? ('n' or '0' - leave as disabled) "; then
+								cbsd myb_api_fqdn
+							fi
+							;;
+						*)
+							if getyesno "Turn API FQDN/certbot OFF? ('n' or '0' - leave as enabled) "; then
+								API_FQDN="disabled"
+								${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock /usr/local/cbsd/misc/cbsdsysrc -qf /etc/rc.conf API_FQDN="${API_FQDN}" > /dev/null 2>&1
+								_editfile=0
+								cbsd myb_api_fqdn mode=off
+							fi
+							;;
+					esac
+				fi
+				;;
+			8)
+				/etc/rc.initial.reboot
+				;;
+			9)
+				/etc/rc.initial.halt
+				;;
+			10)
+				/usr/local/bin/cbsd config_smtp
+				;;
+			11)
+				change_sshflags
+				;;
+			13)
+				echo "not implemented yet"
+				read p
+				;;
+			17)
+				/usr/local/bin/cbsd myb_k8s_settings
+				;;
+			*)
+				true
+				;;
+		esac
+	fi
+
 done
 
 exit 0

@@ -73,16 +73,26 @@ change_sshflags()
 	case "${myb_ssh_root_ssh}" in
 		[Ee][Nn]*)
 			/usr/local/cbsd/misc/cbsdsysrc -qf /etc/rc.conf sshd_flags="-oUseDNS=no -oPermitRootLogin=no -oPort=22" > /dev/null 2>&1
+			myb_ssh_root_ssh="Disabled"
 			;;
 		[Dd][Ii]*)
 			/usr/local/cbsd/misc/cbsdsysrc -qf /etc/rc.conf sshd_flags="-oUseDNS=no -oPermitRootLogin=yes -oPort=22" > /dev/null 2>&1
+			myb_ssh_root_ssh="Enabled "
 			;;
 		*)
 			return 0
 			;;
 	esac
 
-	${SERVICE_CMD} sshd restart
+	printf "Reloading sshd service ..."
+	${SERVICE_CMD} sshd restart > /dev/null 2>&1
+	ret=$?
+	if [ ${ret} -ne 0 ]; then
+		echo "failed"
+	else
+		echo "done"
+	fi
+	sleep 1
 }
 
 init_settings()

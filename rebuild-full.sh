@@ -232,6 +232,7 @@ date
 # myb.d
 [ -d /usr/local/cbsd/modules/myb.d ] && ${RM_CMD} -rf /usr/local/cbsd/modules/myb.d
 cbsd module mode=install myb
+make -C /usr/local/cbsd/modules/myb.d
 ${CP_CMD} -a /usr/local/cbsd/modules/myb.d /root/myb-build/myb-extras/
 ${RM_CMD} -rf /root/myb-build/myb-extras/myb.d/.git || true
 # k8s.d

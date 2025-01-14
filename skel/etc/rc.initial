@@ -204,8 +204,8 @@ while : ; do
 	max_menu_len=52
 	max_menu_len=52
 	echo
-	echo -e "                              ${BOLD}${LBLUE}-= Console Menu (${preselected}) =-" # [${time_pressed_last}]" 
-	echo "                                 ----------------"
+	echo -e "                                      ${BOLD}${LBLUE}-= Console Menu (${preselected}) =-" # [${time_pressed_last}]" 
+	echo "                                         ----------------"
 
 	enum=1; export menu_item_${enum}="(Re)Configure Host Network"
 	enum=2; export menu_item_${enum}="Configure Hosts Allow for API ${IP_WL_COLOR}(${IP_WL})"

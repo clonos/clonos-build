@@ -16,6 +16,10 @@ export OSNAME="MyBee"
 
 cd /
 
+OS=$( uname -s )
+
+echo "Platform: ${OS}"
+
 # Init CMD Macros
 UNAME_CMD=$( which uname )
 if [ ! -x "${UNAME_CMD}" ]; then
@@ -47,69 +51,15 @@ if [ ! -x "${SORT_CMD}" ]; then
 	exit 1
 fi
 
-# generic mandatory tools/script
-MAIN_CMD="
-awk
-basename
-cat
-column
-chmod
-chown
-chroot
-chflags
-cp
-curl
-cut
-date
-dd
-df
-find
-grep
-git
-head
-hostname
-jq
-ln
-mkdir
-mount
-mv
-mktemp
-openssl
-pw
-realpath
-readlink
-rm
-rsync
-sed
-sort
-strings
-sysctl
-tar
-tail
-tee
-touch
-tr
-truncate
-uname
-wc
-whoami
-"
+if [ -r "${progdir}/cmd.${OS}.conf" ]; then
+	. ${progdir}/cmd.${OS}.conf
+else
+	. ${progdir}/cmd.conf
+fi
 
 if [ "${USE_TOR}" = "YES" ]; then
 	MAIN_CMD="${MAIN_CMD} nc"
 fi
-
-case "${OS}" in
-	Linux|SpaceVM)
-		MAIN_CMD="${MAIN_CMD} lsblk fio"
-		;;
-	Liman)
-		MAIN_CMD="${MAIN_CMD} camcontrol diskinfo fio"
-		;;
-	FreeBSD)
-		MAIN_CMD="${MAIN_CMD} camcontrol diskinfo"
-		;;
-esac
 
 ${TRUNCATE_CMD} -s0 ${progdir}/cmd.subr
 
@@ -150,186 +100,28 @@ set -e
 . ${progdir}/system.subr
 set +e
 
-
 FULL_ST_TIME=$( ${DATE_CMD} +%s )
 
 #### PREPARE
 if [ 3 -gt 2 ]; then
-# first init
-
-cbsd module mode=install cpr || true
-${GREP_CMD} -q cpr ~cbsd/etc/modules.conf
-ret=$?
-if [ ${ret} -ne 0 ]; then
-	echo 'cpr.d' >> ~cbsd/etc/modules.conf
-	env NOINTER=1 cbsd initenv
+	if [ -r "${progdir}/rebuild-prepare.${OS}.subr" ]; then
+		/bin/sh ${progdir}/rebuild-prepare.${OS}.subr
+	else
+		/bin/sh ${progdir}/rebuild-prepare.subr
+	fi
 fi
-
-if [ ! -d /root/clonos-ports ]; then
-	${GIT_CMD} clone https://github.com/clonos/clonos-ports-wip.git /root/clonos-ports
-else
-	cd /root/clonos-ports
-	${GIT_CMD} pull
-fi
-
-if [ -d /usr/ports ]; then
-	cd /usr/ports
-	${GIT_CMD} reset --hard > /dev/null 2>&1 || true
-fi
-
-cbsd portsup
-${RSYNC_CMD} -avz --exclude .git /root/clonos-ports/ /usr/ports/
-
-cbsd jremove jname='cpr*'
-${RM_CMD} -rf /var/cache/packages/*
-
-[ -d /usr/ports/sysutils/cbsd-mq-api ] && ${RM_CMD} -rf /usr/ports/sysutils/cbsd-mq-api
-[ -d /usr/ports/sysutils/garm ] && ${RM_CMD} -rf /usr/ports/sysutils/garm
-${CP_CMD} -a /root/myb-build/ports/garm /usr/ports/sysutils/
-${CP_CMD} -a /root/myb-build/ports/cbsd-mq-api /usr/ports/sysutils/
-
-# devel CBSD
-if [ -d /root/myb-build/ports/cbsd ]; then
-	[ -d /usr/ports/sysutils/cbsd ] && ${RM_CMD} -rf /usr/ports/sysutils/cbsd
-	${CP_CMD} -a /root/myb-build/ports/cbsd /usr/ports/sysutils/
-fi
-
-[ ! -d /root/myb-build/myb-extras ] && ${MKDIR_CMD} /root/myb-build/myb-extras
-
-case "${OSNAME}" in
-	ClonOS)
-		[ -d /usr/ports/www/clonos ] && ${RM_CMD} -rf /usr/ports/www/clonos
-		${CP_CMD} -a /root/clonos-ports/www/clonos /usr/ports/www/
-		# deps for vncterm
-		pkg install -y security/gnutls net/libvncserver
-
-		[ -d /usr/ports/sysutils/clonos-ws ] && ${RM_CMD} -rf /usr/ports/sysutils/clonos-ws
-		[ -d /usr/ports/sysutils/cbsd-plugin-wsqueue ] && ${RM_CMD} -rf /usr/ports/sysutils/cbsd-plugin-wsqueue
-		${CP_CMD} -a /root/clonos-ports/sysutils/clonos-ws /usr/ports/sysutils/
-		${CP_CMD} -a /root/clonos-ports/sysutils/cbsd-plugin-wsqueue /usr/ports/sysutils/
-		make -C /usr/local/cbsd/modules/vncterm.d
-		strip /usr/local/cbsd/modules/vncterm.d/cbsdvnc
-		[ -d /root/myb-build/myb-extras/vncterm.d ] && ${RM_CMD} -rf /root/myb-build/myb-extras/vncterm.d
-		${CP_CMD} -a /usr/local/cbsd/modules/vncterm.d /root/myb-build/myb-extras/
-		${RM_CMD} -rf /root/myb-build/myb-extras/vncterm.d/.git
-		;;
-esac
-
-# refresh modules
-[ -d /root/myb-build/myb-extras/myb.d ] && ${RM_CMD} -rf /root/myb-build/myb-extras/myb.d
-[ -d /root/myb-build/myb-extras/garm.d ] && ${RM_CMD} -rf /root/myb-build/myb-extras/garm.d
-[ -d /root/myb-build/myb-extras/api.d ] && ${RM_CMD} -rf /root/myb-build/myb-extras/api.d
-[ -d /root/myb-build/myb-extras/k8s.d ] && ${RM_CMD} -rf /root/myb-build/myb-extras/k8s.d
-[ -d /root/myb-build/myb-extras/convectix.d ] && ${RM_CMD} -rf /root/myb-build/myb-extras/convectix.d
-[ -d /root/myb-build/myb-extras/puppet.d ] && ${RM_CMD} -rf /root/myb-build/myb-extras/puppet.d
-
-# garm.d
-[ -d /usr/local/cbsd/modules/garm.d ] && ${RM_CMD} -rf /usr/local/cbsd/modules/garm.d
-cbsd module mode=install garm
-${CP_CMD} -a /usr/local/cbsd/modules/garm.d /root/myb-build/myb-extras/
-${RM_CMD} -rf /root/myb-build/myb-extras/garm.d/.git || true
-date
-# myb.d
-[ -d /usr/local/cbsd/modules/myb.d ] && ${RM_CMD} -rf /usr/local/cbsd/modules/myb.d
-cbsd module mode=install myb
-make -C /usr/local/cbsd/modules/myb.d
-${CP_CMD} -a /usr/local/cbsd/modules/myb.d /root/myb-build/myb-extras/
-${RM_CMD} -rf /root/myb-build/myb-extras/myb.d/.git || true
-# k8s.d
-[ -d /usr/local/cbsd/modules/k8s.d ] && ${RM_CMD} -rf /usr/local/cbsd/modules/k8s.d
-cbsd module mode=install k8s
-${CP_CMD} -a /usr/local/cbsd/modules/k8s.d /root/myb-build/myb-extras/
-${RM_CMD} -rf /root/myb-build/myb-extras/k8s.d/.git || true
-[ -d /root/myb-build/myb-extras/k8s.d/share/k8s-system-default ] && ${RM_CMD} -rf /root/myb-build/myb-extras/k8s.d/share/k8s-system-default
-${CP_CMD} -a /root/myb-build/myb-extras/k8s-system-default /root/myb-build/myb-extras/k8s.d/share/
-# api.d
-[ -d /usr/local/cbsd/modules/api.d ] && ${RM_CMD} -rf /usr/local/cbsd/modules/api.d
-cbsd module mode=install api
-${CP_CMD} -a /usr/local/cbsd/modules/api.d /root/myb-build/myb-extras/
-${RM_CMD} -rf /root/myb-build/myb-extras/api.d/.git || true
-
-## convectix.d
-[ -d /usr/local/cbsd/modules/convectix.d ] && ${RM_CMD} -rf /usr/local/cbsd/modules/convectix.d
-cbsd module mode=install convectix
-${CP_CMD} -a /usr/local/cbsd/modules/convectix.d /root/myb-build/myb-extras/
-${RM_CMD} -rf /root/myb-build/myb-extras/convectix.d/.git || true
-
-# puppet.d
-[ -d /usr/local/cbsd/modules/puppet.d ] && ${RM_CMD} -rf /usr/local/cbsd/modules/puppet.d
-cbsd module mode=install puppet
-${CP_CMD} -a /usr/local/cbsd/modules/puppet.d /root/myb-build/myb-extras/
-${RM_CMD} -rf /root/myb-build/myb-extras/puppet.d/.git || true
-
-fi		## PREPARE
 
 # !!!
 # not for half:
 set -o errexit
 
 if [ 3 -gt 2 ]; then
-
-## cleanup
-st_time=$( ${DATE_CMD} +%s )
-/root/myb-build/ci/00_cleanup.sh
-time_stats "${N1_COLOR}cleanup done"
-end_time=$( ${DATE_CMD} +%s )
-diff_time=$(( end_time - st_time ))
-put_prometheus_file_metrics "rebuild-full" "cleanup" ${diff_time}
-
-## srcup
-st_time=$( ${DATE_CMD} +%s )
-/root/myb-build/ci/00_srcup.sh
-time_stats "${N1_COLOR}srcup done"
-end_time=$( ${DATE_CMD} +%s )
-diff_time=$(( end_time - st_time ))
-put_prometheus_file_metrics "rebuild-full" "srcup" ${diff_time}
-
-# not needed anymore?
-#/root/myb-build/ci/10_patch-src.sh
-
-# world
-st_time=$( ${DATE_CMD} +%s )
-/root/myb-build/ci/20_world.sh
-time_stats "${N1_COLOR}world done"
-end_time=$( ${DATE_CMD} +%s )
-diff_time=$(( end_time - st_time ))
-put_prometheus_file_metrics "rebuild-full" "world" ${diff_time}
-
-# basepkg
-st_time=$( ${DATE_CMD} +%s )
-/root/myb-build/ci/25_base-pkg.sh
-time_stats "${N1_COLOR}base-pkg done"
-end_time=$( ${DATE_CMD} +%s )
-fiff_time=$(( end_time - st_time ))
-put_prometheus_file_metrics "rebuild-full" "basepkg" ${diff_time}
-
-# cpr
-st_time=$( ${DATE_CMD} +%s )
-/root/myb-build/ci/30_cpr.sh
-time_stats "${N1_COLOR}cpr done"
-end_time=$( ${DATE_CMD} +%s )
-diff_time=$(( end_time - st_time ))
-put_prometheus_file_metrics "rebuild-full" "cpr" ${diff_time}
-
-# cpr-micro
-#st_time=$( ${DATE_CMD} +%s )
-#/root/myb-build/ci/35_cpr-micro.sh
-#time_stats "${N1_COLOR}cpr-micro done"
-#end_time=$( ${DATE_CMD} +%s )
-#diff_time=$(( end_time - st_time ))
-#put_prometheus_file_metrics "rebuild-full" "cprmicro" ${diff_time}
-
-
-# update-repo
-st_time=$( ${DATE_CMD} +%s )
-/root/myb-build/ci/35_update_repo.sh
-time_stats "${N1_COLOR}update_repo done"
-end_time=$( ${DATE_CMD} +%s )
-diff_time=$(( end_time - st_time ))
-put_prometheus_file_metrics "rebuild-full" "updaterepo" ${diff_time}
-
+	if [ -r "${progdir}/rebuild-buildenv.${OS}.subr" ]; then
+		/bin/sh ${progdir}/rebuild-buildenv.${OS}.subr
+	else
+		/bin/sh ${progdir}/rebuild-buildenv.subr
+	fi
 fi
-
 ### HALF-build
 #fi
 # half build

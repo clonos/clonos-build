@@ -1,0 +1,59 @@
+## cleanup
+st_time=$( ${DATE_CMD} +%s )
+/root/myb-build/ci/00_cleanup.sh
+time_stats "${N1_COLOR}cleanup done"
+end_time=$( ${DATE_CMD} +%s )
+diff_time=$(( end_time - st_time ))
+put_prometheus_file_metrics "rebuild-full" "cleanup" ${diff_time}
+
+## srcup
+st_time=$( ${DATE_CMD} +%s )
+/root/myb-build/ci/00_srcup.sh
+time_stats "${N1_COLOR}srcup done"
+end_time=$( ${DATE_CMD} +%s )
+diff_time=$(( end_time - st_time ))
+put_prometheus_file_metrics "rebuild-full" "srcup" ${diff_time}
+
+# not needed anymore?
+#/root/myb-build/ci/10_patch-src.sh
+
+# world
+st_time=$( ${DATE_CMD} +%s )
+/root/myb-build/ci/20_world.sh
+time_stats "${N1_COLOR}world done"
+end_time=$( ${DATE_CMD} +%s )
+diff_time=$(( end_time - st_time ))
+put_prometheus_file_metrics "rebuild-full" "world" ${diff_time}
+
+# basepkg
+st_time=$( ${DATE_CMD} +%s )
+/root/myb-build/ci/25_base-pkg.sh
+time_stats "${N1_COLOR}base-pkg done"
+end_time=$( ${DATE_CMD} +%s )
+fiff_time=$(( end_time - st_time ))
+put_prometheus_file_metrics "rebuild-full" "basepkg" ${diff_time}
+
+# cpr
+st_time=$( ${DATE_CMD} +%s )
+/root/myb-build/ci/30_cpr.sh
+time_stats "${N1_COLOR}cpr done"
+end_time=$( ${DATE_CMD} +%s )
+diff_time=$(( end_time - st_time ))
+put_prometheus_file_metrics "rebuild-full" "cpr" ${diff_time}
+
+# cpr-micro
+#st_time=$( ${DATE_CMD} +%s )
+#/root/myb-build/ci/35_cpr-micro.sh
+#time_stats "${N1_COLOR}cpr-micro done"
+#end_time=$( ${DATE_CMD} +%s )
+#diff_time=$(( end_time - st_time ))
+#put_prometheus_file_metrics "rebuild-full" "cprmicro" ${diff_time}
+
+
+# update-repo
+st_time=$( ${DATE_CMD} +%s )
+/root/myb-build/ci/35_update_repo.sh
+time_stats "${N1_COLOR}update_repo done"
+end_time=$( ${DATE_CMD} +%s )
+diff_time=$(( end_time - st_time ))
+put_prometheus_file_metrics "rebuild-full" "updaterepo" ${diff_time}

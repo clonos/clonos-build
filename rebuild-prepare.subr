@@ -1,0 +1,102 @@
+cbsd module mode=install cpr || true
+${GREP_CMD} -q cpr ~cbsd/etc/modules.conf
+ret=$?
+if [ ${ret} -ne 0 ]; then
+	echo 'cpr.d' >> ~cbsd/etc/modules.conf
+	env NOINTER=1 cbsd initenv
+fi
+
+if [ ! -d /root/clonos-ports ]; then
+	${GIT_CMD} clone https://github.com/clonos/clonos-ports-wip.git /root/clonos-ports
+else
+	cd /root/clonos-ports
+	${GIT_CMD} pull
+fi
+
+if [ -d /usr/ports ]; then
+	cd /usr/ports
+	${GIT_CMD} reset --hard > /dev/null 2>&1 || true
+fi
+
+cbsd portsup
+${RSYNC_CMD} -avz --exclude .git /root/clonos-ports/ /usr/ports/
+
+cbsd jremove jname='cpr*'
+${RM_CMD} -rf /var/cache/packages/*
+
+[ -d /usr/ports/sysutils/cbsd-mq-api ] && ${RM_CMD} -rf /usr/ports/sysutils/cbsd-mq-api
+[ -d /usr/ports/sysutils/garm ] && ${RM_CMD} -rf /usr/ports/sysutils/garm
+${CP_CMD} -a /root/myb-build/ports/garm /usr/ports/sysutils/
+${CP_CMD} -a /root/myb-build/ports/cbsd-mq-api /usr/ports/sysutils/
+
+# devel CBSD
+if [ -d /root/myb-build/ports/cbsd ]; then
+	[ -d /usr/ports/sysutils/cbsd ] && ${RM_CMD} -rf /usr/ports/sysutils/cbsd
+	${CP_CMD} -a /root/myb-build/ports/cbsd /usr/ports/sysutils/
+fi
+
+[ ! -d /root/myb-build/myb-extras ] && ${MKDIR_CMD} /root/myb-build/myb-extras
+
+case "${OSNAME}" in
+	ClonOS)
+		[ -d /usr/ports/www/clonos ] && ${RM_CMD} -rf /usr/ports/www/clonos
+		${CP_CMD} -a /root/clonos-ports/www/clonos /usr/ports/www/
+		# deps for vncterm
+		pkg install -y security/gnutls net/libvncserver
+
+		[ -d /usr/ports/sysutils/clonos-ws ] && ${RM_CMD} -rf /usr/ports/sysutils/clonos-ws
+		[ -d /usr/ports/sysutils/cbsd-plugin-wsqueue ] && ${RM_CMD} -rf /usr/ports/sysutils/cbsd-plugin-wsqueue
+		${CP_CMD} -a /root/clonos-ports/sysutils/clonos-ws /usr/ports/sysutils/
+		${CP_CMD} -a /root/clonos-ports/sysutils/cbsd-plugin-wsqueue /usr/ports/sysutils/
+		make -C /usr/local/cbsd/modules/vncterm.d
+		strip /usr/local/cbsd/modules/vncterm.d/cbsdvnc
+		[ -d /root/myb-build/myb-extras/vncterm.d ] && ${RM_CMD} -rf /root/myb-build/myb-extras/vncterm.d
+		${CP_CMD} -a /usr/local/cbsd/modules/vncterm.d /root/myb-build/myb-extras/
+		${RM_CMD} -rf /root/myb-build/myb-extras/vncterm.d/.git
+		;;
+esac
+
+# refresh modules
+[ -d /root/myb-build/myb-extras/myb.d ] && ${RM_CMD} -rf /root/myb-build/myb-extras/myb.d
+[ -d /root/myb-build/myb-extras/garm.d ] && ${RM_CMD} -rf /root/myb-build/myb-extras/garm.d
+[ -d /root/myb-build/myb-extras/api.d ] && ${RM_CMD} -rf /root/myb-build/myb-extras/api.d
+[ -d /root/myb-build/myb-extras/k8s.d ] && ${RM_CMD} -rf /root/myb-build/myb-extras/k8s.d
+[ -d /root/myb-build/myb-extras/convectix.d ] && ${RM_CMD} -rf /root/myb-build/myb-extras/convectix.d
+[ -d /root/myb-build/myb-extras/puppet.d ] && ${RM_CMD} -rf /root/myb-build/myb-extras/puppet.d
+
+# garm.d
+[ -d /usr/local/cbsd/modules/garm.d ] && ${RM_CMD} -rf /usr/local/cbsd/modules/garm.d
+cbsd module mode=install garm
+${CP_CMD} -a /usr/local/cbsd/modules/garm.d /root/myb-build/myb-extras/
+${RM_CMD} -rf /root/myb-build/myb-extras/garm.d/.git || true
+date
+# myb.d
+[ -d /usr/local/cbsd/modules/myb.d ] && ${RM_CMD} -rf /usr/local/cbsd/modules/myb.d
+cbsd module mode=install myb
+make -C /usr/local/cbsd/modules/myb.d
+${CP_CMD} -a /usr/local/cbsd/modules/myb.d /root/myb-build/myb-extras/
+${RM_CMD} -rf /root/myb-build/myb-extras/myb.d/.git || true
+# k8s.d
+[ -d /usr/local/cbsd/modules/k8s.d ] && ${RM_CMD} -rf /usr/local/cbsd/modules/k8s.d
+cbsd module mode=install k8s
+${CP_CMD} -a /usr/local/cbsd/modules/k8s.d /root/myb-build/myb-extras/
+${RM_CMD} -rf /root/myb-build/myb-extras/k8s.d/.git || true
+[ -d /root/myb-build/myb-extras/k8s.d/share/k8s-system-default ] && ${RM_CMD} -rf /root/myb-build/myb-extras/k8s.d/share/k8s-system-default
+${CP_CMD} -a /root/myb-build/myb-extras/k8s-system-default /root/myb-build/myb-extras/k8s.d/share/
+# api.d
+[ -d /usr/local/cbsd/modules/api.d ] && ${RM_CMD} -rf /usr/local/cbsd/modules/api.d
+cbsd module mode=install api
+${CP_CMD} -a /usr/local/cbsd/modules/api.d /root/myb-build/myb-extras/
+${RM_CMD} -rf /root/myb-build/myb-extras/api.d/.git || true
+
+## convectix.d
+[ -d /usr/local/cbsd/modules/convectix.d ] && ${RM_CMD} -rf /usr/local/cbsd/modules/convectix.d
+cbsd module mode=install convectix
+${CP_CMD} -a /usr/local/cbsd/modules/convectix.d /root/myb-build/myb-extras/
+${RM_CMD} -rf /root/myb-build/myb-extras/convectix.d/.git || true
+
+# puppet.d
+[ -d /usr/local/cbsd/modules/puppet.d ] && ${RM_CMD} -rf /usr/local/cbsd/modules/puppet.d
+cbsd module mode=install puppet
+${CP_CMD} -a /usr/local/cbsd/modules/puppet.d /root/myb-build/myb-extras/
+${RM_CMD} -rf /root/myb-build/myb-extras/puppet.d/.git || true

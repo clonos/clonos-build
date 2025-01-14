@@ -107,13 +107,13 @@ sed -e "s:%%IP%%:${ip4}:g" \
 
 if [ ! -r /usr/local/etc/cbsd-mq-api.json ]; then
 	echo "install new api config"
-	mv /tmp/cbsd-mq-api.json.$$ /usr/local/etc/cbsd-mq-api.json
+	mv -f /tmp/cbsd-mq-api.json.$$ /usr/local/etc/cbsd-mq-api.json
 	service cbsd-mq-api restart > /dev/null 2>&1
 else
 	diff=$( diff -ruN /usr/local/etc/cbsd-mq-api.json /tmp/cbsd-mq-api.json.$$ )
 	if [ -n "${diff}" ]; then
 		echo "install new api config"
-		mv /tmp/cbsd-mq-api.json.$$ /usr/local/etc/cbsd-mq-api.json
+		mv -f /tmp/cbsd-mq-api.json.$$ /usr/local/etc/cbsd-mq-api.json
 		service cbsd-mq-api restart > /dev/null 2>&1
 	else
 		rm -f /tmp/cbsd-mq-api.json.$$
@@ -128,12 +128,12 @@ sed -e "s:%%IP%%:${web_address}:g" \
 [ ! -d /usr/local/www/public ] && mkdir -p /usr/local/www/public
 if [ ! -r /usr/local/www/public/index.html ]; then
 	echo "install new html page"
-	mv /tmp/index.html.$$ /usr/local/www/public/index.html
+	mv -f /tmp/index.html.$$ /usr/local/www/public/index.html
 else
 	diff=$( diff -ruN /usr/local/www/public/index.html /tmp/index.html.$$ )
 	if [ -n "${diff}" ]; then
 		echo "install new html page"
-		mv /tmp/index.html.$$ /usr/local/www/public/index.html
+		mv -f /tmp/index.html.$$ /usr/local/www/public/index.html
 	else
 		rm -f /tmp/index.html.$$
 	fi
@@ -151,12 +151,12 @@ EOF
 
 if [ ! -r /etc/issue ]; then
 	echo "install new issue banner"
-	mv /tmp/issue.$$ /etc/issue
+	mv -f /tmp/issue.$$ /etc/issue
 else
 	diff=$( diff -ruN /etc/issue /tmp/issue.$$ )
 	if [ -n "${diff}" ]; then
 		echo "install new issue banner"
-		mv /tmp/issue.$$ /etc/issue
+		mv -f /tmp/issue.$$ /etc/issue
 	else
 		rm -f /tmp/issue.$$
 	fi

@@ -77,7 +77,7 @@ change_sshflags()
 			;;
 		[Dd][Ii]*)
 			/usr/local/cbsd/misc/cbsdsysrc -qf /etc/rc.conf sshd_flags="-oUseDNS=no -oPermitRootLogin=yes -oPort=22" > /dev/null 2>&1
-			myb_ssh_root_ssh="Enabled "
+			myb_ssh_root_ssh="Enabled"
 			;;
 		*)
 			return 0
@@ -97,10 +97,19 @@ change_sshflags()
 
 init_settings()
 {
+	local _ret=
 	if check_sshflags; then
-		myb_ssh_root_ssh="Enabled "
+		myb_ssh_root_ssh="Enabled"
 	else
 		myb_ssh_root_ssh="Disabled"
+	fi
+
+	myb_ssh_user_ssh=$( id 10000 2>/dev/null )
+	_ret=$?
+	if [ ${_ret} -ne 0 ]; then
+		myb_ssh_user_ssh="-"
+	else
+		myb_ssh_user_ssh=$( echo ${myb_ssh_user_ssh} | tr ":" " " | awk '{printf $1}' )
 	fi
 
 	if [ -z "${PUB_WL}" ]; then

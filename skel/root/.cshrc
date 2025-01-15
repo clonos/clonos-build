@@ -57,6 +57,9 @@ if ($?prompt) then
 	endif
 endif
 
+# check stty/termios win size > 20 rows + 80 cols ?
+/usr/local/cbsd/modules/myb.d/checktty || setenv MYB_SUBSHELL 1
+
 # MyB CLIENT&friends
 if ( $?SUDO_COMMAND ) then
 	setenv MYB_SUBSHELL 1

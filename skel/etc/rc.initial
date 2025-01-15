@@ -123,6 +123,24 @@ while : ; do
 			;;
 	esac
 
+	case ${myb_ssh_root_ssh} in
+		[Ee][Nn][Aa][Bb][Ll][Ee][Dd])
+			ROOT_ACCESS_COLOR="${W1_COLOR}"
+			;;
+		[Dd][Ii][Ss][Aa][Bb][Ll][Ee][Dd])
+			ROOT_ACCESS_COLOR="${H2_COLOR}"
+			;;
+	esac
+
+	case ${myb_ssh_user_ssh} in
+		-)
+			USER_ACCESS_COLOR="${W1_COLOR}"
+			;;
+		*)
+			USER_ACCESS_COLOR="${H3_COLOR}"
+			;;
+	esac
+
 	VPN_COLOR="${H2_COLOR}"
 	[ ! -x /root/bin/vpn.sh ] && VPN_COLOR="${DGRAY}"
 	PROFILE_COLOR="${H2_COLOR}"
@@ -190,10 +208,10 @@ while : ; do
 		[Yy][Ee][Ss])
 			case "${API_FQDN}" in
 				disabled|"")
-					echo -e "        Websocket CLI/Shell enabled: ${H3_COLOR}http://${ip4}/shell${NORMAL}"
+					echo -e "        Websocket CLI/Shell enabled: ${H3_COLOR}http://${ip4}/shell/${NORMAL}"
 					;;
 				*)
-					echo -e "        Websocket CLI/Shell enabled: ${W1_COLOR}http://${ip4}/shell (${H3_COLOR}https://${API_FQDN}/shell${W1_COLOR})${NORMAL}"
+					echo -e "        Websocket CLI/Shell enabled: ${W1_COLOR}http://${ip4}/shell/ (${H3_COLOR}https://${API_FQDN}/shell/${W1_COLOR})${NORMAL}"
 					;;
 			esac
 			;;
@@ -216,9 +234,10 @@ while : ; do
 	enum=7; export menu_item_${enum}="Set API FQDN (+certbot) ${API_FQDN_COLOR}(${API_FQDN})"
 	enum=8; export menu_item_${enum}="Reboot Server"
 	enum=9; export menu_item_${enum}="Shutdown Server"
-	enum=10; export menu_item_${enum}="Configure SMTP${NORMAL} (${SMTP_COLOR}${SMTP_STATUS} )"
-	enum=11; export menu_item_${enum}="SSH root user: ${myb_ssh_root_ssh}"
-	max_item_num=11
+	enum=10; export menu_item_${enum}="Configure SMTP${NORMAL} (${SMTP_COLOR}${SMTP_STATUS})"
+	enum=11; export menu_item_${enum}="SSH root user: ${ROOT_ACCESS_COLOR}${myb_ssh_root_ssh}"
+	enum=12; export menu_item_${enum}="Client SSH user: ${USER_ACCESS_COLOR}${myb_ssh_user_ssh}"
+	max_item_num=12
 
 	for item in $( jot ${max_item_num} ); do
 		if [ ${item} -eq ${preselected} ]; then
@@ -245,7 +264,7 @@ while : ; do
 			printf "${H2_COLOR}${item})${SELECTOR_PRE}${menu_item}${SELECTOR_POST}${NORMAL}"
 
 			# remove ansii codes to calc valid string len
-			menu_item_printed=$( printf "${SELECTOR_PRE}${menu_item}${SELECTOR_POST}" | sed 's/\x1b\[[0-9;]*[mGKHF]//g' )
+			menu_item_printed=$( printf "${item}) ${SELECTOR_PRE}${menu_item}${SELECTOR_POST}" | sed 's/\x1b\[[0-9;]*[mGKHF]//g' )
 			len=${#menu_item_printed}
 			align_spaces=$(( max_menu_len - len ))
 
@@ -269,12 +288,12 @@ while : ; do
 	echo
 	echo -e "${H2_COLOR}q) ${SELECTOR_PRE}Exit${SELECTOR_POST}${NORMAL}"
 	echo
-#	read -p "Enter a number:" opmode
+
 	opmode=$( /usr/local/cbsd/modules/myb.d/getch )
 	ret=$?
 
-	echo "ERRCODE: ${ret}"
-	echo "CODE: [$opmode]"
+#	echo "ERRCODE: ${ret}"
+#	echo "CODE: [$opmode]"
 
 	# enter pressed
 	if [ ${ret} -eq 0 -a -z "${opmode}" ]; then
@@ -527,6 +546,9 @@ while : ; do
 				;;
 			11)
 				change_sshflags
+				;;
+			12)
+				/usr/local/bin/cbsd myb_usermgmt user=10000
 				;;
 			13)
 				echo "not implemented yet"

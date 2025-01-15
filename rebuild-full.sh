@@ -105,9 +105,9 @@ FULL_ST_TIME=$( ${DATE_CMD} +%s )
 #### PREPARE
 if [ 3 -gt 2 ]; then
 	if [ -r "${progdir}/rebuild-prepare.${OS}.subr" ]; then
-		/bin/sh ${progdir}/rebuild-prepare.${OS}.subr
+		. ${progdir}/rebuild-prepare.${OS}.subr
 	else
-		/bin/sh ${progdir}/rebuild-prepare.subr
+		. ${progdir}/rebuild-prepare.subr
 	fi
 fi
 
@@ -117,9 +117,9 @@ set -o errexit
 
 if [ 3 -gt 2 ]; then
 	if [ -r "${progdir}/rebuild-buildenv.${OS}.subr" ]; then
-		/bin/sh ${progdir}/rebuild-buildenv.${OS}.subr
+		. ${progdir}/rebuild-buildenv.${OS}.subr
 	else
-		/bin/sh ${progdir}/rebuild-buildenv.subr
+		. ${progdir}/rebuild-buildenv.subr
 	fi
 fi
 ### HALF-build

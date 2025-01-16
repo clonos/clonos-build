@@ -1,0 +1,9 @@
+TIMESTAMP = 1737031961
+SHA256 (cbsd-cbsd-mq-api-0.6-5c23280_GH0.tar.gz) = 1a5dae41b0dcf9e6708b81bd521a8b3715283f32747c579031f9d6ceda05c15d
+SIZE (cbsd-cbsd-mq-api-0.6-5c23280_GH0.tar.gz) = 17872
+SHA256 (beanstalkd-go-beanstalk-52e4a01_GH0.tar.gz) = 5715c2bdcd005125d023d4b415049c0b5ba4635c40664ebdbd75f1badfcf8a66
+SIZE (beanstalkd-go-beanstalk-52e4a01_GH0.tar.gz) = 8105
+SHA256 (gorilla-mux-v1.8.1_GH0.tar.gz) = c2a09e78d1886abb2d291b472eba3ac9185acb35234c1f5616669664ba893d6d
+SIZE (gorilla-mux-v1.8.1_GH0.tar.gz) = 47033
+SHA256 (golang-crypto-v0.30.0_GH0.tar.gz) = 97d00ce44d288c380e45239dd691df57f39125c0a00ee198bfb6444b681d530a
+SIZE (golang-crypto-v0.30.0_GH0.tar.gz) = 1837435

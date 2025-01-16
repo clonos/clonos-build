@@ -305,6 +305,9 @@ export workdir=/usr/jails
 # Command 'hyperv_fattach' not found: FreeBSD-hyperv-tools
 [ -r /etc/devd/hyperv.conf ] && rm -f /etc/devd/hyperv.conf
 
+[ ! -d /usr/local/www/config/c ] && mkdir -m 070 -p /usr/local/www/config/c
+chown cbsd:cbsd /usr/local/www/config/c
+
 /usr/sbin/sysrc -qf /usr/jails/etc/global.conf configure_default_cbsd_vs_cidr4="${myb_default_network}.1/24"
 
 /usr/sbin/sysrc \
@@ -321,7 +324,7 @@ export workdir=/usr/jails
  ntpd_sync_on_start="YES" \
  cbsd_mq_router_enable="YES" \
  cbsd_mq_api_enable="YES" \
- cbsd_mq_api_flags="-listen 127.0.0.1:65531 -cluster_limit=10" \
+ cbsd_mq_api_flags="-listen 127.0.0.1:65531 -cluster_limit=10 -onetimeconfdir /usr/local/www/config/c" \
  sshd_enable="YES" \
  syslogd_enable="NO" \
  sendmail_enable="NO" \

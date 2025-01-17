@@ -25,7 +25,7 @@ hwprobe()
 	[ -n "${hw_probe_enabled}" ] && return 0
 	[ ! -x /usr/local/bin/hw-probe ] && return 0
 
-	${ECHO} "${H1_COLOR}${OSNAME} first start. Before we start, would you like to send anonymous ( via hw-probe: ${H3_COLOR}https://bsd-hardware.info/${H1_COLOR} ) hardware data (one time, now)? This will allow us to improve hardware support in the future [Y] ?${N2_COLOR}"
+	${ECHO} "${OSNAME} first start. Before we start, would you like to send anonymous ( via hw-probe: https://bsd-hardware.info/ ) hardware data (one time, now)? This will allow us to improve hardware support in the future [Y] ?"
 
 	trap "export SEND_STATS=\"n\"" SIGHUP SIGINT SIGTERM
 	# HUP INT ABRT BUS TERM EXIT

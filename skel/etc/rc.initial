@@ -67,11 +67,10 @@ apply_color()
 }
 
 ## MAIN
+hwprobe
+
 [ -z "${MYB_SUBSHELL_COLOR}" ] && MYB_SUBSHELL_COLOR="black"
 apply_color
-
-check_tty
-hwprobe
 
 # ${myb_version}
 if [ -r /usr/local/myb/version ]; then

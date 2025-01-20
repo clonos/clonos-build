@@ -448,6 +448,31 @@ while : ; do
 				;;
 			2)
 				_editfile=1		# always edit file
+				case ${IP_WL} in
+					enabled)
+						if getyesno "Turn ACL OFF? ('n' or '0' - leave as enabled) "; then
+							IP_WL="disabled"
+							${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock /usr/local/cbsd/misc/cbsdsysrc -qf /etc/rc.conf IP_WL="${IP_WL}" > /dev/null 2>&1
+							_editfile=0
+							cbsd myb_ip_whitelist mode=off
+						fi
+						;;
+					disabled)
+						if getyesno "Turn ACL ON? ('n' or '0' - leave as disabled) "; then
+							IP_WL="enabled"
+							${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock /usr/local/cbsd/misc/cbsdsysrc -qf /etc/rc.conf IP_WL="${IP_WL}" > /dev/null 2>&1
+						fi
+						;;
+				esac
+				if [ "${_editfile}" = "1" ]; then
+					cbsd myb_ip_whitelist
+				fi
+				;;
+			3)
+				/usr/bin/passwd root
+				;;
+			4)
+				_editfile=1		# always edit file
 				case ${PUB_WL} in
 					enabled)
 						if getyesno "Turn Pubkey ACL OFF? ('n' or '0' - leave as enabled) "; then
@@ -469,31 +494,6 @@ while : ; do
 				esac
 				if [ "${_editfile}" = "1" ]; then
 					cbsd myb_pub_whitelist
-				fi
-				;;
-			3)
-				/usr/bin/passwd root
-				;;
-			4)
-				_editfile=1		# always edit file
-				case ${IP_WL} in
-					enabled)
-						if getyesno "Turn ACL OFF? ('n' or '0' - leave as enabled) "; then
-							IP_WL="disabled"
-							${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock /usr/local/cbsd/misc/cbsdsysrc -qf /etc/rc.conf IP_WL="${IP_WL}" > /dev/null 2>&1
-							_editfile=0
-							cbsd myb_ip_whitelist mode=off
-						fi
-						;;
-					disabled)
-						if getyesno "Turn ACL ON? ('n' or '0' - leave as disabled) "; then
-							IP_WL="enabled"
-							${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock /usr/local/cbsd/misc/cbsdsysrc -qf /etc/rc.conf IP_WL="${IP_WL}" > /dev/null 2>&1
-						fi
-						;;
-				esac
-				if [ "${_editfile}" = "1" ]; then
-					cbsd myb_ip_whitelist
 				fi
 				;;
 			5)
@@ -561,7 +561,6 @@ while : ; do
 				;;
 		esac
 	fi
-
 done
 
 exit 0

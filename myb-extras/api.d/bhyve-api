@@ -309,7 +309,7 @@ create_env()
 
 	### partial dub code with nodeip-expose
 	original_vnc_port=$( ${HEAD_CMD} -n1 ${cbsd_workdir}/vm/${jname}/vnc_port | ${AWK_CMD} '{printf $1}' )
-	log "expose settings: nodeip_expose:${nodeip_expose}, nodeip_expose_ssh=${nodeip_expose_ssh}, nodeip_expose_vnc=${nodeip_expose_vnc}, nodeip_expose_rdp=${nodeip_expose_rdp}"
+	log "expose global settings: nodeip_expose:${nodeip_expose}, nodeip_expose_ssh=${nodeip_expose_ssh}, nodeip_expose_vnc=${nodeip_expose_vnc}, nodeip_expose_rdp=${nodeip_expose_rdp}"
 
 	### SSH access
 	_ssh_expose=0
@@ -366,6 +366,8 @@ create_env()
 		rdp_host="${nodeip}"
 	fi
 	### // partial dub code with nodeip-expose
+
+	log "expose apply settings: nodeip_expose:${nodeip_expose}, nodeip_expose_ssh=${_ssh_expose}, nodeip_expose_vnc=${_vnc_expose}, nodeip_expose_rdp=${_rdp_expose}"
 
 	nodeip-expose mode=create jname=${jname}
 

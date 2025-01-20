@@ -138,6 +138,10 @@ ${CP_CMD} -a ${cbsd_workdir}/jails-data/${jname}-data/usr/local/sbin/pkg-static 
 #rm -f /root/*.pkg
 #EOF
 
+echo "WAITING"
+read p
+
+
 cbsd jstop jname=${jname}
 
 case "${OSNAME}" in

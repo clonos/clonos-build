@@ -12,7 +12,7 @@ LICENSE_FILE=	${WRKSRC}/LICENSE
 USES=		go
 USE_GITHUB=	yes
 GH_ACCOUNT=	cbsd
-GH_TAGNAME=	5c23280
+GH_TAGNAME=	8e865f7
 GH_TUPLE=	beanstalkd:go-beanstalk:52e4a01:beanstalkd/src/github.com/beanstalkd/go-beanstalk \
 		gorilla:mux:v1.8.1:gorilla_mux/vendor/github.com/gorilla/mux \
 		golang:crypto:v0.30.0:golang_crypto/vendor/golang.org/x/crypto

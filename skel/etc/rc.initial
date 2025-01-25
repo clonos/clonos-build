@@ -168,6 +168,7 @@ while : ; do
 	echo
 	echo -e "    Copyright (c) 2013-2025 CBSD Team"
 	echo -e "    Copyright (c) 2019-2025 ${OSNAME} Team"
+	echo -e "    ${H5_COLOR}Docs: ${H3_COLOR}https://github.com/myb-project/guide${N0_COLOR}"
 	echo -e "    ${H5_COLOR}Visit: $producturl for system updates! ${H3_COLOR}(or type 'u'+Enter)${N0_COLOR}"
 	case "${MYB_SUBSHELL_COLOR}" in
 		black)
@@ -478,7 +479,7 @@ while : ; do
 						if getyesno "Turn Pubkey ACL OFF? ('n' or '0' - leave as enabled) "; then
 							PUB_WL="disabled"
 							${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock /usr/local/cbsd/misc/cbsdsysrc -qf /etc/rc.conf PUB_WL="${PUB_WL}" > /dev/null 2>&1
-							${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock /usr/local/cbsd/misc/cbsdsysrc -qf /etc/rc.conf cbsd_mq_api_flags="-listen 127.0.0.1:65531" > /dev/null 2>&1
+							${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock /usr/local/cbsd/misc/cbsdsysrc -qf /etc/rc.conf cbsd_mq_api_flags="-listen 127.0.0.1:65531 -cluster_limit=10 -onetimeconfdir /usr/local/www/config/c" > /dev/null 2>&1
 							_editfile=0
 							${SERVICE_CMD} cbsd-mq-api restart
 						fi
@@ -487,7 +488,7 @@ while : ; do
 						if getyesno "Turn Pubkey ACL ON? ('n' or '0' - leave as disabled) "; then
 							PUB_WL="enabled"
 							${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock /usr/local/cbsd/misc/cbsdsysrc -qf /etc/rc.conf PUB_WL="${PUB_WL}" > /dev/null 2>&1
-							${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock /usr/local/cbsd/misc/cbsdsysrc -qf /etc/rc.conf cbsd_mq_api_flags="-listen 127.0.0.1:65531 -allowlist /usr/local/etc/cbsd-mq-api.allow" > /dev/null 2>&1
+							${LOCKF_CMD} -s -t10 /tmp/sysrc_rc.conf.lock /usr/local/cbsd/misc/cbsdsysrc -qf /etc/rc.conf cbsd_mq_api_flags="-listen 127.0.0.1:65531 -allowlist /usr/local/etc/cbsd-mq-api.allow -cluster_limit=10 -onetimeconfdir /usr/local/www/config/c" > /dev/null 2>&1
 							${SERVICE_CMD} cbsd-mq-api restart
 						fi
 						;;

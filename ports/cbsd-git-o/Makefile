@@ -1,5 +1,5 @@
 PORTNAME=	cbsd
-DISTVERSION=	14.2.4
+DISTVERSION=	14.2.4a
 CATEGORIES=	sysutils
 
 MAINTAINER=	fbsd-ports@convectix.com
@@ -12,7 +12,8 @@ LICENSE_FILE=	${WRKSRC}/LICENSE
 LIB_DEPENDS=	libcurl.so:ftp/curl \
 		libsqlite3.so:databases/sqlite3 \
 		libssh2.so:security/libssh2
-RUN_DEPENDS=	curl:ftp/curl \
+RUN_DEPENDS=	${LOCALBASE}/share/certs/ca-root-nss.crt:security/ca_root_nss \
+		curl:ftp/curl \
 		jq:textproc/jq \
 		rsync:net/rsync \
 		sqlite3:databases/sqlite3 \
@@ -20,6 +21,7 @@ RUN_DEPENDS=	curl:ftp/curl \
 
 USES=		compiler:c++11-lang libedit pkgconfig:both
 USE_GITHUB=	yes
+GH_TAGNAME=	982d53b
 USE_RC_SUBR=	cbsdd cbsdrsyncd cbsd-statsd-bhyve cbsd-statsd-hoster \
 		cbsd-statsd-jail
 MAKE_JOBS_UNSAFE=	yes

@@ -324,7 +324,6 @@ chown cbsd:cbsd /usr/local/www/config/c
  ntpd_sync_on_start="YES" \
  cbsd_mq_router_enable="YES" \
  cbsd_mq_api_enable="YES" \
- cbsd_mq_api_flags="-listen 127.0.0.1:65531 -cluster_limit=10 -onetimeconfdir /usr/local/www/config/c" \
  sshd_enable="YES" \
  syslogd_enable="NO" \
  sendmail_enable="NO" \
@@ -368,6 +367,12 @@ if [ ${myb_firstboot} -eq 1 ]; then
 		/usr/sbin/sysrc -qf /etc/rc.conf sshd_flags="-oUseDNS=no -oPermitRootLogin=yes -oPort=22" > /dev/null 2>&1
 	fi
 	/usr/sbin/service sshd restart >/dev/null 2>&1
+
+	/usr/sbin/sysrc -qf /etc/rc.conf \
+		PUB_WL="enabled" \
+		cbsd_mq_api_flags="-listen 127.0.0.1:65531 -allowlist /usr/local/etc/cbsd-mq-api.allow -cluster_limit=10 -onetimeconfdir /usr/local/www/config/c"
+
+	[ ! -r /usr/local/etc/cbsd-mq-api.allow ] && touch /usr/local/etc/cbsd-mq-api.allow
 fi
 
 cat > /etc/sysctl.conf <<EOF

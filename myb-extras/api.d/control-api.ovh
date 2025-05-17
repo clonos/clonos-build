@@ -33,7 +33,7 @@ destroy_env()
 	${FIND_CMD} ${cbsd_api_dbdir}/ -type d -name vms | while read _dir; do
 		if [ -r ${_dir}/${jname} ]; then
 			cid=$( ${REALPATH_CMD} ${_dir}/${jname} | ${CUT_CMD} -d / -f 5 )
-			${RM_CMD} -f ${_dir}/${jname} ${cbsd_api_dbdir}/${cid}/${jname}-bhyve.ssh ${cbsd_api_dbdir}/${cid}/${jname}.node
+			${RM_CMD} -f ${_dir}/${jname} ${cbsd_api_dbdir}/${cid}/${jname}-vm.ssh ${cbsd_api_dbdir}/${cid}/${jname}.node
 			[ -n "${api_postdestroy_hook}" -a -x "${api_postdestroy_hook}" ] && ${api_postdestroy_hook} -c ${cid} -j ${jname} -m destroy -r ${cbsd_api_dbdir}
 		fi
 	done

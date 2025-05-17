@@ -212,8 +212,8 @@ create_env()
 	. /etc/rc.conf
 
 	while [ ${retry} -lt ${max_retry} ]; do
-		if [ -r ${cbsd_workdir}/vm/${jname}/vnc_port ]; then
-			vnc_file_stat=$( ${STAT_CMD} -f "%z" ${cbsd_workdir}/vm/${jname}/vnc_port 2>/dev/null )
+		if [ -r ${cbsd_workdir}/jails-system/${jname}/vnc_port ]; then
+			vnc_file_stat=$( ${STAT_CMD} -f "%z" ${cbsd_workdir}/jails-system/${jname}/vnc_port 2>/dev/null )
 			[ ${vnc_file_stat} -gt 0 ] && break
 		fi
 		sleep 1
@@ -221,8 +221,8 @@ create_env()
 	done
 
 	if [ ${retry} -gt ${max_retry} ]; then
-		log "unable to read vnc port file: ${cbsd_workdir}/vm/${jname}/vnc_port"
-		err 1 "unable to read vnc port file: ${cbsd_workdir}/vm/${jname}/vnc_port"
+		log "unable to read vnc port file: ${cbsd_workdir}/jails-system/${jname}/vnc_port"
+		err 1 "unable to read vnc port file: ${cbsd_workdir}/jails-system/${jname}/vnc_port"
 	fi
 
 	# for slow hdd/vm startup
@@ -270,7 +270,7 @@ create_env()
 	hostname=$( hostname )
 
 	echo "${hostname}" > ${cbsd_api_dbdir}/${cid}/${jname}.node
-	${CAT_CMD} > ${cbsd_api_dbdir}/${cid}/${jname}-bhyve.ssh <<EOF
+	${CAT_CMD} > ${cbsd_api_dbdir}/${cid}/${jname}-vm.ssh <<EOF
 {
   "instanceid": "${host_hostname}",
   "type": "vm",
@@ -294,7 +294,7 @@ EOF
 
 	case "${vm_os_type}" in
 		windows)
-			${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-bhyve.ssh <<EOF
+			${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-vm.ssh <<EOF
   "rdp_string": "xfreerdp +clipboard +fonts /rfx /size:1280x720 /u:Admin /v:${ssh_host}",
   "rdp4_string": "xfreerdp +clipboard +fonts /rfx /size:1280x720 /u:Admin /v:${ssh4_host}",
   "rdp6_string": ""
@@ -303,7 +303,7 @@ EOF
 			;;
 		*)
 
-			${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-bhyve.ssh <<EOF
+			${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-vm.ssh <<EOF
   "ssh_string": "ssh ${ssh_user}@${ssh_host}",
   "ssh4_string": "ssh ${ssh_user}@${ssh4_host}",
   "rdp6_string": ""
@@ -353,24 +353,24 @@ EOF
 			;;
 	esac
 
-	${CHOWN_CMD} ${cbsduser}:${cbsduser} ${cbsd_api_dbdir}/${cid}/vms/${jname} ${cbsd_api_dbdir}/${cid}/${jname}.node ${cbsd_api_dbdir}/${cid}/${jname}-bhyve.ssh
+	${CHOWN_CMD} ${cbsduser}:${cbsduser} ${cbsd_api_dbdir}/${cid}/vms/${jname} ${cbsd_api_dbdir}/${cid}/${jname}.node ${cbsd_api_dbdir}/${cid}/${jname}-vm.ssh
 	[ -n "${api_postcreate_hook}" -a -x "${api_postcreate_hook}" ] && ${api_postcreate_hook} -c ${cid} -j ${jname} -m create -r ${cbsd_api_dbdir}
 
 	# save route
-	#${RM_CMD} -f /usr/jails/vm/${jname}/master_poststop.d/route_del.sh || true
-	#${RM_CMD} -f /usr/jails/vm/${jname}/master_poststart.d/route_add.sh || true
+	#${RM_CMD} -f /usr/jails/jails-system/${jname}/master_poststop.d/route_del.sh || true
+	#${RM_CMD} -f /usr/jails/jails-system/${jname}/master_poststart.d/route_add.sh || true
 
 	# route add
-	#echo "${ROUTE_CMD} -6 add ${ext_ip} -interface ${ext_bridge_name}" > /usr/jails/vm/${jname}/master_poststart.d/route_add.sh
-	#echo "${ROUTE_CMD} -6 add ${ext_ip2} -interface ${ext_bridge_name}" >> /usr/jails/vm/${jname}/master_poststart.d/route_add.sh
-	echo "${IFCONFIG_CMD} ix0 ${ext_v4}/32 alias" >> /usr/jails/vm/${jname}/master_poststart.d/route_add.sh
+	#echo "${ROUTE_CMD} -6 add ${ext_ip} -interface ${ext_bridge_name}" > /usr/jails/jails-system/${jname}/master_poststart.d/route_add.sh
+	#echo "${ROUTE_CMD} -6 add ${ext_ip2} -interface ${ext_bridge_name}" >> /usr/jails/jails-system/${jname}/master_poststart.d/route_add.sh
+	echo "${IFCONFIG_CMD} ix0 ${ext_v4}/32 alias" >> /usr/jails/jails-system/${jname}/master_poststart.d/route_add.sh
 
-	${CHMOD_CMD} +x /usr/jails/vm/${jname}/master_poststart.d/route_add.sh
+	${CHMOD_CMD} +x /usr/jails/jails-system/${jname}/master_poststart.d/route_add.sh
 
 	# route del
-	#echo "${ROUTE_CMD} -6 delete ${ext_ip} -interface ${ext_bridge_name}" > /usr/jails/vm/${jname}/master_poststop.d/route_del.sh
-	#echo "${ROUTE_CMD} -6 delete ${ext_ip2} -interface ${ext_bridge_name}" >> /usr/jails/vm/${jname}/master_poststop.d/route_del.sh
-	#${CHMOD_CMD} +x /usr/jails/vm/${jname}/master_poststop.d/route_del.sh
+	#echo "${ROUTE_CMD} -6 delete ${ext_ip} -interface ${ext_bridge_name}" > /usr/jails/jails-system/${jname}/master_poststop.d/route_del.sh
+	#echo "${ROUTE_CMD} -6 delete ${ext_ip2} -interface ${ext_bridge_name}" >> /usr/jails/jails-system/${jname}/master_poststop.d/route_del.sh
+	#${CHMOD_CMD} +x /usr/jails/jails-system/${jname}/master_poststop.d/route_del.sh
 }
 
 ## MAIN

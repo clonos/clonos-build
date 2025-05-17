@@ -48,7 +48,7 @@ create_env()
 	local ssh_host=
 
 	[ -z "${ssh_host}" ] && ssh_host="${nodeip}"
-	[ -z "${ssh_user}" ] && err 1 "ssh_user empty? check img/mapping in bhyve-api.conf for: ${image}"
+	[ -z "${ssh_user}" ] && err 1 "ssh_user empty? check img/mapping in vm-api.conf ({jail,bhyve,xen,qemu,virtualbox}-api.conf) for: ${image}"
 
 	# extras area
 	v6_addr=
@@ -270,7 +270,7 @@ create_env()
 		port4="22"
 	fi
 
-	${CAT_CMD} > ${cbsd_api_dbdir}/${cid}/${jname}-bhyve.ssh <<EOF
+	${CAT_CMD} > ${cbsd_api_dbdir}/${cid}/${jname}-vm.ssh <<EOF
 {
   "instanceid": "${host_hostname}",
   "type": "container",
@@ -323,8 +323,8 @@ EOF
 
 #	echo "${host_hostname} (jail:${ver}) ${cpus}/${ram}/${imgsize} ssh ${ssh_user}@${ssh_host} -p${port}" > ${cbsd_api_dbdir}/${cid}/vms/${jname}
 
-	#echo -n "ssh ${ssh_user}@${ssh_host} -p${port}" > ${cbsd_api_dbdir}/${cid}/${jname}-bhyve.ssh
-	${CHOWN_CMD} ${cbsduser}:${cbsduser} ${cbsd_api_dbdir}/${cid}/vms/${jname} ${cbsd_api_dbdir}/${cid}/${jname}.node ${cbsd_api_dbdir}/${cid}/${jname}-bhyve.ssh
+	#echo -n "ssh ${ssh_user}@${ssh_host} -p${port}" > ${cbsd_api_dbdir}/${cid}/${jname}-vm.ssh
+	${CHOWN_CMD} ${cbsduser}:${cbsduser} ${cbsd_api_dbdir}/${cid}/vms/${jname} ${cbsd_api_dbdir}/${cid}/${jname}.node ${cbsd_api_dbdir}/${cid}/${jname}-vm.ssh
 
 	[ -n "${api_postcreate_hook}" -a -x "${api_postcreate_hook}" ] && ${api_postcreate_hook} -c "${cid}" -j "${jname}" -m create -r "${cbsd_api_dbdir}" -w "${cbsd_workdir}"
 }

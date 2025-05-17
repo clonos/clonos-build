@@ -1,6 +1,7 @@
 {
   "images": [
     "alma9",
+    "astra",
     "arch22",
     "centos7",
     "centos9",
@@ -8,7 +9,6 @@
     "debian12",
     "devuan5",
     "dflybsd6",
-    "euro9",
     "fedora39",
     "fedora40",
     "fedora41",

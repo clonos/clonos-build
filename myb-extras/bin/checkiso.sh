@@ -10,7 +10,7 @@ fi
 
 ECHO="echo -e"
 
-check="jail alma9 arch22 centos7 centos9 debian11 debian12 devuan5 dflybsd6 euro9 fedora39 fedora40 fedora41 freebsd13_ufs freebsd13_zfs freebsd14_ufs freebsd14_zfs freebsd15_ufs freebsd15_zfs freefire14_ufs freepbx ghostbsd24 homeass kali2024 k8s netbsd9 netbsd10 openbsd7 opnsense22 oracle7 oracle8 oracle9 rocky9 ubuntu22 ubuntu22_vdi ubuntu24 ubuntu24_vdi xigmanas"
+check="jail alma9 astra arch22 centos7 centos9 debian11 debian12 devuan5 dflybsd6 fedora39 fedora40 fedora41 freebsd13_ufs freebsd13_zfs freebsd14_ufs freebsd14_zfs freebsd15_ufs freebsd15_zfs freefire14_ufs freepbx ghostbsd24 homeass kali2024 k8s netbsd9 netbsd10 openbsd7 opnsense22 oracle7 oracle8 oracle9 rocky9 ubuntu22 ubuntu22_vdi ubuntu24 ubuntu24_vdi xigmanas"
 
 if [ -z "${ver}" -o "${ver}" = "native" ]; then
 	tmpver=$( uname -r )
@@ -25,15 +25,15 @@ else
 fi
 
 jail_iso="${workdir}/basejail/base_amd64_amd64_${ver}/bin/sh"
+astra_iso="${workdir}/src/iso/cbsd-cloud-Astra-x86-1.8.raw"
 alma9_iso="${workdir}/src/iso/cbsd-cloud-Alma-9.5-x86_64-cloud.raw"
 arch22_iso="${workdir}/src/iso/cbsd-cloud-arch-2022.09-cloud.raw"
 centos7_iso="${workdir}/src/iso/cbsd-cloud-CentOS-7.9.0-x86_64-cloud.raw"
-centos9_iso="${workdir}/src/iso/cbsd-cloud-CentOS-stream-9-20241203-x86_64-cloud.raw"
+centos9_iso="${workdir}/src/iso/cbsd-cloud-CentOS-stream-9-20250303.0-x86_64-cloud.raw"
 debian11_iso="${workdir}/src/iso/cbsd-cloud-Debian-x86-11.8.0.raw"
 debian12_iso="${workdir}/src/iso/cbsd-cloud-Debian-x86-12.9.0.raw"
 devuan5_iso="${workdir}/src/iso/cbsd-cloud-Devuan-x86-5.0.raw"
 dflybsd6_iso="${workdir}/src/iso/cbsd-cloud-DragonflyBSD-hammer-x64-6.4.0.raw"
-euro9_iso="${workdir}/src/iso/cbsd-cloud-Euro-9.3-x86_64-cloud.raw"
 fedora39_iso="${workdir}/src/iso/cbsd-cloud-Fedora-39-x86_64-cloud.raw"
 fedora40_iso="${workdir}/src/iso/cbsd-cloud-Fedora-40-x86_64-cloud.raw"
 fedora41_iso="${workdir}/src/iso/cbsd-cloud-Fedora-41-x86_64-cloud.raw"
@@ -41,8 +41,8 @@ freebsd13_ufs_iso="${workdir}/src/iso/cbsd-cloud-FreeBSD-ufs-13.4.0-RELEASE-amd6
 freebsd13_zfs_iso="${workdir}/src/iso/cbsd-cloud-FreeBSD-zfs-13.4.0-RELEASE-amd64.raw"
 freebsd14_ufs_iso="${workdir}/src/iso/cbsd-cloud-FreeBSD-ufs-14.2.0-RELEASE-amd64.raw"
 freebsd14_zfs_iso="${workdir}/src/iso/cbsd-cloud-FreeBSD-zfs-14.2.0-RELEASE-amd64.raw"
-freebsd15_ufs_iso="${workdir}/src/iso/cbsd-cloud-FreeBSD-ufs-15.0.6-CURRENT-amd64.raw"
-freebsd15_zfs_iso="${workdir}/src/iso/cbsd-cloud-FreeBSD-zfs-15.0.6-CURRENT-amd64.raw"
+freebsd15_ufs_iso="${workdir}/src/iso/cbsd-cloud-FreeBSD-ufs-15.0.7-CURRENT-amd64.raw"
+freebsd15_zfs_iso="${workdir}/src/iso/cbsd-cloud-FreeBSD-zfs-15.0.7-CURRENT-amd64.raw"
 freefire14_ufs_iso="${workdir}/src/iso/cbsd-cloud-firestarter-ufs-14.0-RELEASE-amd64.raw"
 freepbx_iso="${workdir}/src/iso/cbsd-cloud-FreePBX-16.0-x86_64-cloud.raw"
 ghostbsd24_iso="${workdir}/src/iso/cbsd-cloud-GhostBSD-zfs-x64-24.07-RELEASE-amd64.raw"

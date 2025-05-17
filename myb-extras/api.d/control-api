@@ -40,8 +40,8 @@ destroy_env()
 	${FIND_CMD} ${cbsd_api_dbdir}/ -type d -name vms | while read _dir; do
 		if [ -r ${_dir}/${jname} ]; then
 			cid=$( ${REALPATH_CMD} ${_dir}/${jname} | ${CUT_CMD} -d / -f 5 )
-			echo "${RM_CMD} -f ${_dir}/${jname} ${_dir}/../${jname}-bhyve.ssh ${_dir}/../${jname}.node" | tee -a ${MY_LOG}
-			${RM_CMD} -f ${_dir}/${jname} ${_dir}/../${jname}-bhyve.ssh ${_dir}/../${jname}.node
+			echo "${RM_CMD} -f ${_dir}/${jname} ${_dir}/../${jname}-vm.ssh ${_dir}/../${jname}.node" | tee -a ${MY_LOG}
+			${RM_CMD} -f ${_dir}/${jname} ${_dir}/../${jname}-vm.ssh ${_dir}/../${jname}.node
 			[ -n "${api_postdestroy_hook}" -a -x "${api_postdestroy_hook}" ] && ${api_postdestroy_hook} -c "${cid}" -j "${jname}" -m destroy -r "${cbsd_api_dbdir}" -w "${cbsd_workdir}"
 		fi
 	done
@@ -64,6 +64,21 @@ case "${emulator}" in
 		start_cmd="jstart"
 		stop_cmd="jstop"
 		destroy_cmd="jdestroy"
+		;;
+	qemu)
+		start_cmd="qstart"
+		stop_cmd="qstop"
+		destroy_cmd="qdestroy"
+		;;
+	xen)
+		start_cmd="xstart"
+		stop_cmd="xstop"
+		destroy_cmd="xdestroy"
+		;;
+	virtualbox)
+		start_cmd="vstart"
+		stop_cmd="vstop"
+		destroy_cmd="vdestroy"
 		;;
 	*)
 		log "unknown emulator for ${jname}: ${emulator}"

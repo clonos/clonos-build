@@ -2,7 +2,7 @@
 #v14.0.0
 DIST_MODULE_PATH="${distmoduledir}/api.d"
 . ${DIST_MODULE_PATH}/share/bhyve.conf
-MYOPTARG="imgsize jname image ram cpus pubkey host_hostname extras ci_user_pw_user ci_user_pw_root bhyve_vnc_tcp_bind vm_os_type vm_os_profile"
+MYOPTARG="imgsize jname image ram cpus pubkey host_hostname extras ci_user_pw_user ci_user_pw_root bhyve_vnc_tcp_bind vm_os_type vm_os_profile vm_engine"
 MYARG="mode"
 MYDESC="Operate with bhyve via API"
 CBSDMODULE="sys"
@@ -37,7 +37,10 @@ readconf bhyve-default-default.conf
 readconf bhyve.conf
 
 readconf api.conf
+readconf vm-api.conf
 readconf bhyve-api.conf
+readconf qemu-api.conf
+readconf xen-api.conf
 
 [ -n "${ip4_gw}" ] && oip4_gw="${ip4_gw}"
 
@@ -55,8 +58,35 @@ set -e
 . ${distmoduledir}/api.d/api.subr
 set +e
 
-MY_LOG="${cbsd_api_logdir}/bhyve-api.log"
-log "wakeup: [workdir: ${workdir}, cbsdworkdir: ${cbsd_workdir}, api_postcreate_hook: ${api_postcreate_hook}, cbsd_api_dbdir: ${cbsd_api_dbdir}]: $*"
+MY_LOG="${cbsd_api_logdir}/vm-api.log"
+
+if [ -z "${vm_engine}" ]; then
+	case "${platform}" in
+		FreeBSD)
+			vm_engine="bhyve"
+			;;
+		*)
+			vm_engine="qemu"
+			;;
+	esac
+fi
+
+log "wakeup: [workdir: ${workdir}, cbsdworkdir: ${cbsd_workdir}, api_postcreate_hook: ${api_postcreate_hook}, cbsd_api_dbdir: ${cbsd_api_dbdir}, vm_engine: ${vm_engine}]: $*"
+
+case "${vm_engine}" in
+	bhyve)
+		CREATE_CMD="bcreate"
+		;;
+	qemu)
+		CREATE_CMD="qcreate"
+		;;
+	xen)
+		CREATE_CMD="xcreate"
+		;;
+	virtualbox)
+		CREATE_CMD="vcreate"
+		;;
+esac
 
 ip4_addr=
 vm_os_type=
@@ -78,7 +108,7 @@ api_err()
 	local _msg="${2}"
 	echo -n "${jname}" > ${cbsd_api_dbdir}/${cid}/vm-${host_hostname}
 	echo "${hostname}" > ${cbsd_api_dbdir}/${cid}/${jname}.node
-	${CAT_CMD} > ${cbsd_api_dbdir}/${cid}/${jname}-bhyve.ssh <<EOF
+	${CAT_CMD} > ${cbsd_api_dbdir}/${cid}/${jname}-vm.ssh <<EOF
 {
   "Message": "${_msg}"
 }
@@ -136,12 +166,12 @@ create_env()
 		eval vm_os_profile="\$${image}_vm_os_profile"
 	fi
 
-	[ -z "${vm_os_type}" ] && api_err 1 "vm_os_type empty? check img/mapping in bhyve-api.conf for: ${image}"
-	[ -z "${vm_os_profile}" ] && api_err 1 "vm_os_profile empty? check img/mapping in bhyve-api.conf for: ${image}"
+	[ -z "${vm_os_type}" ] && api_err 1 "vm_os_type empty? check img/mapping in vm-api.conf ({bhyve,jail,qemu,xen,virtualbox}-api.conf) for: ${image}"
+	[ -z "${vm_os_profile}" ] && api_err 1 "vm_os_profile empty? check img/mapping in vm-api.conf ({bhyve,jail,qemu,xen,virtualbox}-api.conf) for: ${image}"
 
 	eval ssh_user="\$${image}_ssh_user"
 
-	[ -z "${ssh_user}" ] && api_err 1 "ssh_user empty? check img/mapping in bhyve-api.conf for: ${image}"
+	[ -z "${ssh_user}" ] && api_err 1 "ssh_user empty? check img/mapping in vm-api.conf ({bhyve,jail,qemu,xen,virtualbox}-api.conf) for: ${image}"
 	[ -z "${ssh_host}" ] && ssh_host="${nodeip}"
 
 	# extras area
@@ -270,9 +300,9 @@ create_env()
 	[ -z "${vm_os_profile}" ] && err 1 "no vm_os_profile"
 
 	if [ -n "${ci_gw42}" ]; then
-		str="cbsd bcreate jname=${jname} runasap=1 vm_cpus=${cpus} vm_ram=${ram} imgsize=${imgsize} vm_os_type=\"${vm_os_type}\" vm_os_profile=\"${vm_os_profile}\" ci_fqdn=\"${ci_fqdn}\" ci_ip4_addr=\"${ip4_addr}\" ci_gw4=\"${ip4_gw}\" ip4_addr=\"${ip4_addr}\" ci_user_pubkey=\"${cbsd_api_dbdir}/${cid}/.ssh/authorized_keys\" ci_jname=\"${ci_jname}\" ci_ip4_addr2=\"${v6_addr}\" ci_user_pw_root=\"cbsd\""
+		str="cbsd ${CREATE_CMD} jname=${jname} runasap=1 vm_cpus=${cpus} vm_ram=${ram} imgsize=${imgsize} vm_os_type=\"${vm_os_type}\" vm_os_profile=\"${vm_os_profile}\" ci_fqdn=\"${ci_fqdn}\" ci_ip4_addr=\"${ip4_addr}\" ci_gw4=\"${ip4_gw}\" ip4_addr=\"${ip4_addr}\" ci_user_pubkey=\"${cbsd_api_dbdir}/${cid}/.ssh/authorized_keys\" ci_jname=\"${ci_jname}\" ci_ip4_addr2=\"${v6_addr}\" ci_user_pw_root=\"cbsd\""
 	else
-		str="cbsd bcreate jname=${jname} runasap=1 vm_cpus=${cpus} vm_ram=${ram} imgsize=${imgsize} vm_os_type=\"${vm_os_type}\" vm_os_profile=\"${vm_os_profile}\" ci_fqdn=\"${ci_fqdn}\" ci_ip4_addr=\"${ip4_addr}\" ci_gw4=\"${ip4_gw}\" ip4_addr=\"${ip4_addr}\" ci_user_pubkey=\"${cbsd_api_dbdir}/${cid}/.ssh/authorized_keys\" ci_jname=\"${ci_jname}\""
+		str="cbsd ${CREATE_CMD} jname=${jname} runasap=1 vm_cpus=${cpus} vm_ram=${ram} imgsize=${imgsize} vm_os_type=\"${vm_os_type}\" vm_os_profile=\"${vm_os_profile}\" ci_fqdn=\"${ci_fqdn}\" ci_ip4_addr=\"${ip4_addr}\" ci_gw4=\"${ip4_gw}\" ip4_addr=\"${ip4_addr}\" ci_user_pubkey=\"${cbsd_api_dbdir}/${cid}/.ssh/authorized_keys\" ci_jname=\"${ci_jname}\""
 	fi
 
 	[ -n "${bhyve_vnc_tcp_bind}" ] && str="${str} bhyve_vnc_tcp_bind=\"${bhyve_vnc_tcp_bind}\""
@@ -289,26 +319,35 @@ create_env()
 	. /etc/rc.conf
 
 	while [ ${retry} -lt ${max_retry} ]; do
-		if [ -r ${cbsd_workdir}/vm/${jname}/vnc_port ]; then
-			vnc_file_stat=$( ${STAT_CMD} -f "%z" ${cbsd_workdir}/vm/${jname}/vnc_port 2>/dev/null )
+		if [ -r ${cbsd_workdir}/jails-system/${jname}/vnc_port ]; then
+
+			case "${platform}" in
+				Linux)
+					vnc_file_stat=$( ${STAT_CMD} --printf="%s" ${cbsd_workdir}/jails-system/${jname}/vnc_port 2>/dev/null )
+					;;
+				*)
+					vnc_file_stat=$( ${STAT_CMD} -f "%z" ${cbsd_workdir}/jails-system/${jname}/vnc_port 2>/dev/null )
+					;;
+			esac
+
 			[ ${vnc_file_stat} -gt 0 ] && break
 		fi
 		sleep 1
 		retry=$(( retry + 1 ))
 	done
 
-	[ -r ${cbsd_workdir}/vm/${jname}/rc.conf_${jname} ] && . ${cbsd_workdir}/vm/${jname}/rc.conf_${jname}
+	[ -r ${cbsd_workdir}/jails-system/${jname}/rc.conf_${jname} ] && . ${cbsd_workdir}/jails-system/${jname}/rc.conf_${jname}
 
 	if [ ${retry} -gt ${max_retry} ]; then
-		log "unable to read vnc port file: ${cbsd_workdir}/vm/${jname}/vnc_port"
-		err 1 "unable to read vnc port file: ${cbsd_workdir}/vm/${jname}/vnc_port"
+		log "unable to read vnc port file: ${cbsd_workdir}/jails-system/${jname}/vnc_port"
+		err 1 "unable to read vnc port file: ${cbsd_workdir}/jails-system/${jname}/vnc_port"
 	fi
 
 	# for slow hdd/vm startup
 	sleep 5
 
 	### partial dub code with nodeip-expose
-	original_vnc_port=$( ${HEAD_CMD} -n1 ${cbsd_workdir}/vm/${jname}/vnc_port | ${AWK_CMD} '{printf $1}' )
+	original_vnc_port=$( ${HEAD_CMD} -n1 ${cbsd_workdir}/jails-system/${jname}/vnc_port | ${AWK_CMD} '{printf $1}' )
 	log "expose global settings: nodeip_expose:${nodeip_expose}, nodeip_expose_ssh=${nodeip_expose_ssh}, nodeip_expose_vnc=${nodeip_expose_vnc}, nodeip_expose_rdp=${nodeip_expose_rdp}"
 
 	### SSH access
@@ -466,7 +505,7 @@ EOF
 	fi
 
 	echo "${hostname}" > ${cbsd_api_dbdir}/${cid}/${jname}.node
-	${CAT_CMD} > ${cbsd_api_dbdir}/${cid}/${jname}-bhyve.ssh <<EOF
+	${CAT_CMD} > ${cbsd_api_dbdir}/${cid}/${jname}-vm.ssh <<EOF
 {
   "id": "${ci_jname}",
   "type": "vm",
@@ -485,83 +524,83 @@ EOF
 EOF
 
 if [ -n "${ssh_user}" ]; then
-${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-bhyve.ssh <<EOF
+${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-vm.ssh <<EOF
   "ssh_user": "${ssh_user}",
 EOF
 fi
 if [ -n "${ssh_host}" ]; then
-${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-bhyve.ssh <<EOF
+${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-vm.ssh <<EOF
   "ssh_host": "${ssh_host}",
 EOF
 fi
 if [ -n "${ssh4_user}" ]; then
-${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-bhyve.ssh <<EOF
+${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-vm.ssh <<EOF
   "ssh4_host": "${ssh4_host}",
 EOF
 fi
 if [ -n "${ssh6_host}" ]; then
-${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-bhyve.ssh <<EOF
+${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-vm.ssh <<EOF
   "ssh6_host": "${ssh6_host}",
 EOF
 fi
 if [ -n "${ssh_port}" ]; then
-${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-bhyve.ssh <<EOF
+${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-vm.ssh <<EOF
   "ssh_port": ${ssh_port},
 EOF
 fi
 if [ -n "${ssh4_port}" ]; then
-${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-bhyve.ssh <<EOF
+${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-vm.ssh <<EOF
   "ssh4_port": ${ssh4_port},
 EOF
 fi
 if [ -n "${ssh6_port}" ]; then
-${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-bhyve.ssh <<EOF
+${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-vm.ssh <<EOF
   "ssh6_port": ${ssh6_port},
 EOF
 fi
 if [ -n "${rdp_user}" ]; then
-${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-bhyve.ssh <<EOF
+${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-vm.ssh <<EOF
   "rdp_user": "${rdp_user}",
 EOF
 fi
 if [ -n "${rdp_password}" ]; then
-${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-bhyve.ssh <<EOF
+${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-vm.ssh <<EOF
   "rdp_password": "${rdp_password}",
 EOF
 fi
 if [ -n "${rdp_host}" ]; then
-${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-bhyve.ssh <<EOF
+${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-vm.ssh <<EOF
   "rdp_host": "${rdp_host}",
 EOF
 fi
 if [ -n "${rdp_port}" ]; then
-${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-bhyve.ssh <<EOF
+${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-vm.ssh <<EOF
   "rdp_port": ${rdp_port},
 EOF
 fi
 if [ -n "${rdp4_host}" ]; then
-${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-bhyve.ssh <<EOF
+${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-vm.ssh <<EOF
   "rdp4_host": "${rdp4_host}",
 EOF
 fi
 if [ -n "${rdp4_port}" ]; then
-${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-bhyve.ssh <<EOF
+${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-vm.ssh <<EOF
   "rdp4_port": ${rdp4_port},
 EOF
 fi
 if [ -n "${rdp6_host}" ]; then
-${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-bhyve.ssh <<EOF
+${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-vm.ssh <<EOF
   "rdp6_host": "${rdp6_host}",
 EOF
 fi
 if [ -n "${rdp6_port}" ]; then
-${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-bhyve.ssh <<EOF
+${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-vm.ssh <<EOF
   "rdp6_port": ${rdp6_port},
 EOF
 fi
 
 ## VNC REDIR
-${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-bhyve.ssh <<EOF
+${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-vm.ssh <<EOF
   "vnc_port": ${vnc_port},
   "vnc_password": "cbsd",
   "vnc_host": "${vnc_host}",
@@ -569,7 +608,7 @@ EOF
 
 	case "${cbsd_vdi_image}" in
 		1)
-			${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-bhyve.ssh <<EOF
+			${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-vm.ssh <<EOF
   "rdp_string": "xfreerdp +clipboard +fonts /rfx /size:1920x1200 /u:${rdp_user} /p:${rdp_password} /v:${rdp_host}:${rdp_port}",
   "rdp4_string": "xfreerdp +clipboard +fonts /rfx /size:1920x1200 /u:${rdp_user} /p:${rdp_password} /v:${rdp4_host}:${port4}",
   "rdp6_string": "xfreerdp +clipboard +fonts /rfx /size:1920x1200 /u:${rdp_user} /p:${rdp_password} /v:[${rdp6_host}]:${port6}"
@@ -577,7 +616,7 @@ EOF
 EOF
 			;;
 		*)
-			${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-bhyve.ssh <<EOF
+			${CAT_CMD} >> ${cbsd_api_dbdir}/${cid}/${jname}-vm.ssh <<EOF
   "ssh_port": ${ssh_port},
   "ssh_string": "ssh ${ssh_user}@${ssh_host} -p${ssh_port}",
   "ssh4_string": "ssh ${ssh_user}@${ssh4_host} -p${port4}",
@@ -629,7 +668,7 @@ EOF
 			;;
 	esac
 
-	${CHOWN_CMD} ${cbsduser}:${cbsduser} ${cbsd_api_dbdir}/${cid}/vms/${jname} ${cbsd_api_dbdir}/${cid}/${jname}.node ${cbsd_api_dbdir}/${cid}/${jname}-bhyve.ssh
+	${CHOWN_CMD} ${cbsduser}:${cbsduser} ${cbsd_api_dbdir}/${cid}/vms/${jname} ${cbsd_api_dbdir}/${cid}/${jname}.node ${cbsd_api_dbdir}/${cid}/${jname}-vm.ssh
 
 	[ -n "${api_postcreate_hook}" -a -x "${api_postcreate_hook}" ] && ${api_postcreate_hook} -c "${cid}" -j "${jname}" -m create -r "${cbsd_api_dbdir}" -w "${cbsd_workdir}"
 }

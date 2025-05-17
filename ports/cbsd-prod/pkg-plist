@@ -1533,5 +1533,3 @@ cbsd/tests/cbsd_mountfstab_test.sh
 cbsd/tests/cbsd_vnet_ipv4v6.sh
 cbsd/tests/runall
 cbsd/tests/shunit2
-cbsd/upgrade/pre-patch-14.2.6.0
-cbsd/upgrade/pre-patch-14.2.6.1

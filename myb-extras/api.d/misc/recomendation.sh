@@ -68,8 +68,21 @@ if [ "${1}" = "lock" ]; then
 	get_recomendation
 	exit 0
 else
+
+	LOCKF_CMD=$( which lockf )
+	if [ -x "${LOCKF_CMD}" ]; then
+		_lock_str="${LOCKF_CMD} -s -t10 /tmp/recomendation.lock"
+	else
+		FLOCK_CMD=$( which flock )
+		if [ -x "${FLOCK_CMD}" ]; then
+			_lock_str="${FLOCK_CMD} -w10 -x /tmp/recomendation.lock"
+		else
+			echo "no such 'lockf' or 'flock' cmd, please install it fist"
+			exit 1
+		fi
+	fi
 	# recursive execite via lockf wrapper
-	lockf -s -t10 /tmp/recomendation.lock /usr/local/cbsd/modules/api.d/misc/recomendation.sh lock $*
+	${_lock_str} /usr/local/cbsd/modules/api.d/misc/recomendation.sh lock $*
 fi
 
 exit 0

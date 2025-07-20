@@ -8,7 +8,6 @@ progdir=$( realpath ${progdir} )
 progdir=$( dirname ${progdir} )
 . ${progdir}/cmd.subr
 . ${progdir}/brand.conf
-
 tmpver=$( ${UNAME_CMD} -r )
 ver=${tmpver%%-*}
 unset tmpver
@@ -78,7 +77,7 @@ hash -r
 EOF
 
 # /usr/local/bin/spacevm-perf-fio-run
-for i in /usr/local/sbin/nginx /usr/local/myb/version /usr/local/bin/cbsd /usr/local/bin/cbsd-mq-api /usr/local/bin/cbsd-mq-router /usr/local/bin/curl /usr/local/bin/jq /usr/local/bin/genisoimage /usr/local/bin/beanstalkd /usr/local/bin/bash /usr/local/sbin/dmidecode /usr/local/bin/ttyd; do
+for i in /usr/local/myb/mybinst.sh /usr/local/sbin/nginx /usr/local/myb/version /usr/local/bin/cbsd /usr/local/bin/cbsd-mq-api /usr/local/bin/cbsd-mq-router /usr/local/bin/curl /usr/local/bin/jq /usr/local/bin/genisoimage /usr/local/bin/beanstalkd /usr/local/bin/bash /usr/local/sbin/dmidecode /usr/local/bin/ttyd; do
 	if [ ! -r "${cbsd_workdir}/jails-data/${jname}-data${i}" ]; then
 		echo "error: No such: ${cbsd_workdir}/jails-data/${jname}-data${i}"
 		exit 1
@@ -137,10 +136,6 @@ ${CP_CMD} -a ${cbsd_workdir}/jails-data/${jname}-data/usr/local/sbin/pkg-static 
 #pkg clean -ya
 #rm -f /root/*.pkg
 #EOF
-
-echo "WAITING"
-read p
-
 
 cbsd jstop jname=${jname}
 
@@ -296,6 +291,7 @@ cd ${cbsd_workdir}/jails-data/${jname}-data/
 cp -a ${cbsd_workdir}/jails-data/${jname}-data/etc/rc.conf /tmp
 grep -v hw_probe /tmp/rc.conf > ${cbsd_workdir}/jails-data/${jname}-data/etc/rc.conf
 
+echo "env XZ_OPT=\"-9 -T8\" ${TAR_CMD} -cJf /root/base.txz ."
 env XZ_OPT="-9 -T8" ${TAR_CMD} -cJf /root/base.txz .
 
 #cbsd up cbsdfile=${progdir}/micro-CBSDfile ver="${mybbasever}"

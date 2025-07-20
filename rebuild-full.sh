@@ -3,6 +3,8 @@ pgm="${0##*/}"                          # Program basename
 progdir="${0%/*}"                       # Program directory
 progdir=$( realpath ${progdir} )
 
+export STEP_BY_STEP=1
+
 export PATH="/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin"
 ### SET version in /root/myb-build/ports/myb/Makefile
 ### + /root/myb-build/skel/usr/local/etc/mybee/version
@@ -103,7 +105,7 @@ set +e
 FULL_ST_TIME=$( ${DATE_CMD} +%s )
 
 #### PREPARE
-if [ 3 -gt 2 ]; then
+if [ 5 -gt 2 ]; then
 	if [ -r "${progdir}/rebuild-prepare.${OS}.subr" ]; then
 		. ${progdir}/rebuild-prepare.${OS}.subr
 	else
@@ -111,11 +113,13 @@ if [ 3 -gt 2 ]; then
 	fi
 fi
 
+step
+
 # !!!
 # not for half:
 set -o errexit
 
-if [ 3 -gt 2 ]; then
+if [ 5 -gt 2 ]; then
 	if [ -r "${progdir}/rebuild-buildenv.${OS}.subr" ]; then
 		. ${progdir}/rebuild-buildenv.${OS}.subr
 	else
@@ -127,6 +131,8 @@ fi
 # half build
 #fi
 # jail
+
+step
 
 st_time=$( ${DATE_CMD} +%s )
 /root/myb-build/ci/40_jail.sh

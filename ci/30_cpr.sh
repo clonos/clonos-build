@@ -116,7 +116,8 @@ cbsd jstart jname=${cpr_jname} || true
 
 echo "Update/run cix_upgrade: clonos_ver.conf"
 cp -a ${progdir}/scripts/cix_upgrade ${cbsd_workdir}/jails-data/${cpr_jname}-data/root/
-cbsd jexec jname=${cpr_jname} /root/cix_upgrade
+#cbsd jexec jname=${cpr_jname} /root/cix_upgrade
+chroot ${cbsd_workdir}/jails-data/${cpr_jname}-data /bin/sh /root/cix_upgrade
 echo "/root/cix_upgrade"
 
 # original?

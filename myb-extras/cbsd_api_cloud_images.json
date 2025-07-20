@@ -1,10 +1,12 @@
 {
   "images": [
     "alma9",
+    "alma10",
     "astra",
     "arch22",
     "centos7",
     "centos9",
+    "centos10",
     "debian11",
     "debian12",
     "devuan5",
@@ -33,6 +35,7 @@
     "oracle8",
     "oracle9",
     "rocky9",
+    "rocky10",
     "ubuntu22",
     "ubuntu22_vdi",
     "ubuntu24",

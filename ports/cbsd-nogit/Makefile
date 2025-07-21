@@ -1,5 +1,5 @@
 PORTNAME=	cbsd
-DISTVERSION=	14.3.1a
+DISTVERSION=	14.3.0
 CATEGORIES=	sysutils
 
 MAINTAINER=	fbsd-ports@convectix.com
@@ -20,7 +20,6 @@ RUN_DEPENDS=	curl:ftp/curl \
 
 USES=		compiler:c++11-lang libedit pkgconfig:both
 USE_GITHUB=	yes
-GH_TAGNAME=	506563e
 USE_RC_SUBR=	cbsdd cbsdrsyncd cbsd-statsd-bhyve cbsd-statsd-hoster \
 		cbsd-statsd-jail
 MAKE_JOBS_UNSAFE=	yes

@@ -11,11 +11,13 @@ progdir=$( dirname ${progdir} )
 : ${distdir="/usr/local/cbsd"}
 [ ! -r "${distdir}/subr/cbsdbootstrap.subr" ] && exit 1
 . ${distdir}/subr/cbsdbootstrap.subr || exit 1
-
+OSNAME="MyBee"
 # lookup for RSYNC
 . /etc/rc.conf
 . ${progdir}/cmd.subr
 . ${progdir}/brand.conf
+
+echo "UPDATE_REPO for ${OSNAME}"
 
 ver_w_point=$( echo ${mybbasever} | tr -d '.' )
 
@@ -118,10 +120,22 @@ jq ".installed + {
 	;;
 esac
 
-echo "check ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/"
+echo "update_repo: check ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/"
 
 echo "${RSYNC_CMD} -avz ./ ${RSYNC_DST}latest/"
-#read p
 ${RSYNC_CMD} -avz --delete ./ ${RSYNC_DST}latest/
+_ret=$?
 
-# retcode
+echo "update_repo: rsync errcode: ${_ret}"
+
+case ${_ret} in
+	0|6|24|25)
+		# rsync good codes
+		_ret=0
+		;;
+	*)
+		true
+		;;
+esac
+
+exit ${_ret}

@@ -11,7 +11,6 @@ progdir=$( dirname ${progdir} )
 : ${distdir="/usr/local/cbsd"}
 [ ! -r "${distdir}/subr/cbsdbootstrap.subr" ] && exit 1
 . ${distdir}/subr/cbsdbootstrap.subr || exit 1
-OSNAME="MyBee"
 # lookup for RSYNC
 . /etc/rc.conf
 . ${progdir}/cmd.subr

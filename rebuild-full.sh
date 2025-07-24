@@ -13,8 +13,8 @@ export PATH="/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin"
 #export OSNAME="home.olevole.ru"
 #export OSNAME="mother.olevole.ru"
 #export OSNAME="FreeBSD"
-export OSNAME="MyBee"
-#export OSNAME="ClonOS"
+#export OSNAME="MyBee"
+export OSNAME="ClonOS"
 
 cd /
 

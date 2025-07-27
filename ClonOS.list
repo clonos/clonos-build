@@ -19,8 +19,8 @@
 /usr/ports/security/gnutls
 /usr/ports/databases/sqlite3
 /usr/ports/shells/bash
-#/usr/ports/www/node23
-#/usr/ports/www/npm-node23
+#/usr/ports/www/node24
+#/usr/ports/www/npm-node24
 /usr/ports/security/sudo
 /usr/ports/devel/git
 /usr/ports/devel/pkgconf

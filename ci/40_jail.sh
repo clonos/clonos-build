@@ -89,9 +89,9 @@ if [ "${OSNAME}" = "ClonOS" ]; then
 
 cbsd jexec jname=${jname} /bin/sh <<EOF
 echo "Install ClonOS packages"
-	pkg install -y lang/python311 lang/php84 net/libvncserver security/gnutls sqlite3 shells/bash www/node23 www/nginx \
+	pkg install -y lang/python311 lang/php84 net/libvncserver security/gnutls sqlite3 shells/bash www/node24 www/nginx \
 sysutils/cbsd security/ca_root_nss security/sudo net/beanstalkd git devel/pkgconf tmux py311-numpy www/php84-session \
-archivers/php84-zip databases/php84-sqlite3 databases/php84-pdo_sqlite security/php84-filter www/php84-opcache www/npm-node23 clonos clonos-ws
+archivers/php84-zip databases/php84-sqlite3 databases/php84-pdo_sqlite security/php84-filter www/php84-opcache www/npm-node24 clonos clonos-ws
 pkg remove -y go121
 EOF
 for i in /usr/local/www/clonos/version /usr/local/bin/node /usr/local/bin/php; do

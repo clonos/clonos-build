@@ -94,8 +94,8 @@ php84
 php84-session \
 php84-opcache \
 gnutls \
-node23 \
-npm-node23 \
+node24 \
+npm-node24 \
 "
 fi
 

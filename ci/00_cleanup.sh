@@ -10,7 +10,7 @@ set +e
 . ${progdir}/brand.conf
 
 if [ -z "${mybbasever}" ]; then
-	echo "Please specify mybbasever= via /etc/rc.conf, e.g.: sysrc -q mybbasever=\"14.1\""
+	echo "Please specify mybbasever= via /etc/rc.conf, e.g.: sysrc -q mybbasever=\"15.0\""
 	exit 1
 fi
 
@@ -65,7 +65,7 @@ for i in cpr3e421 cprd07dc cpr9ca75 mybee1 micro1; do
 done
 
 echo "remove kernel/base"
-cbsd removebase
-cbsd removekernel
+cbsd removebase ver=${mybbasever}
+cbsd removekernel ver=${mybbasever}
 
 exit 0

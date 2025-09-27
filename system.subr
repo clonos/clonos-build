@@ -13,7 +13,7 @@ fi
 step()
 {
 	if [ "${STEP_BY_STEP}" = "1" ]; then
-		echo "hit Enter to next step"
+		echo "hit Enter to next step: ${1}"
 		read p
 	fi
 

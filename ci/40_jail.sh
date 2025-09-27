@@ -7,6 +7,7 @@ progdir="${0%/*}"			# Program directory
 progdir=$( realpath ${progdir} )
 progdir=$( dirname ${progdir} )
 . ${progdir}/cmd.subr
+#OSNAME="MyBee"
 . ${progdir}/brand.conf
 tmpver=$( ${UNAME_CMD} -r )
 ver=${tmpver%%-*}
@@ -16,8 +17,8 @@ unset tmpver
 cbsd destroy cbsdfile=${progdir}/mybee-CBSDfile || true
 cbsd destroy cbsdfile=${progdir}/micro-CBSDfile || true
 
-cbsd up cbsdfile=${progdir}/mybee-CBSDfile
-cbsd jset ver=${ver} jname=${jname}
+cbsd up cbsdfile=${progdir}/mybee-CBSDfile ver="${mybbasever}"
+cbsd jset ver=${mybbasever} jname=${jname}
 
 ${MKDIR_CMD} ${cbsd_workdir}/jails-data/${jname}-data/dev ${cbsd_workdir}/jails-data/${jname}-data/tmp
 ${CHMOD_CMD} 0777 ${cbsd_workdir}/jails-data/${jname}-data/tmp
@@ -28,10 +29,13 @@ PKG_BASE="FreeBSD-runtime"
 
 basejail_conf=
 
-if [ -r "${progdir}/profiles/${OSNAME}/basejail.conf-${ver}" ]; then
-	basejail_conf="${progdir}/profiles/${OSNAME}/basejail.conf-${ver}.conf"
-elif [ -r "${progdir}/profiles/${OSNAME}/basejail.conf" ]; then
-	basejail_conf="${progdir}/profiles/${OSNAME}/basejail.conf"
+if [ -r "${progdir}/profiles/${OSNAME}/basejail.conf-${mybbasever}.conf" ]; then
+	basejail_conf="${progdir}/profiles/${OSNAME}/basejail.conf-${mybbasever}.conf"
+else
+	echo "no such: ${progdir}/profiles/${OSNAME}/basejail.conf-${mybbasever}.."
+	if [ -r "${progdir}/profiles/${OSNAME}/basejail.conf" ]; then
+		basejail_conf="${progdir}/profiles/${OSNAME}/basejail.conf"
+	fi
 fi
 
 if [ -n "${basejail_conf}" ]; then
@@ -89,10 +93,10 @@ if [ "${OSNAME}" = "ClonOS" ]; then
 
 cbsd jexec jname=${jname} /bin/sh <<EOF
 echo "Install ClonOS packages"
-	pkg install -y lang/python311 lang/php84 net/libvncserver security/gnutls sqlite3 shells/bash www/node24 www/nginx \
-sysutils/cbsd security/ca_root_nss security/sudo net/beanstalkd git devel/pkgconf tmux py311-numpy www/php84-session \
-archivers/php84-zip databases/php84-sqlite3 databases/php84-pdo_sqlite security/php84-filter www/php84-opcache www/npm-node24 clonos clonos-ws
-pkg remove -y go121
+	pkg install -y lang/python311 lang/php85 net/libvncserver security/gnutls sqlite3 shells/bash www/node24 www/nginx \
+sysutils/cbsd security/ca_root_nss security/sudo net/beanstalkd git devel/pkgconf tmux py311-numpy www/php85-session \
+archivers/php85-zip databases/php85-sqlite3 databases/php85-pdo_sqlite security/php85-filter www/php85-opcache www/npm-node24 clonos clonos-ws
+pkg remove -y go125
 EOF
 for i in /usr/local/www/clonos/version /usr/local/bin/node /usr/local/bin/php; do
 	if [ ! -r "${cbsd_workdir}/jails-data/${jname}-data${i}" ]; then

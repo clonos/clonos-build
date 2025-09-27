@@ -11,7 +11,7 @@ set +e
 . ${progdir}/brand.conf
 
 if [ -z "${mybbasever}" ]; then
-	echo "Please specify mybbasever= via /etc/rc.conf, e.g: sysrc -q mybbasever=\"14.0\""
+	echo "Please specify mybbasever= via /etc/rc.conf, e.g: sysrc -q mybbasever=\"15.0\""
 	exit 1
 fi
 

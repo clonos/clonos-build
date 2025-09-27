@@ -6,7 +6,7 @@ end_time=$( ${DATE_CMD} +%s )
 diff_time=$(( end_time - st_time ))
 put_prometheus_file_metrics "rebuild-full" "cleanup" ${diff_time}
 
-step
+step "--> 00_srcup.sh"
 
 ## srcup
 st_time=$( ${DATE_CMD} +%s )
@@ -27,7 +27,7 @@ end_time=$( ${DATE_CMD} +%s )
 diff_time=$(( end_time - st_time ))
 put_prometheus_file_metrics "rebuild-full" "world" ${diff_time}
 
-step
+step "--> 25_base-pkg.sh"
 
 
 # basepkg
@@ -38,7 +38,7 @@ end_time=$( ${DATE_CMD} +%s )
 fiff_time=$(( end_time - st_time ))
 put_prometheus_file_metrics "rebuild-full" "basepkg" ${diff_time}
 
-step
+step "--> 30_cpr.sh"
 
 # cpr
 st_time=$( ${DATE_CMD} +%s )
@@ -48,7 +48,7 @@ end_time=$( ${DATE_CMD} +%s )
 diff_time=$(( end_time - st_time ))
 put_prometheus_file_metrics "rebuild-full" "cpr" ${diff_time}
 
-step
+step "--> 35_cpr-micro.sh"
 
 # cpr-micro
 #st_time=$( ${DATE_CMD} +%s )
@@ -67,4 +67,4 @@ end_time=$( ${DATE_CMD} +%s )
 diff_time=$(( end_time - st_time ))
 put_prometheus_file_metrics "rebuild-full" "updaterepo" ${diff_time}
 
-step
+step "--> 35__update_repo.sh"

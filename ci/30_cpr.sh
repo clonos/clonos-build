@@ -68,9 +68,9 @@ sudo \
 bash \
 cmake \
 gmake \
-gcc13 \
+gcc \
 go \
-go122 \
+go125 \
 ninja \
 nginx \
 python311 \
@@ -90,9 +90,9 @@ PREFETCHED_PACKAGES="${PREFETCHED_PACKAGES} \
 bash \
 git \
 libvncserver \
-php84
-php84-session \
-php84-opcache \
+php85
+php85-session \
+php85-opcache \
 gnutls \
 node24 \
 npm-node24 \

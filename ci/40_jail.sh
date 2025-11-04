@@ -7,7 +7,7 @@ progdir="${0%/*}"			# Program directory
 progdir=$( realpath ${progdir} )
 progdir=$( dirname ${progdir} )
 . ${progdir}/cmd.subr
-#OSNAME="MyBee"
+OSNAME="MyBee"
 . ${progdir}/brand.conf
 tmpver=$( ${UNAME_CMD} -r )
 ver=${tmpver%%-*}
@@ -29,10 +29,11 @@ PKG_BASE="FreeBSD-runtime"
 
 basejail_conf=
 
-if [ -r "${progdir}/profiles/${OSNAME}/basejail.conf-${mybbasever}.conf" ]; then
-	basejail_conf="${progdir}/profiles/${OSNAME}/basejail.conf-${mybbasever}.conf"
+if [ -r "${progdir}/profiles/${OSNAME}/basejail-${mybbasever}.conf" ]; then
+	basejail_conf="${progdir}/profiles/${OSNAME}/basejail-${mybbasever}.conf"
+	echo "found: ${basejail_conf}"
 else
-	echo "no such: ${progdir}/profiles/${OSNAME}/basejail.conf-${mybbasever}.."
+	echo "no such: ${progdir}/profiles/${OSNAME}/basejail-${mybbasever}.conf"
 	if [ -r "${progdir}/profiles/${OSNAME}/basejail.conf" ]; then
 		basejail_conf="${progdir}/profiles/${OSNAME}/basejail.conf"
 	fi
@@ -81,7 +82,7 @@ hash -r
 EOF
 
 # /usr/local/bin/spacevm-perf-fio-run
-for i in /usr/local/myb/mybinst.sh /usr/local/sbin/nginx /usr/local/myb/version /usr/local/bin/cbsd /usr/local/bin/cbsd-mq-api /usr/local/bin/cbsd-mq-router /usr/local/bin/curl /usr/local/bin/jq /usr/local/bin/genisoimage /usr/local/bin/beanstalkd /usr/local/bin/bash /usr/local/sbin/dmidecode /usr/local/bin/ttyd; do
+for i in /boot/kernel/kernel /usr/local/myb/mybinst.sh /usr/local/sbin/nginx /usr/local/myb/version /usr/local/bin/cbsd /usr/local/bin/cbsd-mq-api /usr/local/bin/cbsd-mq-router /usr/local/bin/curl /usr/local/bin/jq /usr/local/bin/genisoimage /usr/local/bin/beanstalkd /usr/local/bin/bash /usr/local/sbin/dmidecode /usr/local/bin/ttyd; do
 	if [ ! -r "${cbsd_workdir}/jails-data/${jname}-data${i}" ]; then
 		echo "error: No such: ${cbsd_workdir}/jails-data/${jname}-data${i}"
 		exit 1

@@ -23,7 +23,7 @@ fi
 . /etc/rc.conf
 . ${progdir}/cmd.subr
 
-OSNAME="MyBee"
+#OSNAME="MyBee"
 . ${progdir}/brand.conf
 date
 echo "UPDATE_REPO for ${OSNAME}"

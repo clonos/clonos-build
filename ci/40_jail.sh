@@ -7,7 +7,7 @@ progdir="${0%/*}"			# Program directory
 progdir=$( realpath ${progdir} )
 progdir=$( dirname ${progdir} )
 . ${progdir}/cmd.subr
-OSNAME="MyBee"
+#OSNAME="MyBee"
 . ${progdir}/brand.conf
 tmpver=$( ${UNAME_CMD} -r )
 ver=${tmpver%%-*}

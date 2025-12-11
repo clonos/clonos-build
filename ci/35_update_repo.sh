@@ -9,13 +9,23 @@ progdir=$( realpath ${progdir} )
 progdir=$( dirname ${progdir} )
 
 : ${distdir="/usr/local/cbsd"}
-[ ! -r "${distdir}/subr/cbsdbootstrap.subr" ] && exit 1
-. ${distdir}/subr/cbsdbootstrap.subr || exit 1
+if [ ! -r "${distdir}/subr/cbsdbootstrap.subr" ]; then
+	echo "no such ${distdir}/subr/cbsdbootstrap.subr"
+	exit 1
+fi
+. ${distdir}/subr/cbsdbootstrap.subr
+if [ $? -ne 0 ]; then
+	echo "cbsdbootstrap.subr failed"
+	exit 1
+fi
+
 # lookup for RSYNC
 . /etc/rc.conf
 . ${progdir}/cmd.subr
-. ${progdir}/brand.conf
 
+OSNAME="MyBee"
+. ${progdir}/brand.conf
+date
 echo "UPDATE_REPO for ${OSNAME}"
 
 ver_w_point=$( echo ${mybbasever} | tr -d '.' )
@@ -51,7 +61,7 @@ if [ ! -h ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest ]; then
 fi
 
 [ -z "${PKG_CMD}" ] && PKG_CMD="/usr/sbin/pkg"
-
+date
 # save package list
 [ ! -d ${progdir}/myb ] && ${MKDIR_CMD} -p ${progdir}/myb
 ${GREP_CMD} -v '^#' ${progdir}/myb.list | ${SED_CMD} 's:/usr/ports/::g' > ${progdir}/myb/myb.list
@@ -94,7 +104,6 @@ ${MV_CMD} /usr/ports/packages/All/*.pkg ${progdir}/cbsd/FreeBSD:${ver}:amd64/lat
 #cp -a ${progdir}/cbsd/*.pkg /usr/ports/packages/All/
 
 cd ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest
-
 ${PKG_CMD} repo .
 
 sysrc -qf ${progdir}/myb/myb_ver.conf myb_ver_new="${VER}"
@@ -120,6 +129,8 @@ jq ".installed + {
 esac
 
 echo "update_repo: check ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/"
+
+#cd ${progdir}/cbsd/FreeBSD:${ver}:amd64/
 
 echo "${RSYNC_CMD} -avz ./ ${RSYNC_DST}latest/"
 ${RSYNC_CMD} -avz --delete ./ ${RSYNC_DST}latest/

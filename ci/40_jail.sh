@@ -57,7 +57,8 @@ env ASSUME_ALWAYS_YES=yes SIGNATURE_TYPE=none IGNORE_OSVERSION=yes pkg -C /root/
 
 cbsd jstart jname=${jname}
 
-fetch -o ${cbsd_workdir}/jails-data/${jname}-data/bin/distribution https://pkg.convectix.com/FreeBSD:14:amd64/latest/distribution
+major_ver=${mybbasever%%.*}
+fetch -o ${cbsd_workdir}/jails-data/${jname}-data/bin/distribution https://pkg.convectix.com/FreeBSD:${major_ver}:amd64/latest/distribution
 chmod +x ${cbsd_workdir}/jails-data/${jname}-data/bin/distribution
 
 [ ! -d ${cbsd_workdir}/jails-data/${jname}-data/usr/local/etc/pkg/repos ] && ${MKDIR_CMD} -p ${cbsd_workdir}/jails-data/${jname}-data/usr/local/etc/pkg/repos

@@ -3,7 +3,7 @@ pgm="${0##*/}"                          # Program basename
 progdir="${0%/*}"                       # Program directory
 progdir=$( realpath ${progdir} )
 
-#export STEP_BY_STEP=1
+export STEP_BY_STEP=1
 
 export PATH="/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin"
 ### SET version in /root/myb-build/ports/myb/Makefile

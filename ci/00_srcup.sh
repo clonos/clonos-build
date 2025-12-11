@@ -13,7 +13,7 @@ echo "Build ${OSNAME} base version: ${mybbasever}"
 
 case "${ver}" in
 	15*)
-		cbsd srcup ver=${mybbasever} rev=1efb9810ba8c
+		cbsd srcup ver=${mybbasever}
 		;;
 	14*)
 		cbsd srcup ver=${mybbasever}

@@ -5,7 +5,7 @@ progdir="${0%/*}"			# Program directory
 progdir=$( realpath ${progdir} )
 progdir=$( dirname ${progdir} )
 . ${progdir}/cmd.subr
-#OSNAME="ClonOS"
+#OSNAME="MyBee"
 . ${progdir}/brand.conf
 dstdir=$( ${MKTEMP_CMD} -d )
 
@@ -102,6 +102,9 @@ fi
 # MC needs for 'mcedit' !!
 #/usr/ports/net/realtek-re-kmod
 
+
+#CLEAN
+PREFETCHED_PACKAGES=
 
 echo "cbsd cpr batch=1 makeconf=/root/myb-build/myb_make.conf jname=\"${cpr_jname}\" ver=${mybbasever} pkglist=${progdir}/myb.list dstdir=${dstdir} package_fetch=\"${PREFETCHED_PACKAGES}\" autoremove=1"
 cbsd cpr batch=1 makeconf=/root/myb-build/myb_make.conf jname="${cpr_jname}" ver=${mybbasever} pkglist=${progdir}/myb.list dstdir=${dstdir} package_fetch="${PREFETCHED_PACKAGES}" autoremove=1

@@ -23,9 +23,8 @@ fi
 . /etc/rc.conf
 . ${progdir}/cmd.subr
 
-#OSNAME="MyBee"
+OSNAME="MyBee"
 . ${progdir}/brand.conf
-date
 echo "UPDATE_REPO for ${OSNAME}"
 
 ver_w_point=$( echo ${mybbasever} | tr -d '.' )
@@ -135,6 +134,8 @@ echo "update_repo: check ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/"
 echo "${RSYNC_CMD} -avz ./ ${RSYNC_DST}latest/"
 ${RSYNC_CMD} -avz --delete ./ ${RSYNC_DST}latest/
 _ret=$?
+
+read p
 
 echo "update_repo: rsync errcode: ${_ret}"
 

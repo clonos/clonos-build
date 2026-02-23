@@ -5,7 +5,7 @@ progdir="${0%/*}"			# Program directory
 progdir=$( realpath ${progdir} )
 progdir=$( dirname ${progdir} )
 . ${progdir}/cmd.subr
-#OSNAME="MyBee"
+OSNAME="MyBee"
 . ${progdir}/brand.conf
 dstdir=$( ${MKTEMP_CMD} -d )
 
@@ -139,8 +139,8 @@ esac
 
 cbsd jstop jname=${cpr_jname} || true
 
-echo "${MV_CMD} ${dstdir}/* ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/"
-${MV_CMD} ${dstdir}/* ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/
+echo "${RSYNC_CMD_CMD} -avz ${dstdir}/ ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/"
+${RSYNC_CMD} -avz ${dstdir}/ ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/
 
 ${RM_CMD} -rf ${dstdir}
 if [ ! -h ${progdir}/cbsd/FreeBSD:${ver}:amd64/latest/pkg.pkg ]; then
